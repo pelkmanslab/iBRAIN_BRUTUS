@@ -1,0 +1,14 @@
+#! /bin/sh
+
+if [ -d $1 ]; then
+
+echo submitting DataFusion $pathname
+REPORTFILE=DataFusion_$(date +"%y%m%d%H%M%S").results
+#bsub -W 8:01 -o $1/$REPORTFILE ./DataFusion/RunDataFusion.command $1
+bsub -W 08:00 -o $1/$REPORTFILE "matlab -singleCompThread -nodisplay -nojvm << M_PROG;
+RunDataFusion('$1');
+M_PROG"
+
+touch $(dirname $1)/DataFusion.submitted
+
+fi
