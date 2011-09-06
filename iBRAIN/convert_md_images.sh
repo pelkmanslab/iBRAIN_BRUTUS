@@ -27,8 +27,8 @@ DRY_RUN=0
 
 # STRUCTURE IS DEFINED BY THIS REGEXP:
 #                 date                ID        timepoint
-regexp='[0-9]{4}-[0-9]{2}-[0-9]{2}/[0-9]{4}/TimePoint_[0-9]*/[^/]*.(png|tif)$'
-MD_IMAGES=$(find ${ACQUISITION_FOLDER}/*/*/*/* -type f | egrep $regexp )
+regexp='[0-9]{4}-[0-9]{2}-[0-9]{2}/[0-9]{4}/TimePoint_[0-9]*/[^/]*\.(png|tif)$'
+MD_IMAGES=$(find ${ACQUISITION_FOLDER} -type f | egrep $regexp )
 if [[ $? -ne 0 ]]; then MD_IMAGES=;fi
 
 # CHECK IF ACQUISITION_FOLDER STRUCTURE CORRESPONDS TO MD STRUCTURE; IF IT DOES
