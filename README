@@ -10,10 +10,10 @@ obtained results. It contains numerous meta-information on genes and proteins,
 obtained from ontology databases and STRING. It also incorporates probabilistic
 algorithms to determine the true loss-of-function phenotype of a gene from
 measurements of multiple siRNAs targeting the same gene. Some of these
-algorithms have been developed by us, and will be published in the near future.
-iBRAIN also provides a webbrowser-compatible user interface with which the
-progress in computational analysis can be easily monitored for each running
-project.
+algorithms have been developed in Lucas Pelkmans group by Berend Snijder, and 
+will be published in the near future. iBRAIN also provides a webbrowser-
+compatible user interface with which the progress in computational analysis 
+can be easily monitored for each running project.
 
 author: Berend Snijder
 version: 2009-08-03
