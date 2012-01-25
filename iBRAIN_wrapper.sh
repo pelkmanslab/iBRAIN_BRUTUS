@@ -117,7 +117,7 @@ if [ -e ~/logs/diskusage.txt ]; then
 	echo "  <share_3_total>$SHARE3TOTAL</share_3_total>"
 
 	# check if there is enough free space
-	if [ $SHARE2FREE -lt 150000000 -o $SHARE3FREE -lt 150000000 ]; then
+	if [ $SHARE2FREE -lt 100000000 -o $SHARE3FREE -lt 100000000 ]; then
 	    echo "  <error type=\"NotEnoughDiskSpace\">"
 		echo "ABORTING iBRAIN BECAUSE THERE IS NOT ENOUGH DISK SPACE FREE!"
 		echo "  KBYTES FREE ON SHARE-2-$ = $SHARE2FREE."
@@ -130,7 +130,7 @@ if [ -e ~/logs/diskusage.txt ]; then
 		# if this flag is not present, sent a mail to the entire lab at once!
 		if [ ! -e ~/logs/sentmailtoentirelab.submitted ]; then
 			touch ~/logs/sentmailtoentirelab.submitted
-			echo -e "Hi all,\n\nThere is not enough free space on our NAS shares. Here is how it breaks down:\n\nKBYTES FREE ON SHARE-2-$ = $SHARE2FREE.\nKBYTES FREE ON SHARE-3-$ = $SHARE3FREE.\n\nThis is an automatically generated message. See http://www.ibrain.ethz.ch/explorer for more details.\n\nKind regards,\nBerend." | mail -s "iBRAIN: PANIC! NOT ENOUGH FREE SPACE ON NAS SHARES!" pelkmans_group@imsb.biol.ethz.ch 
+			echo -e "Hi all,\n\nThere is not enough free space on our NAS shares. Here is how it breaks down:\n\nKBYTES FREE ON SHARE-2-$ = $SHARE2FREE.\nKBYTES FREE ON SHARE-3-$ = $SHARE3FREE.\n\nThis is an automatically generated message. See http://www.ibrain.ethz.ch/explorer for more details.\n\nKind regards,\nBerend." | mail -s "iBRAIN: PANIC! NOT ENOUGH FREE SPACE ON NAS SHARES!" pelkmans_lab@imls.lists.uzh.ch 
 		fi
 
 		echo "empty mail." | mail -s "iBRAIN: $(basename $0): PANIC! NOT ENOUGH FREE SPACE ON NAS SHARES!" snijder@imsb.biol.ethz.ch

@@ -2057,7 +2057,7 @@ M_PROG"
 	                    #echo "      </message>"
 	                    echo "      <output>"    
 	                    BINRESULTFILE="$BINRESULTFILEBASE$(date +"%y%m%d%H%M%S").results"
-	                    if [-e $BINRUNLIMITFILE ]; then
+	                    if [ -e $BINRUNLIMITFILE ]; then
 bsub -W 8:00 -o "${BATCHDIR}$BINRESULTFILE" "matlab -singleCompThread -nodisplay << M_PROG
 runBinCorrection('${BATCHDIR}','${BINSETTINGSFILE}','$(basename $BINOUTPUTFILE)');
 M_PROG"
@@ -2245,15 +2245,15 @@ M_PROG"
                     echo "      <output>"    
                     TRACKERRESULTFILE="$TRACKERRESULTFILEBASE$(date +"%y%m%d%H%M%S").results"
                     # Always submit to 8h queue...
-#                    if [ -e $TRACKERRUNLIMITFILE ]; then
+                    if [ -e $TRACKERRUNLIMITFILE ]; then
+bsub -W 35:00 -o "${BATCHDIR}$TRACKERRESULTFILE" "matlab -singleCompThread -nodisplay << M_PROG
+iBrainTrackerV1('${PROJECTDIR}','${TRACKERSETTINGSFILE}');
+M_PROG"
+                    else
 bsub -W 8:00 -o "${BATCHDIR}$TRACKERRESULTFILE" "matlab -singleCompThread -nodisplay << M_PROG
 iBrainTrackerV1('${PROJECTDIR}','${TRACKERSETTINGSFILE}');
 M_PROG"
-#                    else
-#bsub -W 1:00 -o "${BATCHDIR}$TRACKERRESULTFILE" "matlab -singleCompThread -nodisplay << M_PROG
-#iBrainTrackerV1('${PROJECTDIR}','${TRACKERSETTINGSFILE}');
-#M_PROG"
-#                	fi                    
+                	fi                    
                     touch $TRACKERSUBMITTEDFILE
                     echo "      </output>"     
                     if [ -e $TRACKERSETTINGSFILE ]; then
@@ -2653,7 +2653,7 @@ M_PROG"
     
     #######################################################
     ### SUBMIT FUSE_BASIC_DATA IF FUSEBASICDATAFLAG > 0 ###
-    SEARCHSTRING="fuse_basic_data_v4('${INCLUDEDPATH}')"
+    SEARCHSTRING="fuse_basic_data_v5('${INCLUDEDPATH}')"
     #FUSEBASICDATAJOBCOUNT=$(($(~/iBRAIN/countjobs.sh $SEARCHSTRING) + 0))
     FUSEBASICDATAJOBCOUNT=$(($(grep $SEARCHSTRING $JOBSFILE -c) + 0))
     if [ ! -w $INCLUDEDPATH ]; then
@@ -2686,7 +2686,7 @@ M_PROG"
                 echo "      <output>"                    
                 #echo "  FOUND $FUSEBASICDATAFLAG BASICDATA FILES NEWER THAN $PROJECTBASICDATAFILE"      
                 bsub -W 8:00 -o "$INCLUDEDPATH/FuseBasicData_$(date +"%y%m%d%H%M%S").results" "matlab -singleCompThread -nodisplay -nojvm << M_PROG
-fuse_basic_data_v4('${INCLUDEDPATH}');
+fuse_basic_data_v5('${INCLUDEDPATH}');
 check_dg_plate_correlations('${INCLUDEDPATH}');
 M_PROG"
                 touch $INCLUDEDPATH/FuseBasicData.submitted
