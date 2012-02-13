@@ -212,10 +212,24 @@ if [ "$INCLUDEDPATH" ] && [ -d $INCLUDEDPATH ]; then
             # TIFF 2 PNG CONVERSION
             COMPLETEDPNGCONVERSIONCHECK=$(find $BATCHDIR -maxdepth 1 -type f -name "ConvertAllTiff2Png.complete" | wc -l)
             CONVERTALLTIFF2PNGRESULTCOUNT=$(find $BATCHDIR -maxdepth 1 -type f -name "ConvertAllTiff2Png_*.results" | wc -l)
-            
-            # ILLUMINATION CORRECTION MEASUREMENTS
-            COMPLETEDILLCORMEASUREMENTCHECK=$(find $BATCHDIR -maxdepth 1 -type f -name "IllCorMeasurement.complete" | wc -l)
-            ILLCORMEASUREMENTRESULTCOUNT=$(find $BATCHDIR -maxdepth 1 -type f -name "IllCorMeasurement_*.results" | wc -l)
+
+            # ILLUMINATION CORRECTION MEASUREMENTS            
+            # CHECK HOW MANY ILLUMINATION CORRECTION SETTINGS FILES ARE PRESENT. IF THIS IS BIGGER THAN 0, 
+            # AND FOR EACH EXISTS AN OUTPUT FILE, THAN CONSIDER STEP COMPLETE
+        	ALLILLCORSETTINGSFILESCOUNT=$(find $BATCHDIR -maxdepth 1 -type f -name "batch_illcor_*.mat" | wc -l)
+        	if [ $ALLILLCORSETTINGSFILESCOUNT -gt 0 ]; then
+        		COMPLETEDILLCORMEASUREMENTCHECK=1;
+	            for ILLCORSETTINGSFILE in $(find $BATCHDIR -maxdepth 1 -type f -name "batch_illcor_*.mat"); do
+	                ILLCOROUTPUTFILE="${BATCHDIR}Measurements_$(basename $ILLCORSETTINGSFILE)"
+	                if [ ! -e $ILLCOROUTPUTFILE ]; then
+	                	COMPLETEDILLCORMEASUREMENTCHECK=0;
+	                	break
+	                fi
+	            done
+        	else
+        		COMPLETEDILLCORMEASUREMENTCHECK=0;
+        	fi
+
 
             # PRECLUSTER
             PRECLUSTERCHECK=$(find $BATCHDIR -maxdepth 1 -type f -name "PreCluster_*.results" | wc -l)
@@ -441,101 +455,237 @@ if [ "$INCLUDEDPATH" ] && [ -d $INCLUDEDPATH ]; then
             fi
             
 
-        elif [ ! $COMPLETEFILECHECK -eq 0 ] && [ $COMPLETEDPNGCONVERSIONCHECK -eq 0 ] && [ $COMPLETEDILLCORMEASUREMENTCHECK -eq 0 ]; then
+        elif [ ! $COMPLETEFILECHECK -eq 0 ] && ([ $COMPLETEDPNGCONVERSIONCHECK -eq 0 ] || [ $COMPLETEDILLCORMEASUREMENTCHECK -eq 0 ]); then
             
-            ### AT THE START OF IBRAIN, DO A PNG CONVERSION OF ALL TIF FILES IN THE TIFF DIRECTORY. 
-            # ONLY IF THIS TIFF CONVERSION IS DONE, CREATE THE ConvertAllTiff2Png.complete FILE
-            # FURTHER ANALYSIS AND THE JPG CREATION DEPENDS ON THIS FILE
-        
-            ###
-            ### CONVERT ALL TIFF TO PNG
-            ###
-            
-            TIFFCOUNT=$(find $TIFFDIR -maxdepth 1 -type f -iname "*.tif" | wc -l)
-            PNGCOUNT=$(find $TIFFDIR -maxdepth 1 -type f -iname "*.png" | wc -l)
-
-            # it's important to have an up to date conversion job count
-            #TIFF2PNGCONVERSIONJOBS=$(grep "convert_all_tiff2png" $JOBSFILE -c)	 
-            SEARCHSTRING="convert_all_tiff2png(${TIFFDIR})"
-            TIFF2PNGCONVERSIONJOBSPERPLATE=$(($(grep $SEARCHSTRING $JOBSFILE -c) + 0))
-			TIFF2PNGCONVERSIONJOBS=$(~/iBRAIN/countjobs.sh "convert_all_tiff2png")
-			
-            ### IF ALL EXPECTED MEASUREMENTS ARE PRESENT SUBMIT MEASUREMENTS_MEAN_STD
-            
-            if [ ! -e $PROJECTDIR/ConvertAllTiff2Png.submitted ]; then
-                 
-                if [ $TIFFCOUNT -gt 0 ] && [ $TIFF2PNGCONVERSIONJOBS -lt 15 ] && [ $TIFF2PNGCONVERSIONJOBSPERPLATE -eq 0 ]; then
-                    
-                    echo "     <status action=\"convert-all-tiff-2-png\">submitting"
-                    echo "      <output>"
-
-                    # create batch files for png conversion (and clean up previous ones if present?)
-                    
-                    # clean up old batch png conversion files
-                    rm -f ${BATCHDIR}batch_png_convert_*
-                    # create new batch png conversion files, with 3000 files per batch job
-                	find ${TIFFDIR} -maxdepth 1 -type f -name *.tif | split -a 3 -l 3000 -d - ${BATCHDIR}batch_png_convert_
-					# loop over files and submit jobs                    
-                    for BATCHPNGCONVERTFILE in $( find $BATCHDIR -maxdepth 1 -type f -name batch_png_convert_*  ); do
-                    	PNGRESULTFILE="ConvertAllTiff2Png_$(basename ${BATCHPNGCONVERTFILE})_$(date +"%y%m%d%H%M%S").results"
+            if [ $COMPLETEDPNGCONVERSIONCHECK -eq 0 ]; then 
+	            	
+	            ### AT THE START OF IBRAIN, DO A PNG CONVERSION OF ALL TIF FILES IN THE TIFF DIRECTORY. 
+	            # ONLY IF THIS TIFF CONVERSION IS DONE, CREATE THE ConvertAllTiff2Png.complete FILE
+	            # FURTHER ANALYSIS AND THE JPG CREATION DEPENDS ON THIS FILE
+	        
+	            ###
+	            ### CONVERT ALL TIFF TO PNG
+	            ###
+	            
+	            TIFFCOUNT=$(find $TIFFDIR -maxdepth 1 -type f -iname "*.tif" | wc -l)
+	            PNGCOUNT=$(find $TIFFDIR -maxdepth 1 -type f -iname "*.png" | wc -l)
+	
+	            # it's important to have an up to date conversion job count
+	            #TIFF2PNGCONVERSIONJOBS=$(grep "convert_all_tiff2png" $JOBSFILE -c)	 
+	            SEARCHSTRING="convert_all_tiff2png(${TIFFDIR})"
+	            TIFF2PNGCONVERSIONJOBSPERPLATE=$(($(grep $SEARCHSTRING $JOBSFILE -c) + 0))
+				TIFF2PNGCONVERSIONJOBS=$(~/iBRAIN/countjobs.sh "convert_all_tiff2png")
+				
+	            ### IF ALL EXPECTED MEASUREMENTS ARE PRESENT SUBMIT MEASUREMENTS_MEAN_STD
+	            
+	            if [ ! -e $PROJECTDIR/ConvertAllTiff2Png.submitted ]; then
+	                 
+	                if [ $TIFFCOUNT -gt 0 ] && [ $TIFF2PNGCONVERSIONJOBS -lt 15 ] && [ $TIFF2PNGCONVERSIONJOBSPERPLATE -eq 0 ]; then
+	                    
+	                    echo "     <status action=\"convert-all-tiff-2-png\">submitting"
+	                    echo "      <output>"
+	
+	                    # create batch files for png conversion (and clean up previous ones if present?)
+	                    
+	                    # clean up old batch png conversion files
+	                    rm -f ${BATCHDIR}batch_png_convert_*
+	                    # create new batch png conversion files, with 3000 files per batch job
+	                	find ${TIFFDIR} -maxdepth 1 -type f -name *.tif | split -a 3 -l 3000 -d - ${BATCHDIR}batch_png_convert_
+						# loop over files and submit jobs                    
+	                    for BATCHPNGCONVERTFILE in $( find $BATCHDIR -maxdepth 1 -type f -name batch_png_convert_*  ); do
+	                    	PNGRESULTFILE="ConvertAllTiff2Png_$(basename ${BATCHPNGCONVERTFILE})_$(date +"%y%m%d%H%M%S").results"
 bsub -W 8:00 -o "${BATCHDIR}$PNGRESULTFILE" << M_PROG
 ~/iBRAIN/batchpngconversion.sh ${BATCHPNGCONVERTFILE}
 #mogrify -depth 16 -type Grayscale -format png *.tif && rm *.tif
 echo "${SEARCHSTRING}"
 M_PROG
-                    done
-
-                    touch $PROJECTDIR/ConvertAllTiff2Png.submitted
-                    echo "      </output>"                    
-                    echo "     </status>"                           
-
-                elif [ $TIFFCOUNT -gt 0 ] && [ $TIFF2PNGCONVERSIONJOBS -gt 14 ] && [ $TIFF2PNGCONVERSIONJOBSPERPLATE -eq 0 ]; then
-
-                    echo "     <status action=\"convert-all-tiff-2-png\">waiting"
-                    echo "      <message>"
-                    echo "    not yet submitting plate tiff to png conversion, too many jobs of this kind present. waiting for some jobs to finish."
-                    echo "    TIFF2PNGCONVERSIONJOBS = $TIFF2PNGCONVERSIONJOBS"
-                    echo "    TIFF2PNGCONVERSIONJOBSPERPLATE = $TIFF2PNGCONVERSIONJOBSPERPLATE"
-                    echo "    TIFFCOUNT = $TIFFCOUNT"
-                    echo "    PNGCOUNT = $PNGCOUNT"
-                    echo "      </message>"
-                    echo "     </status>"   
-
-                elif [ $TIFFCOUNT -eq 0 ] && [ $PNGCOUNT -gt 0 ]; then
-
-                    echo "     <status action=\"convert-all-tiff-2-png\">waiting"
-                    echo "      <message>"
-                    echo "    No TIFF files found, png files are present, and ConvertAllTiff2Png.submitted was missing, creating ConvertAllTiff2Png.submitted and ConvertAllTiff2Png.complete"
-                    echo "    TIFF2PNGCONVERSIONJOBSPERPLATE = $TIFF2PNGCONVERSIONJOBSPERPLATE"
-                    echo "    TIFF2PNGCONVERSIONJOBS = $TIFF2PNGCONVERSIONJOBS"
-                    echo "    TIFFCOUNT = $TIFFCOUNT"
-                    echo "    PNGCOUNT = $PNGCOUNT"
-                    echo "      </message>"
-                    echo "      <output>"
-                    touch $PROJECTDIR/ConvertAllTiff2Png.submitted
-                    # just make sure BATCH is present... people might delete it
-                    if [ ! -e $BATCHDIR ]; then
-                        mkdir -p $BATCHDIR
-                    fi
-                    touch $BATCHDIR/ConvertAllTiff2Png.complete
-                    echo "      </output>"                    
-                    echo "     </status>"                           
-            
-				elif [ $TIFF2PNGCONVERSIONJOBSPERPLATE -eq 0 ]; then
-				
-                    echo "     <status action=\"convert-all-tiff-2-png\">waiting"
-                    echo "      <message>"
-                    echo "    Jobs still running but and ConvertAllTiff2Png.submitted was missing, creating ConvertAllTiff2Png.submitted"
-                    echo "      </message>"
-                    echo "      <output>"
-                    touch $PROJECTDIR/ConvertAllTiff2Png.submitted
-                    # just make sure BATCH is present... people might delete it
-                    if [ ! -e $BATCHDIR ]; then
-                        mkdir -p $BATCHDIR
-                    fi
-                    echo "      </output>"                    
-                    echo "     </status>" 
-                    			
+	                    done
+	
+	                    touch $PROJECTDIR/ConvertAllTiff2Png.submitted
+	                    echo "      </output>"                    
+	                    echo "     </status>"                           
+	
+	                elif [ $TIFFCOUNT -gt 0 ] && [ $TIFF2PNGCONVERSIONJOBS -gt 14 ] && [ $TIFF2PNGCONVERSIONJOBSPERPLATE -eq 0 ]; then
+	
+	                    echo "     <status action=\"convert-all-tiff-2-png\">waiting"
+	                    echo "      <message>"
+	                    echo "    not yet submitting plate tiff to png conversion, too many jobs of this kind present. waiting for some jobs to finish."
+	                    echo "    TIFF2PNGCONVERSIONJOBS = $TIFF2PNGCONVERSIONJOBS"
+	                    echo "    TIFF2PNGCONVERSIONJOBSPERPLATE = $TIFF2PNGCONVERSIONJOBSPERPLATE"
+	                    echo "    TIFFCOUNT = $TIFFCOUNT"
+	                    echo "    PNGCOUNT = $PNGCOUNT"
+	                    echo "      </message>"
+	                    echo "     </status>"   
+	
+	                elif [ $TIFFCOUNT -eq 0 ] && [ $PNGCOUNT -gt 0 ]; then
+	
+	                    echo "     <status action=\"convert-all-tiff-2-png\">waiting"
+	                    echo "      <message>"
+	                    echo "    No TIFF files found, png files are present, and ConvertAllTiff2Png.submitted was missing, creating ConvertAllTiff2Png.submitted and ConvertAllTiff2Png.complete"
+	                    echo "    TIFF2PNGCONVERSIONJOBSPERPLATE = $TIFF2PNGCONVERSIONJOBSPERPLATE"
+	                    echo "    TIFF2PNGCONVERSIONJOBS = $TIFF2PNGCONVERSIONJOBS"
+	                    echo "    TIFFCOUNT = $TIFFCOUNT"
+	                    echo "    PNGCOUNT = $PNGCOUNT"
+	                    echo "      </message>"
+	                    echo "      <output>"
+	                    touch $PROJECTDIR/ConvertAllTiff2Png.submitted
+	                    # just make sure BATCH is present... people might delete it
+	                    if [ ! -e $BATCHDIR ]; then
+	                        mkdir -p $BATCHDIR
+	                    fi
+	                    touch $BATCHDIR/ConvertAllTiff2Png.complete
+	                    echo "      </output>"                    
+	                    echo "     </status>"                           
+	            
+					elif [ $TIFF2PNGCONVERSIONJOBSPERPLATE -eq 0 ]; then
+					
+	                    echo "     <status action=\"convert-all-tiff-2-png\">waiting"
+	                    echo "      <message>"
+	                    echo "    Jobs still running but and ConvertAllTiff2Png.submitted was missing, creating ConvertAllTiff2Png.submitted"
+	                    echo "      </message>"
+	                    echo "      <output>"
+	                    touch $PROJECTDIR/ConvertAllTiff2Png.submitted
+	                    # just make sure BATCH is present... people might delete it
+	                    if [ ! -e $BATCHDIR ]; then
+	                        mkdir -p $BATCHDIR
+	                    fi
+	                    echo "      </output>"                    
+	                    echo "     </status>" 
+	                    			
+		            else
+		                
+		                echo "     <status action=\"convert-all-tiff-2-png\">unknown"
+		                echo "      <warning>"
+		                echo "  UNKNOWN STATUS FOR convert-all-tiff-2-png ACTION"
+		                if [ -e $BATCHDIR/ConvertAllTiff2Png.complete ]; then
+		                echo "    ConvertAllTiff2Png.complete IS PRESENT"
+		                else
+		                echo "    ConvertAllTiff2Png.complete IS NOT PRESENT"	
+		                fi
+		                echo "    TIFFCOUNT=$TIFFCOUNT"
+		                echo "    PNGCOUNT=$PNGCOUNT"
+		                echo "    TIFF2PNGCONVERSIONJOBS = $TIFF2PNGCONVERSIONJOBS"                
+		                echo "    CONVERTALLTIFF2PNGRESULTCOUNT=$CONVERTALLTIFF2PNGRESULTCOUNT"
+		                echo "    TIFF2PNGCONVERSIONJOBSPERPLATE = $TIFF2PNGCONVERSIONJOBSPERPLATE"                
+		                echo "      </warning>"                                        
+		                echo "     </status>" 
+		            fi
+	                
+	            ### PLATE NORMALIZATION HAS BEEN SUBMITTED BUT DID NOT PRODUCE OUTPUT FILES YET
+	            elif [ -e $PROJECTDIR/ConvertAllTiff2Png.submitted ] && [ $CONVERTALLTIFF2PNGRESULTCOUNT -lt 1 ]; then
+	                
+	                echo "     <status action=\"convert-all-tiff-2-png\">waiting"
+	                #echo "      <message>"
+	                #echo "    PROCESSING: waiting for tiff-2-png conversion to finish"
+	                #echo "      </message>"
+	                echo "      <output>"                    
+	                ### EXPERIMENTAL: IF NO JOBS ARE FOUND FOR THIS PROJECT, WAITING IS SENSELESS. REMOVE .submitted FILE AND TRY AGAIN
+	                if [ $PLATEJOBCOUNT -eq 0 ]; then
+	                    echo "    ALERT: iBRAIN IS WAITING FOR PNG CONVERSION, BUT THERE ARE NO JOBS (PENDING OR RUNNING) FOR THIS PROJECT. RETRYING THIS FOLDER"
+	                    rm -f $PROJECTDIR/ConvertAllTiff2Png.submitted
+	                fi
+	                
+	                ### [091208 BS] Add a PNG conversion progress bar!
+	                
+	                # This progress bar logic holds for MATLAB based conversion
+					PROGRESSBARVALUE=$(echo "scale=2; (${PNGCOUNT} / (${TIFFCOUNT} + ${PNGCOUNT})) * 100;" | bc)
+					
+					# This progress bar logic holds for Imagemagick based conversion
+					# PROGRESSBARVALUE=$(echo "scale=2; (${PNGCOUNT} / (${TIFFCOUNT})) * 100;" | bc)
+	            	if [ "$PROGRESSBARVALUE" ]; then
+	        			echo "       <progressbar>$PROGRESSBARVALUE</progressbar>"
+	            	fi
+	                
+	                echo "      </output>"                    
+	                echo "     </status>"  
+	                
+	
+					elif [ $TIFFCOUNT -gt 0 ] && [ -e $PROJECTDIR/ConvertAllTiff2Png.submitted ] && [ $CONVERTALLTIFF2PNGRESULTCOUNT -gt 0 ] && [ $TIFF2PNGCONVERSIONJOBSPERPLATE -gt 0 ]; then
+	 
+	                echo "     <status action=\"convert-all-tiff-2-png\">waiting"
+	                echo "      <message>"
+	                echo "    PROCESSING: waiting for tiff-2-png conversion to finish"
+	                echo "      </message>"
+	                echo "      <output>"                    
+	                ### [091208 BS] Add a PNG conversion progress bar!
+					PROGRESSBARVALUE=$(echo "scale=2; (${PNGCOUNT} / (${TIFFCOUNT} + ${PNGCOUNT})) * 100;" | bc)
+					# PROGRESSBARVALUE=$(echo "scale=2; (${PNGCOUNT} / (${TIFFCOUNT})) * 100;" | bc)
+	            	if [ "$PROGRESSBARVALUE" ]; then
+	        			echo "       <progressbar>$PROGRESSBARVALUE</progressbar>"
+	            	fi
+	                echo "    TIFF2PNGCONVERSIONJOBSPERPLATE = $TIFF2PNGCONVERSIONJOBSPERPLATE"            	
+	                echo "      </output>"                    
+	                echo "     </status>" 
+	                
+	            ### PLATE NORMALIZATION HAS BEEN COMPLETED BUT FAILED TO REMOVE ALL TIFF FILES
+	            elif [ $TIFFCOUNT -gt 0 ] && [ -e $PROJECTDIR/ConvertAllTiff2Png.submitted ] && [ $CONVERTALLTIFF2PNGRESULTCOUNT -gt 0 ] && [ $TIFF2PNGCONVERSIONJOBSPERPLATE -eq 0 ]; then
+	                
+	                echo "     <status action=\"convert-all-tiff-2-png\">failed"
+	                echo "      <warning>"
+	                echo "    convert-all-tiff-2-png FAILED"
+	                echo "      </warning>"
+	                echo "      <output>"  
+	                if [ -e $BATCHDIR/ConvertAllTiff2Png.complete ]; then
+	                echo "    ConvertAllTiff2Png.complete IS PRESENT"
+	                else
+	                echo "    ConvertAllTiff2Png.complete IS NOT PRESENT"   
+	                fi	                
+	                echo "    TIFFCOUNT=$TIFFCOUNT"
+	                echo "    PNGCOUNT=$PNGCOUNT"
+	                echo "    CONVERTALLTIFF2PNGRESULTCOUNT=$CONVERTALLTIFF2PNGRESULTCOUNT"
+	                echo "    TIFF2PNGCONVERSIONJOBSPERPLATE = $TIFF2PNGCONVERSIONJOBSPERPLATE"	                                  
+	                ### check resultfiles for known errors, reset/resubmit jobs if appropriate 
+	                ERRORCHECKOUTPUT=$(~/iBRAIN/check_resultfiles_for_known_errors.sh $BATCHDIR "ConvertAllTiff2Png_" $PROJECTDIR/ConvertAllTiff2Png.submitted)
+	                echo " ${ERRORCHECKOUTPUT}"	                
+	                #ERRORCHECKOUTPUTTIMEOUTCOUNT=$(grep "${ERRORCHECKOUTPUT}" "Job exceeded runlimit" -c)
+	                if [ $(echo "$ERRORCHECKOUTPUT" | grep "no known or unknown errors were found" -c) -gt 0 ]; then
+	                	echo " [BS, EXPERIMENTAL] NO ERRORS FOUND IN RESULT FILE: RESETTING PNG CONVERSION JOB"
+	                	rm -v $PROJECTDIR/ConvertAllTiff2Png.submitted
+	                elif [ $(echo "$ERRORCHECKOUTPUT" | grep "Job exceeded runlimit" -c) -gt 0 ]; then
+	                    echo " [BS, EXPERIMENTAL] NO ERROR FOUND IN RESULT FILE: RESETTING PNG CONVERSION JOB"
+	                    rm -v $PROJECTDIR/ConvertAllTiff2Png.submitted
+	                fi
+	                echo "      </output>"                   
+	                echo "     </status>"                         
+	
+	
+	            ### IF PLATE NORMALIZATION FILE IS PRESENT, FLAG AS COMPLETED
+	            elif [ $TIFFCOUNT -eq 0 ] && [ $PNGCOUNT -gt 0 ] && [ $TIFFDIRLASTMODIFIED -eq 0 ]; then
+	                
+	                echo "     <status action=\"convert-all-tiff-2-png\">waiting"
+	                echo "      <message>"
+	                echo "    COMPLETED: png conversion is complete. waiting for second timeout"
+	                echo "      </message>"
+	                echo "      <output>"                    
+	                ### create   
+	                touch $BATCHDIR/ConvertAllTiff2Png.complete
+	                echo "      </output>"                  	                
+	                echo "     </status>"
+	
+	            elif [ $TIFFCOUNT -eq 0 ] && [ $PNGCOUNT -gt 0 ] && [ $TIFFDIRLASTMODIFIED -eq 1 ]; then
+	                
+	                echo "     <status action=\"convert-all-tiff-2-png\">completed, waiting"
+	                #echo "      <message>"
+	                #echo "    COMPLETED: plate normalization"
+	                #echo "      </message>"
+	                echo "      <output>"                    
+	                ### create   
+	                touch $BATCHDIR/ConvertAllTiff2Png.complete
+	                echo "      </output>"                                      
+	                echo "     </status>"
+	
+	            elif [ $TIFFCOUNT -gt 0 ] && [ $PNGCOUNT -gt 0 ] && [ $TIFFDIRLASTMODIFIED -eq 1 ]; then
+	                
+	                echo "     <status action=\"convert-all-tiff-2-png\">resetting"
+	                echo "      <message>"
+	                echo "    Finished waiting for the second timeout after png conversion, but new tif files were found, resetting pngconversion."
+	                echo "      </message>"
+	                echo "      <output>"                    
+	                rm -v $BATCHDIR/ConvertAllTiff2Png.complete
+	                rm -v $PROJECTDIR/ConvertAllTiff2Png.submitted
+	                echo "      </output>"                                      
+	                echo "     </status>"
+	
 	            else
 	                
 	                echo "     <status action=\"convert-all-tiff-2-png\">unknown"
@@ -548,226 +698,188 @@ M_PROG
 	                fi
 	                echo "    TIFFCOUNT=$TIFFCOUNT"
 	                echo "    PNGCOUNT=$PNGCOUNT"
-	                echo "    TIFF2PNGCONVERSIONJOBS = $TIFF2PNGCONVERSIONJOBS"                
 	                echo "    CONVERTALLTIFF2PNGRESULTCOUNT=$CONVERTALLTIFF2PNGRESULTCOUNT"
 	                echo "    TIFF2PNGCONVERSIONJOBSPERPLATE = $TIFF2PNGCONVERSIONJOBSPERPLATE"                
 	                echo "      </warning>"                                        
-	                echo "     </status>" 
-	            fi
-                
-            ### PLATE NORMALIZATION HAS BEEN SUBMITTED BUT DID NOT PRODUCE OUTPUT FILES YET
-            elif [ -e $PROJECTDIR/ConvertAllTiff2Png.submitted ] && [ $CONVERTALLTIFF2PNGRESULTCOUNT -lt 1 ]; then
-                
-                echo "     <status action=\"convert-all-tiff-2-png\">waiting"
-                #echo "      <message>"
-                #echo "    PROCESSING: waiting for tiff-2-png conversion to finish"
-                #echo "      </message>"
-                echo "      <output>"                    
-                ### EXPERIMENTAL: IF NO JOBS ARE FOUND FOR THIS PROJECT, WAITING IS SENSELESS. REMOVE .submitted FILE AND TRY AGAIN
-                if [ $PLATEJOBCOUNT -eq 0 ]; then
-                    echo "    ALERT: iBRAIN IS WAITING FOR PNG CONVERSION, BUT THERE ARE NO JOBS (PENDING OR RUNNING) FOR THIS PROJECT. RETRYING THIS FOLDER"
-                    rm -f $PROJECTDIR/ConvertAllTiff2Png.submitted
-                fi
-                
-                ### [091208 BS] Add a PNG conversion progress bar!
-                
-                # This progress bar logic holds for MATLAB based conversion
-				PROGRESSBARVALUE=$(echo "scale=2; (${PNGCOUNT} / (${TIFFCOUNT} + ${PNGCOUNT})) * 100;" | bc)
-				
-				# This progress bar logic holds for Imagemagick based conversion
-				# PROGRESSBARVALUE=$(echo "scale=2; (${PNGCOUNT} / (${TIFFCOUNT})) * 100;" | bc)
-            	if [ "$PROGRESSBARVALUE" ]; then
-        			echo "       <progressbar>$PROGRESSBARVALUE</progressbar>"
-            	fi
-                
-                echo "      </output>"                    
-                echo "     </status>"  
-                
+	                echo "     </status>"                     
+	                	                
+	            fi                
+	            
+			fi # check if png conversion was completed 
+	        
+	        
+	        if [ $COMPLETEDILLCORMEASUREMENTCHECK -eq 0 ]; then
+		
+		        ###
+		        ### ILLUMINATION CORRECTION BATCHED PER CHANNEL AND Z-STACK
+		        ###
+		        
+		        ### IF THERE ARE NO SETTINGS FILE PRESENT, RUN MATLAB LOCALLY TO CREATE BATCH SETTINGS FILES FOR ILLUMINATION CORRECTION
+		        ### PER INDIVIDUAL CHANNEL AND Z-STACK
+		        ILLCORSETTINGSFILE=$(find $BATCHDIR -maxdepth 1 -type f -name "batch_illcor_*.mat" | wc -l)
+				if [ $ILLCORSETTINGSFILE -eq 0 ]; then
+echo "<!-- STARTING MATLAB CREATION OF BATCH ILLUMINATION CORRECTION SETTINGS FILES"					
+matlab -singleCompThread -nodisplay -nojvm << M_PROG
+prepare_batch_measure_illcor_stats('${TIFFDIR}');
+M_PROG
+echo "-->"
+					ILLCORSETTINGSFILE=$(find $BATCHDIR -maxdepth 1 -type f -name "batch_illcor_*.mat" | wc -l)
+				fi
+		        
+		        if [ $ILLCORSETTINGSFILE -gt 0 ]; then
+		
+		            echo "     <status action=\"illumination-correction\">"
+		            echo "      <message>"
+		            echo "    $ILLCORSETTINGSFILE illumination correction settings files found"
+		            echo "      </message>"
+		
+		 			# GET A LIST OF ALL ILLUM COR SETTINGS FILES
+		        	ALLILLCORSETTINGSFILES=$(find $BATCHDIR -maxdepth 1 -type f -name 'batch_illcor_*.mat')
+		             
+		            for ILLCORSETTINGSFILE in $ALLILLCORSETTINGSFILES; do
+		                
+		                ILLCOROUTPUTFILE="${BATCHDIR}Measurements_$(basename $ILLCORSETTINGSFILE)"
+		                ILLCOROVERVIEWPDFFILE="${POSTANALYSISDIR}Measurements_$(basename $ILLCORSETTINGSFILE .mat).pdf"
+		                ILLCORRESULTFILEBASE="IllumCorrection_$(basename $ILLCORSETTINGSFILE .mat)_"
+		                ILLCORSUBMITTEDFILE="${PROJECTDIR}/IllumCorrection_$(basename $ILLCORSETTINGSFILE .mat).submitted"
+		                #ILLCORRUNLIMITFILE="${PROJECTDIR}/IllumCorrection_$(basename $ILLCORSETTINGSFILE .mat).runlimit"
+		                ILLCORRESULTFILECOUNT=$(find $BATCHDIR -maxdepth 1 -type f -name "$ILLCORRESULTFILEBASE*.results" | wc -l)
+		                #ILLCORJOBCOUNT=$(~/iBRAIN/countjobs.sh $(basename $ILLCORSETTINGSFILE))
+		                ILLCORJOBCOUNT=$(grep $ILLCORSETTINGSFILE $JOBSFILE -c)
+		                if [ ! -d $POSTANALYSISDIR ]; then
+		                    mkdir -p $POSTANALYSISDIR
+		                fi
+		                
+		                if [ ! -e $ILLCORSUBMITTEDFILE ] && [ ! -e $ILLCOROUTPUTFILE ]; then
+		
+		                    echo "     <status action=\"$(basename $ILLCORSETTINGSFILE)\">submitting"
+		                    #echo "      <message>"
+		                    #echo "      SUBMITTING: $(basename $ILLCORSETTINGSFILE)"
+		                    #echo "      </message>"
+		                    echo "      <output>"    
+		                    ILLCORRESULTFILE="$ILLCORRESULTFILEBASE$(date +"%y%m%d%H%M%S").results"
+bsub -W 8:00 -o "${BATCHDIR}$ILLCORRESULTFILE" "matlab -singleCompThread -nodisplay << M_PROG
+batch_measure_illcor_stats('${BATCHDIR}','${ILLCORSETTINGSFILE}');
+M_PROG"
+		                    
+		                    touch $ILLCORSUBMITTEDFILE
+		                    echo "      </output>"                    
+		                    echo "     </status>"
+		                                       
+		                    
+		                    
+		                    
+		                # no output yet                has been submitted          has jobs present        no output jet
+		                elif [ ! -e $ILLCOROUTPUTFILE ] && [ -e $ILLCORSUBMITTEDFILE ] && [ $ILLCORJOBCOUNT -gt 0 ] && [ $ILLCORRESULTFILECOUNT -eq 0 ]; then
+		                    
+		                    echo "     <status action=\"$(basename $ILLCORSETTINGSFILE)\">waiting"
+		                    #echo "      <message>"
+		                    #echo "      WAITING: $(basename $ILLCORSETTINGSFILE): $ILLCORJOBCOUNT JOB(S) PRESENT"
+		                    #echo "      </message>"
+		                    echo "     </status>"
+		
+		                # no output yet                has been submitted          no jobs present           results never produced
+		                elif [ ! -e $ILLCOROUTPUTFILE ] && [ -e $ILLCORSUBMITTEDFILE ] && [ $ILLCORJOBCOUNT -eq 0 ] && [ $ILLCORRESULTFILECOUNT -eq 0 ]; then
+		
+		                    echo "     <status action=\"$(basename $ILLCORSETTINGSFILE)\">failed"
+		                    echo "      <warning>"
+		                    echo "      FAILED: $(basename $ILLCORSETTINGSFILE): RETRYING ILLUMINATION CORRECTION. PREVIOUS JOB DID NOT PRODUCE OUTPUT (?!)"
+		                    echo "      </warning>"
+		                    echo "      <output>"                    
+		                    rm -fv $ILLCORSUBMITTEDFILE
+		                    echo "      </output>"                    
+		                    echo "     </status>"
+		
+		                # no output yet                has been submitted          no jobs present           results produced once
+		                elif [ ! -e $ILLCOROUTPUTFILE ] && [ -e $ILLCORSUBMITTEDFILE ] && [ $ILLCORJOBCOUNT -eq 0 ] && [ $ILLCORRESULTFILECOUNT -eq 1 ]; then
+		
+		                    echo "     <status action=\"$(basename $ILLCORSETTINGSFILE)\">failed"
+		                    echo "      <warning>"
+		                    echo "      FAILED: $(basename $ILLCORSETTINGSFILE): RETRYING ILLUMINATION CORRECTION"
+		                    echo "      </warning>"
+		                    echo "      <output>"                    
+		                    ### check resultfiles for known errors, reset/resubmit jobs if appropriate 
+		                    ~/iBRAIN/check_resultfiles_for_known_errors.sh $BATCHDIR "$ILLCORRESULTFILEBASE" $ILLCORSUBMITTEDFILE                            
+		                    rm -fv $ILLCORSUBMITTEDFILE
+		                    echo "      </output>"                    
+		                    echo "     </status>"
+		                    
+		                # no output yet                has been submitted          no jobs present           results produced twice
+		                elif [ ! -e $ILLCOROUTPUTFILE ] && [ -e $ILLCORSUBMITTEDFILE ] && [ $ILLCORJOBCOUNT -eq 0 ] && [ $ILLCORRESULTFILECOUNT -eq 2 ]; then
+		
+		                    echo "     <status action=\"$(basename $ILLCORSETTINGSFILE)\">failed"
+		                    echo "      <warning>"
+		                    echo "      ABORTED: $(basename $ILLCORSETTINGSFILE): FAILED TWICE"
+		                    echo "      </warning>"
+		                    echo "      <output>"                    
+		                    ### check resultfiles for known errors, reset/resubmit jobs if appropriate 
+		                    ~/iBRAIN/check_resultfiles_for_known_errors.sh $BATCHDIR "$ILLCORRESULTFILEBASE" $ILLCORSUBMITTEDFILE
+		                    echo "      </output>"                    
+		                    echo "     </status>"
+		                    
+		                    
+		                # output present
+		                elif [ -e $ILLCOROUTPUTFILE ] ; then
+		                    
+		                    echo "     <status action=\"$(basename $ILLCORSETTINGSFILE)\">completed"
+		                    #echo "      <message>"
+		                    #echo "      COMPLETED: $(basename $ILLCORSETTINGSFILE)"
+		                    #echo "      </message>"
+		                    if [ -e $ILLCOROVERVIEWPDFFILE ]; then
+		                        echo "     <file type=\"pdf\">$ILLCOROVERVIEWPDFFILE</file>"
+		                    fi
+		                    echo "     </status>"
+		                    
+		                else
+		                
+		                    echo "     <status action=\"$(basename $ILLCORSETTINGSFILE)\">unknown"
+		                    echo "      <warning>"
+		                    echo "      UNKNOWN STATUS: $(basename $ILLCORSETTINGSFILE)"
+		                    if [ -e $ILLCORSETTINGSFILE ]; then
+		                        echo "        DEBUG: ILLCORSETTINGSFILE=$ILLCORSETTINGSFILE (present)"
+		                    else
+		                        echo "        DEBUG: ILLCORSETTINGSFILE=$ILLCORSETTINGSFILE (missing)"
+		                    fi
+		                    if [ -e $ILLCOROUTPUTFILE ]; then
+		                        echo "        DEBUG: ILLCOROUTPUTFILE=$ILLCOROUTPUTFILE (present)"
+		                    else
+		                        echo "        DEBUG: ILLCOROUTPUTFILE=$ILLCOROUTPUTFILE (missing)"
+		                    fi
+		                    if [ -e $ILLCORSUBMITTEDFILE ]; then
+		                        echo "        DEBUG: ILLCORSUBMITTEDFILE=$ILLCORSUBMITTEDFILE (present)"
+		                    else
+		                        echo "        DEBUG: ILLCORSUBMITTEDFILE=$ILLCORSUBMITTEDFILE (missing)"
+		                    fi
+		                    echo "        DEBUG: ILLCORRESULTFILEBASE=$ILLCORRESULTFILEBASE"
+		                    echo "        DEBUG: ILLCORRESULTFILECOUNT-SEARCH-STRING=$ILLCORRESULTFILEBASE*.results"                            
+		                    echo "        DEBUG: ILLCORRESULTFILECOUNT=$ILLCORRESULTFILECOUNT"
+		                    echo "        DEBUG: ILLCORJOBCOUNT=$ILLCORJOBCOUNT"
+		
+		                    echo "      </warning>"
+		                    echo "      <output>"                            
+		                    ### check resultfiles for known errors, reset/resubmit jobs if appropriate 
+		                    ~/iBRAIN/check_resultfiles_for_known_errors.sh $BATCHDIR "$ILLCORRESULTFILEBASE" $ILLCORSUBMITTEDFILE                            
+		                    echo "      </output>"
+		                    
+		                    echo "     </status>"
+		                                            
+		                
+		                
+		                fi
+		             
+		            done #LOOP OVER ILLCORSETTINGS FILES
+		            echo "     </status>"
+		                                
+				fi # end of illumination correction
+				#############################################
+				#### END OF ILLUMINATION CORRECTION BLOCK ###
+				#############################################
+		
+			fi # check if illumination correction is completed 
+	
+	
 
-				elif [ $TIFFCOUNT -gt 0 ] && [ -e $PROJECTDIR/ConvertAllTiff2Png.submitted ] && [ $CONVERTALLTIFF2PNGRESULTCOUNT -gt 0 ] && [ $TIFF2PNGCONVERSIONJOBSPERPLATE -gt 0 ]; then
- 
-                echo "     <status action=\"convert-all-tiff-2-png\">waiting"
-                echo "      <message>"
-                echo "    PROCESSING: waiting for tiff-2-png conversion to finish"
-                echo "      </message>"
-                echo "      <output>"                    
-                ### [091208 BS] Add a PNG conversion progress bar!
-				PROGRESSBARVALUE=$(echo "scale=2; (${PNGCOUNT} / (${TIFFCOUNT} + ${PNGCOUNT})) * 100;" | bc)
-				# PROGRESSBARVALUE=$(echo "scale=2; (${PNGCOUNT} / (${TIFFCOUNT})) * 100;" | bc)
-            	if [ "$PROGRESSBARVALUE" ]; then
-        			echo "       <progressbar>$PROGRESSBARVALUE</progressbar>"
-            	fi
-                echo "    TIFF2PNGCONVERSIONJOBSPERPLATE = $TIFF2PNGCONVERSIONJOBSPERPLATE"            	
-                echo "      </output>"                    
-                echo "     </status>" 
-                
-            ### PLATE NORMALIZATION HAS BEEN COMPLETED BUT FAILED TO REMOVE ALL TIFF FILES
-            elif [ $TIFFCOUNT -gt 0 ] && [ -e $PROJECTDIR/ConvertAllTiff2Png.submitted ] && [ $CONVERTALLTIFF2PNGRESULTCOUNT -gt 0 ] && [ $TIFF2PNGCONVERSIONJOBSPERPLATE -eq 0 ]; then
-                
-                echo "     <status action=\"convert-all-tiff-2-png\">failed"
-                echo "      <warning>"
-                echo "    convert-all-tiff-2-png FAILED"
-                echo "      </warning>"
-                echo "      <output>"  
-                if [ -e $BATCHDIR/ConvertAllTiff2Png.complete ]; then
-                echo "    ConvertAllTiff2Png.complete IS PRESENT"
-                else
-                echo "    ConvertAllTiff2Png.complete IS NOT PRESENT"   
-                fi	                
-                echo "    TIFFCOUNT=$TIFFCOUNT"
-                echo "    PNGCOUNT=$PNGCOUNT"
-                echo "    CONVERTALLTIFF2PNGRESULTCOUNT=$CONVERTALLTIFF2PNGRESULTCOUNT"
-                echo "    TIFF2PNGCONVERSIONJOBSPERPLATE = $TIFF2PNGCONVERSIONJOBSPERPLATE"	                                  
-                ### check resultfiles for known errors, reset/resubmit jobs if appropriate 
-                ERRORCHECKOUTPUT=$(~/iBRAIN/check_resultfiles_for_known_errors.sh $BATCHDIR "ConvertAllTiff2Png_" $PROJECTDIR/ConvertAllTiff2Png.submitted)
-                echo " ${ERRORCHECKOUTPUT}"	                
-                #ERRORCHECKOUTPUTTIMEOUTCOUNT=$(grep "${ERRORCHECKOUTPUT}" "Job exceeded runlimit" -c)
-                if [ $(echo "$ERRORCHECKOUTPUT" | grep "no known or unknown errors were found" -c) -gt 0 ]; then
-                	echo " [BS, EXPERIMENTAL] NO ERRORS FOUND IN RESULT FILE: RESETTING PNG CONVERSION JOB"
-                	rm -v $PROJECTDIR/ConvertAllTiff2Png.submitted
-                elif [ $(echo "$ERRORCHECKOUTPUT" | grep "Job exceeded runlimit" -c) -gt 0 ]; then
-                    echo " [BS, EXPERIMENTAL] NO ERROR FOUND IN RESULT FILE: RESETTING PNG CONVERSION JOB"
-                    rm -v $PROJECTDIR/ConvertAllTiff2Png.submitted
-                fi
-                echo "      </output>"                   
-                echo "     </status>"                         
 
-
-            ### IF PLATE NORMALIZATION FILE IS PRESENT, FLAG AS COMPLETED
-            elif [ $TIFFCOUNT -eq 0 ] && [ $PNGCOUNT -gt 0 ] && [ $TIFFDIRLASTMODIFIED -eq 0 ]; then
-                
-                echo "     <status action=\"convert-all-tiff-2-png\">waiting"
-                echo "      <message>"
-                echo "    COMPLETED: png conversion is complete. waiting for second timeout"
-                echo "      </message>"
-                echo "      <output>"                    
-                ### create   
-                touch $BATCHDIR/ConvertAllTiff2Png.complete
-                echo "      </output>"                  	                
-                echo "     </status>"
-
-            elif [ $TIFFCOUNT -eq 0 ] && [ $PNGCOUNT -gt 0 ] && [ $TIFFDIRLASTMODIFIED -eq 1 ]; then
-                
-                echo "     <status action=\"convert-all-tiff-2-png\">completed, waiting"
-                #echo "      <message>"
-                #echo "    COMPLETED: plate normalization"
-                #echo "      </message>"
-                echo "      <output>"                    
-                ### create   
-                touch $BATCHDIR/ConvertAllTiff2Png.complete
-                echo "      </output>"                                      
-                echo "     </status>"
-
-            elif [ $TIFFCOUNT -gt 0 ] && [ $PNGCOUNT -gt 0 ] && [ $TIFFDIRLASTMODIFIED -eq 1 ]; then
-                
-                echo "     <status action=\"convert-all-tiff-2-png\">resetting"
-                echo "      <message>"
-                echo "    Finished waiting for the second timeout after png conversion, but new tif files were found, resetting pngconversion."
-                echo "      </message>"
-                echo "      <output>"                    
-                rm -v $BATCHDIR/ConvertAllTiff2Png.complete
-                rm -v $PROJECTDIR/ConvertAllTiff2Png.submitted
-                echo "      </output>"                                      
-                echo "     </status>"
-
-            else
-                
-                echo "     <status action=\"convert-all-tiff-2-png\">unknown"
-                echo "      <warning>"
-                echo "  UNKNOWN STATUS FOR convert-all-tiff-2-png ACTION"
-                if [ -e $BATCHDIR/ConvertAllTiff2Png.complete ]; then
-                echo "    ConvertAllTiff2Png.complete IS PRESENT"
-                else
-                echo "    ConvertAllTiff2Png.complete IS NOT PRESENT"	
-                fi
-                echo "    TIFFCOUNT=$TIFFCOUNT"
-                echo "    PNGCOUNT=$PNGCOUNT"
-                echo "    CONVERTALLTIFF2PNGRESULTCOUNT=$CONVERTALLTIFF2PNGRESULTCOUNT"
-                echo "    TIFF2PNGCONVERSIONJOBSPERPLATE = $TIFF2PNGCONVERSIONJOBSPERPLATE"                
-                echo "      </warning>"                                        
-                echo "     </status>"                     
-                	                
-            fi                
-            
-            
-            
-        ###
-        ### ILLUMINATION CORRECTION MEASUREMENTS
-        ###
-        
-        ### variables:
-
-        ### IF ALL EXPECTED I.C. MEASUREMENTS ARE PRESENT SUBMIT ILL_COR_MEASUREMENTS
-        #
-        #
-        if [ ! -e $PROJECTDIR/IllCorMeasurement.submitted ]; then
-
-            currentjobcount=$(~/iBRAIN/countjobs.sh "Ill_Cor_Measurement_iBRAIN")
-                         
-            if [ $currentjobcount -lt 1 ]; then
-            	
-                echo "     <status action=\"illumination-correction\">submitting"
-                #echo "      <message>"
-                #echo "    PROCESSING: submitting illumination correction measurement"
-                #echo "      </message>"
-                echo "      <output>"
-                ~/iBRAIN/illcormeasurement.sh $TIFFDIR
-                touch $PROJECTDIR/IllCorMeasurement.submitted
-                echo "      </output>"                    
-                echo "     </status>"                        	
-
-            else
-            
-                echo "     <status action=\"illumination-correction\">waiting"
-                #echo "      <message>"
-                #echo "    WAITING: not yet submitting illumination correction measurement, too many jobs of this kind present"
-                #echo "      </message>"
-                echo "     </status>"   
-
-            fi
-            
-        ### ILLUMINATION CORRECTION WAS SUBMITTED BUT DID NOT PRODUCE OUTPUT FILES YET
-        elif [ $COMPLETEDILLCORMEASUREMENTCHECK -lt 1 ] && [ -e $PROJECTDIR/IllCorMeasurement.submitted ] && [ $ILLCORMEASUREMENTRESULTCOUNT -lt 1 ]; then
-            
-            echo "     <status action=\"illumination-correction\">waiting"
-            #echo "      <message>"
-            #echo "    PROCESSING: waiting for illumination correction measurement to finish"
-            #echo "      </message>"
-            echo "      <output>"                    
-            ### EXPERIMENTAL: IF NO JOBS ARE FOUND FOR THIS PROJECT, WAITING IS SENSELESS. REMOVE .submitted FILE AND TRY AGAIN
-            if [ $PLATEJOBCOUNT -eq 0 ]; then
-                echo "    ALERT: iBRAIN IS WAITING FOR ILLUMINATION CORRECTION MEASUREMENT, BUT THERE ARE NO JOBS (PENDING OR RUNNING) FOR THIS PROJECT. RETRYING THIS FOLDER"
-                rm -f $PROJECTDIR/IllCorMeasurement.submitted
-            fi
-            echo "      </output>"                    
-            echo "     </status>"  
-            
-            
-        ### ILLUMINATION CORRECTION HAS BEEN COMPLETED BUT FAILED TO PRODUCE OUTPUT FILES
-        elif [ $COMPLETEDILLCORMEASUREMENTCHECK -lt 1 ] && [ -e $PROJECTDIR/IllCorMeasurement.submitted ] && [ $ILLCORMEASUREMENTRESULTCOUNT -gt 0 ]; then
-            
-            echo "     <status action=\"illumination-correction\">failed"
-            echo "      <warning>"
-            echo "    ALERT: illumination correction measurement FAILED"
-            echo "      </warning>"
-            echo "      <output>"                    
-            ### check resultfiles for known errors, reset/resubmit jobs if appropriate 
-            ~/iBRAIN/check_resultfiles_for_known_errors.sh $BATCHDIR "IllCorMeasurement" $PROJECTDIR/IllCorMeasurement.submitted
-            echo "      </output>"
-            echo "     </status>"
-
-        ### IF ILLUMINATION CORRECTION FILE IS PRESENT, FLAG AS COMPLETED
-        elif [ $COMPLETEDILLCORMEASUREMENTCHECK -gt 0 ]; then
-            
-            
-            echo "     <status action=\"illumination-correction\">completed"
-            #echo "      <message>"
-            #echo "    COMPLETED: illumination correction"
-            #echo "      </message>"
-            echo "     </status>"
-            
-        fi    
-            
             
             
             
