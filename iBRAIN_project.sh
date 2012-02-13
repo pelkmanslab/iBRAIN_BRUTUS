@@ -103,6 +103,11 @@ if [ "$INCLUDEDPATH" ] && [ -d $INCLUDEDPATH ]; then
     fi
     echo "    -->"
     
+    ### CONVERT FOLDER STRUCTURE TO iBRAIN FORMAT
+    if [ ! -e $PROJECTDIR/iBRAIN_Stage_0.completed ]; then
+        $()
+    fi
+
     for tiff in $TIFFDIRECTORYLISTING; do
         echo "    <plate>"
         ### SET MAIN DIRECTORY PARAMETERS
@@ -190,7 +195,8 @@ if [ "$INCLUDEDPATH" ] && [ -d $INCLUDEDPATH ]; then
         
         # init to false/zero in case batch dir is not present
         COMPLETEDPNGCONVERSIONCHECK=0
-        
+        COMPLETEDILLCORMEASUREMENTCHECK=0        
+
         # let's just create the batch directory, we need this in any case, and I've seen some cases where iBRAIN was behaving strangely because this directory was missing...
         if [ ! -d $BATCHDIR ]; then
         	echo "<!-- creating BATCH directory.."
@@ -207,6 +213,10 @@ if [ "$INCLUDEDPATH" ] && [ -d $INCLUDEDPATH ]; then
             COMPLETEDPNGCONVERSIONCHECK=$(find $BATCHDIR -maxdepth 1 -type f -name "ConvertAllTiff2Png.complete" | wc -l)
             CONVERTALLTIFF2PNGRESULTCOUNT=$(find $BATCHDIR -maxdepth 1 -type f -name "ConvertAllTiff2Png_*.results" | wc -l)
             
+            # ILLUMINATION CORRECTION MEASUREMENTS
+            COMPLETEDILLCORMEASUREMENTCHECK=$(find $BATCHDIR -maxdepth 1 -type f -name "IllCorMeasurement.complete" | wc -l)
+            ILLCORMEASUREMENTRESULTCOUNT=$(find $BATCHDIR -maxdepth 1 -type f -name "IllCorMeasurement_*.results" | wc -l)
+
             # PRECLUSTER
             PRECLUSTERCHECK=$(find $BATCHDIR -maxdepth 1 -type f -name "PreCluster_*.results" | wc -l)
 
@@ -431,7 +441,7 @@ if [ "$INCLUDEDPATH" ] && [ -d $INCLUDEDPATH ]; then
             fi
             
 
-        elif [ ! $COMPLETEFILECHECK -eq 0 ] && [ $COMPLETEDPNGCONVERSIONCHECK -eq 0 ]; then
+        elif [ ! $COMPLETEFILECHECK -eq 0 ] && [ $COMPLETEDPNGCONVERSIONCHECK -eq 0 ] && [ $COMPLETEDILLCORMEASUREMENTCHECK -eq 0 ]; then
             
             ### AT THE START OF IBRAIN, DO A PNG CONVERSION OF ALL TIF FILES IN THE TIFF DIRECTORY. 
             # ONLY IF THIS TIFF CONVERSION IS DONE, CREATE THE ConvertAllTiff2Png.complete FILE
@@ -681,8 +691,82 @@ M_PROG
             
             
             
+        ###
+        ### ILLUMINATION CORRECTION MEASUREMENTS
+        ###
+        
+        ### variables:
+
+        ### IF ALL EXPECTED I.C. MEASUREMENTS ARE PRESENT SUBMIT ILL_COR_MEASUREMENTS
+        #
+        #
+        if [ ! -e $PROJECTDIR/IllCorMeasurement.submitted ]; then
+
+            currentjobcount=$(~/iBRAIN/countjobs.sh "Ill_Cor_Measurement_iBRAIN")
+                         
+            if [ $currentjobcount -lt 1 ]; then
+            	
+                echo "     <status action=\"illumination-correction\">submitting"
+                #echo "      <message>"
+                #echo "    PROCESSING: submitting illumination correction measurement"
+                #echo "      </message>"
+                echo "      <output>"
+                ~/iBRAIN/illcormeasurement.sh $TIFFDIR
+                touch $PROJECTDIR/IllCorMeasurement.submitted
+                echo "      </output>"                    
+                echo "     </status>"                        	
+
+            else
+            
+                echo "     <status action=\"illumination-correction\">waiting"
+                #echo "      <message>"
+                #echo "    WAITING: not yet submitting illumination correction measurement, too many jobs of this kind present"
+                #echo "      </message>"
+                echo "     </status>"   
+
+            fi
+            
+        ### ILLUMINATION CORRECTION WAS SUBMITTED BUT DID NOT PRODUCE OUTPUT FILES YET
+        elif [ $COMPLETEDILLCORMEASUREMENTCHECK -lt 1 ] && [ -e $PROJECTDIR/IllCorMeasurement.submitted ] && [ $ILLCORMEASUREMENTRESULTCOUNT -lt 1 ]; then
+            
+            echo "     <status action=\"illumination-correction\">waiting"
+            #echo "      <message>"
+            #echo "    PROCESSING: waiting for illumination correction measurement to finish"
+            #echo "      </message>"
+            echo "      <output>"                    
+            ### EXPERIMENTAL: IF NO JOBS ARE FOUND FOR THIS PROJECT, WAITING IS SENSELESS. REMOVE .submitted FILE AND TRY AGAIN
+            if [ $PLATEJOBCOUNT -eq 0 ]; then
+                echo "    ALERT: iBRAIN IS WAITING FOR ILLUMINATION CORRECTION MEASUREMENT, BUT THERE ARE NO JOBS (PENDING OR RUNNING) FOR THIS PROJECT. RETRYING THIS FOLDER"
+                rm -f $PROJECTDIR/IllCorMeasurement.submitted
+            fi
+            echo "      </output>"                    
+            echo "     </status>"  
             
             
+        ### ILLUMINATION CORRECTION HAS BEEN COMPLETED BUT FAILED TO PRODUCE OUTPUT FILES
+        elif [ $COMPLETEDILLCORMEASUREMENTCHECK -lt 1 ] && [ -e $PROJECTDIR/IllCorMeasurement.submitted ] && [ $ILLCORMEASUREMENTRESULTCOUNT -gt 0 ]; then
+            
+            echo "     <status action=\"illumination-correction\">failed"
+            echo "      <warning>"
+            echo "    ALERT: illumination correction measurement FAILED"
+            echo "      </warning>"
+            echo "      <output>"                    
+            ### check resultfiles for known errors, reset/resubmit jobs if appropriate 
+            ~/iBRAIN/check_resultfiles_for_known_errors.sh $BATCHDIR "IllCorMeasurement" $PROJECTDIR/IllCorMeasurement.submitted
+            echo "      </output>"
+            echo "     </status>"
+
+        ### IF ILLUMINATION CORRECTION FILE IS PRESENT, FLAG AS COMPLETED
+        elif [ $COMPLETEDILLCORMEASUREMENTCHECK -gt 0 ]; then
+            
+            
+            echo "     <status action=\"illumination-correction\">completed"
+            #echo "      <message>"
+            #echo "    COMPLETED: illumination correction"
+            #echo "      </message>"
+            echo "     </status>"
+            
+        fi    
             
             
             
