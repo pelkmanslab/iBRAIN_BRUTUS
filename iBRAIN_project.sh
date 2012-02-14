@@ -216,20 +216,37 @@ if [ "$INCLUDEDPATH" ] && [ -d $INCLUDEDPATH ]; then
             # ILLUMINATION CORRECTION MEASUREMENTS            
             # CHECK HOW MANY ILLUMINATION CORRECTION SETTINGS FILES ARE PRESENT. IF THIS IS BIGGER THAN 0, 
             # AND FOR EACH EXISTS AN OUTPUT FILE, THAN CONSIDER STEP COMPLETE
+			TOTALILLCORJOBCOUNT=$(~/iBRAIN/countjobs.sh batch_measure_illcor_stats)            
         	ALLILLCORSETTINGSFILESCOUNT=$(find $BATCHDIR -maxdepth 1 -type f -name "batch_illcor_*.mat" | wc -l)
         	if [ $ALLILLCORSETTINGSFILESCOUNT -gt 0 ]; then
+        		# ALSO ACCUMULATE XML FOR REPORTING OUTSIDE OF STAGE-1 NODE. 
+        		XMLSTRREPORT="<status action=\"illumination-correction\">completed<message>All $ALLILLCORSETTINGSFILESCOUNT illumination correction settings are completed</message>"
         		COMPLETEDILLCORMEASUREMENTCHECK=1;
 	            for ILLCORSETTINGSFILE in $(find $BATCHDIR -maxdepth 1 -type f -name "batch_illcor_*.mat"); do
 	                ILLCOROUTPUTFILE="${BATCHDIR}Measurements_$(basename $ILLCORSETTINGSFILE)"
+	                ILLCOROVERVIEWPDFFILE="${POSTANALYSISDIR}Measurements_$(basename $ILLCORSETTINGSFILE .mat).pdf"
 	                if [ ! -e $ILLCOROUTPUTFILE ]; then
 	                	COMPLETEDILLCORMEASUREMENTCHECK=0;
 	                	break
 	                fi
+	            	if [ -e $ILLCOROVERVIEWPDFFILE ]; then
+    					XMLSTRREPORT=$XMLSTRREPORT"<status action=\"$(basename $ILLCORSETTINGSFILE)\">completed<file type=\"pdf\">$ILLCOROVERVIEWPDFFILE</file></status>"
+	                fi
 	            done
+				XMLSTRREPORT=$XMLSTRREPORT"</status>"
+				if [ $COMPLETEDILLCORMEASUREMENTCHECK -eq 1 ]; then
+					# REPORT XML WHEN ALL CORRECTIONS ARE DONE AND STAGE-1 HAS CONTINUED.
+					echo $XMLSTRREPORT
+				fi
         	else
         		COMPLETEDILLCORMEASUREMENTCHECK=0;
         	fi
 
+			###############################################
+			# ILLUMINATION CORRECTION MEASUREMENTS BUGFIX #
+			echo "<!-- cleaning up erroneous pdf output to BATCH"
+			mv -v $BATCHDIR/Measurements_batch_illcor*.pdf $POSTANALYSISDIR
+ 			echo "-->"
 
             # PRECLUSTER
             PRECLUSTERCHECK=$(find $BATCHDIR -maxdepth 1 -type f -name "PreCluster_*.results" | wc -l)
@@ -709,6 +726,7 @@ M_PROG
 	        
 	        
 	        if [ $COMPLETEDILLCORMEASUREMENTCHECK -eq 0 ]; then
+
 		
 		        ###
 		        ### ILLUMINATION CORRECTION BATCHED PER CHANNEL AND Z-STACK
@@ -752,22 +770,28 @@ echo "-->"
 		                
 		                if [ ! -e $ILLCORSUBMITTEDFILE ] && [ ! -e $ILLCOROUTPUTFILE ]; then
 		
-		                    echo "     <status action=\"$(basename $ILLCORSETTINGSFILE)\">submitting"
-		                    #echo "      <message>"
-		                    #echo "      SUBMITTING: $(basename $ILLCORSETTINGSFILE)"
-		                    #echo "      </message>"
-		                    echo "      <output>"    
-		                    ILLCORRESULTFILE="$ILLCORRESULTFILEBASE$(date +"%y%m%d%H%M%S").results"
+		
+							# TOTALILLCORJOBCOUNT=$(grep batch_measure_illcor_stats $JOBSFILE -c)
+							if [ $TOTALILLCORJOBCOUNT -lt 100 ]; then		
+			                    echo "     <status action=\"$(basename $ILLCORSETTINGSFILE)\">submitting"
+			                    #echo "      <message>"
+			                    #echo "      SUBMITTING: $(basename $ILLCORSETTINGSFILE)"
+			                    #echo "      </message>"
+			                    echo "      <output>"    
+			                    ILLCORRESULTFILE="$ILLCORRESULTFILEBASE$(date +"%y%m%d%H%M%S").results"
 bsub -W 8:00 -o "${BATCHDIR}$ILLCORRESULTFILE" "matlab -singleCompThread -nodisplay << M_PROG
-batch_measure_illcor_stats('${BATCHDIR}','${ILLCORSETTINGSFILE}');
+batch_measure_illcor_stats('${TIFFDIR}','${ILLCORSETTINGSFILE}');
 M_PROG"
-		                    
-		                    touch $ILLCORSUBMITTEDFILE
-		                    echo "      </output>"                    
-		                    echo "     </status>"
-		                                       
-		                    
-		                    
+			                    touch $ILLCORSUBMITTEDFILE
+			                    echo "      </output>"                    
+			                    echo "     </status>"
+							else
+			                    echo "     <status action=\"$(basename $ILLCORSETTINGSFILE)\">waiting"
+			                    echo "      <message>"
+			                    echo "      WAITING with submission of $(basename $ILLCORSETTINGSFILE) job because there are too many ($TOTALILLCORJOBCOUNT) illumination correction jobs present now."
+			                    echo "      </message>"
+			                    echo "     </status>"
+		                	fi
 		                    
 		                # no output yet                has been submitted          has jobs present        no output jet
 		                elif [ ! -e $ILLCOROUTPUTFILE ] && [ -e $ILLCORSUBMITTEDFILE ] && [ $ILLCORJOBCOUNT -gt 0 ] && [ $ILLCORRESULTFILECOUNT -eq 0 ]; then
