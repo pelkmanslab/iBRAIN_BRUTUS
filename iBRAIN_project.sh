@@ -1431,7 +1431,19 @@ M_PROG"
             #echo "    PROCESSING: submitting jpg creation"
             #echo "      </message>"
             echo "      <output>"
-            ~/iBRAIN/createjpgs.sh $TIFFDIR $JPGDIR
+			REPORTFILE=CreateJPGs_$(date +"%y%m%d%H%M%S").results
+			if [ -e $PROJECTDIR/CreateJPGs.runlimit ]; then
+bsub -W 36:00 -o $2/$REPORTFILE "matlab -singleCompThread -nodisplay -nojvm << M_PROG;
+create_jpgs('${TIFFDIR}','${JPGDIR}');
+merge_jpgs_per_plate('${JPGDIR}');
+M_PROG"
+			else
+bsub -W 08:00 -o $2/$REPORTFILE "matlab -singleCompThread -nodisplay -nojvm << M_PROG;
+create_jpgs('${TIFFDIR}','${JPGDIR}');
+merge_jpgs_per_plate('${JPGDIR}');
+M_PROG"
+        	fi            
+            #~/iBRAIN/createjpgs.sh $TIFFDIR $JPGDIR
             touch $PROJECTDIR/CreateJPGs.submitted
             echo "      </output>"                                        
             echo "     </status>"
@@ -1799,11 +1811,18 @@ M_PROG"
                 #echo "      </message>"
                 echo "      <output>"           
                 
+            	if [ -e $PROJECTDIR/GetLocalCellDensityPerWell_Auto.runlimit ]; then
                     LCDRESULTFILE="getLocalCellDensityPerWell_auto_$(date +"%y%m%d%H%M%S").results"
+bsub -W 34:00 -o "${BATCHDIR}$LCDRESULTFILE" "matlab -singleCompThread -nodisplay << M_PROG
+getLocalCellDensityPerWell_auto('${BATCHDIR}');
+Detect_BorderCells('${BATCHDIR}');
+M_PROG"
+                	else
 bsub -W 8:00 -o "${BATCHDIR}$LCDRESULTFILE" "matlab -singleCompThread -nodisplay << M_PROG
 getLocalCellDensityPerWell_auto('${BATCHDIR}');
 Detect_BorderCells('${BATCHDIR}');
 M_PROG"
+		        fi
                 touch $PROJECTDIR/GetLocalCellDensityPerWell_Auto.submitted
                 echo "      </output>"                    
                 echo "     </status>"                        	
