@@ -1470,7 +1470,18 @@ M_PROG"
             #echo "    PROCESSING: resubmitting jpg creation"
             #echo "      </message>"
             echo "      <output>"
-            ~/iBRAIN/createjpgs.sh $TIFFDIR $JPGDIR
+			if [ -e $PROJECTDIR/CreateJPGs.runlimit ]; then
+bsub -W 36:00 -o $2/$REPORTFILE "matlab -singleCompThread -nodisplay -nojvm << M_PROG;
+create_jpgs('${TIFFDIR}','${JPGDIR}');
+merge_jpgs_per_plate('${JPGDIR}');
+M_PROG"
+			else
+bsub -W 08:00 -o $2/$REPORTFILE "matlab -singleCompThread -nodisplay -nojvm << M_PROG;
+create_jpgs('${TIFFDIR}','${JPGDIR}');
+merge_jpgs_per_plate('${JPGDIR}');
+M_PROG"
+        	fi     
+        	#~/iBRAIN/createjpgs.sh $TIFFDIR $JPGDIR
             touch $PROJECTDIR/CreateJPGs.resubmitted
             echo "      </output>"                                        
             echo "     </status>"
