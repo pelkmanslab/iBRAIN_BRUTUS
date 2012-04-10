@@ -25,16 +25,24 @@ DRY_RUN=0
 # GET ALL IMAGES FOUND INSIDE THE FOLDER STRUCTURE OF THE MOLECULAR DEVICES
 # (MD) MICROSCOPE
 
-# STRUCTURE IS DEFINED BY THIS REGEXP:
-#                 date                ID        timepoint
-regexp='[0-9]{4}-[0-9]{2}-[0-9]{2}/[0-9]{4}/TimePoint_[0-9]*/[^/]*\.(png|tif)$'
-MD_IMAGES=$(find ${ACQUISITION_FOLDER} -type f | egrep $regexp )
-if [[ $? -ne 0 ]]; then MD_IMAGES=;fi
+# LOOK FOR TIMEPOINT FOLDERS
+MD_TIMEPOINT_FOLDERS=$(find -mindepth 3 -type d -name "TimePoint_*")
+if [[ $? -ne 0 ]]; then MD_TIMEPOINT_FOLDERS=;fi
 
 # CHECK IF ACQUISITION_FOLDER STRUCTURE CORRESPONDS TO MD STRUCTURE; IF IT DOES
 # NOT - EXIT
-#NO_MD_STRUCTURE=$(if [[ ${#MD_IMAGES[@]} -gt 0 ]]; then echo 0; else echo 1; fi)
-NO_MD_STRUCTURE=$(if [ -z $MD_IMAGES ]; then echo 1; else echo 0; fi)
+NO_MD_STRUCTURE=$(if [ -z $MD_TIMEPOINT_FOLDERS ]; then echo 1; else echo 0; fi)
+
+if [[ $NO_MD_STRUCTURE -eq 0 ]]; then
+    # STRUCTURE IS DEFINED BY THIS REGEXP:
+    #                 date                ID        timepoint
+    regexp='[0-9]{4}-[0-9]{2}-[0-9]{2}/[0-9]{4}/TimePoint_[0-9]*/[^/]*\.(png|tif)$'
+    MD_IMAGES=$(find ${ACQUISITION_FOLDER} -type f | egrep $regexp )
+    if [[ $? -ne 0 ]]; then MD_IMAGES=;fi
+
+    #NO_MD_STRUCTURE=$(if [[ ${#MD_IMAGES[@]} -gt 0 ]]; then echo 0; else echo 1; fi)
+    NO_MD_STRUCTURE=$(if [ -z $MD_IMAGES ]; then echo 1; else echo 0; fi)
+fi
 
 if [[ $NO_MD_STRUCTURE -ne 0 ]]; then
     echo "There was no MD structure found. Nothing to do.."

@@ -10,10 +10,21 @@
 #   we loose the annoying problem that bigger projects block the analysis of smaller projects. Gotta think what the consequences 
 #   are for the wrapper.html creation... Let's see.   
 
+
+#############################################
+### INCLUDE IBRAIN CONFIGURATION
+IBRAIN_ROOT=$(dirname `readlink -m $0`)
+if [ -f $IBRAIN_ROOT/etc/config ]; then
+    . $IBRAIN_ROOT/etc/config
+else
+    echo "Aborting $(basename $0) (missing configuration at $IBRAIN_ROOT/etc/config)"
+    exit 1
+fi
+
 #############################################
 ### CHECK IF IBRAIN IS ALREADY RUNNING. 
 ### ONLY START IF NO INSTANCES ARE PRESENT
-INSTANCES=$( ps -u bsnijder | grep $(basename $0 .sh) -c )
+INSTANCES=$( ps -u $IBRAIN_USER | grep $(basename $0 .sh) -c )
 
 ### current instance will be 2 for some reason, so more than 2 will be other iBRAIN.sh instances
 ### this should not be XML since this will never be included in the log files.
@@ -44,22 +55,22 @@ ALLJOBS=$(bjobs -aw 1> ~/logs/bjobsaw.txt)
 
 echo " <ibrain_meta>"
 echo "  <author>Berend Snijder</author>"
-echo "  <version>2009-08-03</version>"
+echo "  <version>2012-03-27</version>"
 echo "  <date_last_modified>$(stat $0 | grep Modify | awk '{print $2,$3}')</date_last_modified>"
 echo "  <start>$(date +"%y%m%d %H:%M:%S")</start>"
 echo "  <host_name>$HOSTNAME</host_name>"
 echo "  <script_name>$(basename $0)</script_name>"
 
-TOTALJOBS=`busers | grep bsnijder | awk '{print $4}'`
-RUNNINGJOBS=`busers | grep bsnijder | awk '{print $6}'`
-JOBCOUNTFILE="/BIOL/imsb/fs2/bio3/bio3/Data/Code/iBRAIN/database/jobs.txt"
-INCLUDEDPATHSFILE="/BIOL/imsb/fs2/bio3/bio3/Data/Code/iBRAIN/cfg/paths.txt"
-LOGFILEPATH="/BIOL/imsb/fs2/bio3/bio3/Data/Code/iBRAIN/logs/"
-PROJECTXMLPATH="/BIOL/imsb/fs2/bio3/bio3/Data/Code/iBRAIN/database/project_xml"
-WRAPPERXMLPATH="/BIOL/imsb/fs2/bio3/bio3/Data/Code/iBRAIN/database/wrapper_xml"
-PRECLUSTERBACKUPPATH="/BIOL/imsb/fs2/bio3/bio3/Data/Code/iBRAIN/pipelines/"
-MATLABCODEPATH="/BIOL/imsb/fs2/bio3/bio3/Data/Code/iBRAIN/matlab/"
-PROJECTXMLXSLFILE="/BIOL/imsb/fs2/bio3/bio3/Data/Code/iBRAIN/database/project.xsl"
+TOTALJOBS=`busers | grep $IBRAIN_USER | awk '{print $4}'`
+RUNNINGJOBS=`busers | grep $IBRAIN_USER | awk '{print $6}'`
+JOBCOUNTFILE="$IBRAIN_DATABASE_PATH/jobs.txt"
+INCLUDEDPATHSFILE="$IBRAIN_ETC_PATH/paths.txt"
+LOGFILEPATH="$IBRAIN_ETC_PATH/"
+PROJECTXMLPATH="$IBRAIN_DATABASE_PATH/project_xml"
+WRAPPERXMLPATH="$IBRAIN_DATABASE_PATH/wrapper_xml"
+PRECLUSTERBACKUPPATH="$IBRAIN_ROOT/pipelines/"
+MATLABCODEPATH="$IBRAIN_ROOT/bin/matlab/"
+PROJECTXMLXSLFILE="$IBRAIN_DATABASE_PATH/project.xsl"
 
 echo "  <job_count_running>$RUNNINGJOBS</job_count_running>"
 echo "  <job_count_total>$TOTALJOBS</job_count_total>"

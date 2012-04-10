@@ -179,7 +179,7 @@ if [ "$INCLUDEDPATH" ] && [ -d $INCLUDEDPATH ]; then
                 fi                    
                 if [ -d $TIFFDIR ] && [ ! -w $TIFFDIR ]; then
                     echo "      <message>"
-                    echo "    Paused because the TIFF directory is not writable by iBRAIN."
+                    echo "    Paused because the TIFF directory $TIFFDIR is not writable by iBRAIN."
                     echo "      </message>"
                 fi
                 if [ -d $BATCHDIR ] && [ ! -w $BATCHDIR ]; then

@@ -1,0 +1,18 @@
+#! /bin/sh
+
+if [ ! -d $IBRAIN_ROOT ]; then
+    IBRAIN_ROOT=~/tools/iBRAIN
+fi
+IBRAIN_BIN_PATH=$IBRAIN_ROOT/bin
+IBRAIN_ETC_PATH=$IBRAIN_ROOT/etc
+IBRAIN_LOGS_PATH=$IBRAIN_ROOT/logs
+IBRAIN_DATABASE_PATH=$IBRAIN_ROOT/var
+
+IBRAIN_USER=$(whoami)
+IBRAIN_ADMIN_EMAIL=yauhen.yakimovich@uzh.ch
+
+
+if [ -f $IBRAIN_ETC_PATH/ibrain_bash ]; then
+    . $IBRAIN_ETC_PATH/ibrain_bash
+fi
+
