@@ -427,7 +427,7 @@ if [ "$INCLUDEDPATH" ] && [ -d $INCLUDEDPATH ]; then
 	        # calculate as time in seconds since last modified date / 1800 (1800 sec = 30 min)
 			PROGRESSBARVALUE=$(echo "scale=2; (${TIME_DIFF} / 1800) * 100;" | bc)
         	if [ "$PROGRESSBARVALUE" ]; then
-    			echo "       <progressbar>$PROGRESSBARVALUE</progressbar>"
+    			echo "       <progressbar text=\"waiting for data timeout\">$PROGRESSBARVALUE</progressbar>"
         	fi
         	echo "TIMELASTMODIFIED=$TIMELASTMODIFIED"
         	echo "TIMENOW=$TIMENOW"
@@ -610,7 +610,7 @@ M_PROG
 					# This progress bar logic holds for Imagemagick based conversion
 					# PROGRESSBARVALUE=$(echo "scale=2; (${PNGCOUNT} / (${TIFFCOUNT})) * 100;" | bc)
 	            	if [ "$PROGRESSBARVALUE" ]; then
-	        			echo "       <progressbar>$PROGRESSBARVALUE</progressbar>"
+	        			echo "       <progressbar text=\"png-conversion\">$PROGRESSBARVALUE</progressbar>"
 	            	fi
 	                
 	                echo "      </output>"                    
@@ -628,7 +628,7 @@ M_PROG
 					PROGRESSBARVALUE=$(echo "scale=2; (${PNGCOUNT} / (${TIFFCOUNT} + ${PNGCOUNT})) * 100;" | bc)
 					# PROGRESSBARVALUE=$(echo "scale=2; (${PNGCOUNT} / (${TIFFCOUNT})) * 100;" | bc)
 	            	if [ "$PROGRESSBARVALUE" ]; then
-	        			echo "       <progressbar>$PROGRESSBARVALUE</progressbar>"
+	        			echo "       <progressbar text=\"png-conversion\">$PROGRESSBARVALUE</progressbar>"
 	            	fi
 	                echo "    TIFF2PNGCONVERSIONJOBSPERPLATE = $TIFF2PNGCONVERSIONJOBSPERPLATE"            	
 	                echo "      </output>"                    
@@ -1061,7 +1061,7 @@ M_PROG"
             
             ### DRAW PROGRESSBAR IF APPROPRIATE (Note: expected to be at /plates/plate/status/output/progressbar ... all others are ignored
             if [ "$PROGRESSVALUE" ]; then
-        		echo "       <progressbar>$PROGRESSVALUE</progressbar>"
+        		echo "       <progressbar text=\"CellProfiler batch jobs\">$PROGRESSVALUE</progressbar>"
             fi
 
             
@@ -1086,7 +1086,33 @@ M_PROG"
             #echo "      </message>"                                        
             echo "      <output>"
             touch $PROJECTDIR/SubmitBatchJobs.resubmitted
-            ~/iBRAIN/submitbatchjobs.sh $BATCHDIR                    
+            
+            
+            
+			for BATCHJOBFILE in `find ${BATCHDIR} -name 'Batch_*.txt'`
+			do
+			  if [ ! -r ${BATCHDIR}/$(basename $BATCHJOBFILE .txt)_OUT.mat ]; then
+			    REPORTFILE=$(basename $BATCHJOBFILE .txt)_%J_$(date +"%y%m%d%H%M%S").results
+				if [ -e $PROJECTDIR/SubmitBatchJobs.runlimit ] || [ -e $PROJECTDIR/SubmitBatchJobs.resubmitted.runlimit ]; then			    
+bsub -W 34:00 -o ${BATCHDIR}/$REPORTFILE -R 'rusage[mem=2000]' "matlab -singleCompThread -nodisplay -nojvm << M_PROG
+CPCluster('${BATCHDIR}/Batch_data.mat','${BATCHDIR}/$(basename $BATCHJOBFILE .txt).mat');
+M_PROG"
+				else
+bsub -W 8:00 -o ${BATCHDIR}/$REPORTFILE -R 'rusage[mem=2000]' "matlab -singleCompThread -nodisplay -nojvm << M_PROG
+CPCluster('${BATCHDIR}/Batch_data.mat','${BATCHDIR}/$(basename $BATCHJOBFILE .txt).mat');
+M_PROG"
+			  	fi
+			    touch $PROJECTDIR/SubmitBatchJobs.submitted
+			  fi
+			done
+            
+            
+            
+            
+            
+            
+            
+            #~/iBRAIN/submitbatchjobs.sh $BATCHDIR
             echo "      </output>"
             echo "     </status>"
                                 
@@ -1200,7 +1226,7 @@ M_PROG"
             ### [091208 BS] Add a DATAFUSION progress bar!
 			PROGRESSBARVALUE=$(echo "scale=2; (${DATAFUSIONRESULTCOUNT} / ${EXPECTEDMEASUREMENTS}) * 100;" | bc)
         	if [ "$PROGRESSBARVALUE" ]; then
-    			echo "       <progressbar>$PROGRESSBARVALUE</progressbar>"
+    			echo "       <progressbar text=\"datafusion\">$PROGRESSBARVALUE</progressbar>"
         	fi
             
             
@@ -1406,7 +1432,7 @@ M_PROG"
             # CHECK HOW MANY JPGs HAVE BEEN CREATED
             JPGCOUNT=$(find $JPGDIR -maxdepth 1 -type f -name "*.jpg" | wc -l)
             JPGPLATEOVERVIEWCOUNT=$(find $JPGDIR -maxdepth 1 -type f -name "*PlateOverview.jpg" | wc -l)                    
-            CREATEJPGRESULTCOUNT=$(find $JPGDIR -maxdepth 1 -type f -name "CreateJPGs*.results" | wc -l)
+            CREATEJPGRESULTCOUNT=$(find $BATCHDIR -maxdepth 1 -type f -name "CreateJPGs*.results" | wc -l)
         else
             JPGPLATEOVERVIEWCOUNT=0
             JPGCOUNT=0
@@ -1433,12 +1459,12 @@ M_PROG"
             echo "      <output>"
 			REPORTFILE=CreateJPGs_$(date +"%y%m%d%H%M%S").results
 			if [ -e $PROJECTDIR/CreateJPGs.runlimit ]; then
-bsub -W 36:00 -o $2/$REPORTFILE "matlab -singleCompThread -nodisplay -nojvm << M_PROG;
+bsub -W 36:00 -o $BATCHDIR/$REPORTFILE "matlab -singleCompThread -nodisplay -nojvm << M_PROG;
 create_jpgs('${TIFFDIR}','${JPGDIR}');
 merge_jpgs_per_plate('${JPGDIR}');
 M_PROG"
 			else
-bsub -W 08:00 -o $2/$REPORTFILE "matlab -singleCompThread -nodisplay -nojvm << M_PROG;
+bsub -W 08:00 -o $BATCHDIR/$REPORTFILE "matlab -singleCompThread -nodisplay -nojvm << M_PROG;
 create_jpgs('${TIFFDIR}','${JPGDIR}');
 merge_jpgs_per_plate('${JPGDIR}');
 M_PROG"
@@ -1470,13 +1496,14 @@ M_PROG"
             #echo "    PROCESSING: resubmitting jpg creation"
             #echo "      </message>"
             echo "      <output>"
+REPORTFILE=CreateJPGs_$(date +"%y%m%d%H%M%S").results
 			if [ -e $PROJECTDIR/CreateJPGs.runlimit ]; then
-bsub -W 36:00 -o $2/$REPORTFILE "matlab -singleCompThread -nodisplay -nojvm << M_PROG;
+bsub -W 36:00 -o $BATCHDIR/$REPORTFILE "matlab -singleCompThread -nodisplay -nojvm << M_PROG;
 create_jpgs('${TIFFDIR}','${JPGDIR}');
 merge_jpgs_per_plate('${JPGDIR}');
 M_PROG"
 			else
-bsub -W 08:00 -o $2/$REPORTFILE "matlab -singleCompThread -nodisplay -nojvm << M_PROG;
+bsub -W 08:00 -o $BATCHDIR/$REPORTFILE "matlab -singleCompThread -nodisplay -nojvm << M_PROG;
 create_jpgs('${TIFFDIR}','${JPGDIR}');
 merge_jpgs_per_plate('${JPGDIR}');
 M_PROG"
@@ -1510,7 +1537,7 @@ M_PROG"
             echo "      </warning>"
             echo "      <output>"
             ### check resultfiles for known errors, reset/resubmit jobs if appropriate 
-            ~/iBRAIN/check_resultfiles_for_known_errors.sh $JPGDIR "CreateJPGs" $PROJECTDIR/CreateJPGs.resubmitted
+            ~/iBRAIN/check_resultfiles_for_known_errors.sh $BATCHDIR "CreateJPGs" $PROJECTDIR/CreateJPGs.resubmitted
             echo "      </output>"                                        
             echo "     </status>"                    
             
@@ -1821,9 +1848,8 @@ M_PROG"
                 #echo "    PROCESSING: submitting plate normalization calculations"
                 #echo "      </message>"
                 echo "      <output>"           
-                
+                LCDRESULTFILE="getLocalCellDensityPerWell_auto_$(date +"%y%m%d%H%M%S").results"
             	if [ -e $PROJECTDIR/GetLocalCellDensityPerWell_Auto.runlimit ]; then
-                    LCDRESULTFILE="getLocalCellDensityPerWell_auto_$(date +"%y%m%d%H%M%S").results"
 bsub -W 34:00 -o "${BATCHDIR}$LCDRESULTFILE" "matlab -singleCompThread -nodisplay << M_PROG
 getLocalCellDensityPerWell_auto('${BATCHDIR}');
 Detect_BorderCells('${BATCHDIR}');
@@ -2495,15 +2521,15 @@ M_PROG"
                     echo "      <output>"    
                     TRACKERRESULTFILE="$TRACKERRESULTFILEBASE$(date +"%y%m%d%H%M%S").results"
                     # Always submit to 8h queue...
-                    if [ -e $TRACKERRUNLIMITFILE ]; then
-bsub -W 35:00 -o "${BATCHDIR}$TRACKERRESULTFILE" "matlab -singleCompThread -nodisplay << M_PROG
+#                    if [ -e $TRACKERRUNLIMITFILE ]; then
+bsub -W 35:00 -R "rusage[mem=5000]" -o "${BATCHDIR}$TRACKERRESULTFILE" "matlab -singleCompThread -nodisplay << M_PROG
 iBrainTrackerV1('${PROJECTDIR}','${TRACKERSETTINGSFILE}');
 M_PROG"
-                    else
-bsub -W 8:00 -o "${BATCHDIR}$TRACKERRESULTFILE" "matlab -singleCompThread -nodisplay << M_PROG
-iBrainTrackerV1('${PROJECTDIR}','${TRACKERSETTINGSFILE}');
-M_PROG"
-                	fi                    
+#                    else
+#bsub -W 8:00 -R "rusage[mem=10000]" -o "${BATCHDIR}$TRACKERRESULTFILE" "matlab -singleCompThread -nodisplay << M_PROG
+#iBrainTrackerV1('${PROJECTDIR}','${TRACKERSETTINGSFILE}');
+#3M_PROG"
+#                	fi                    
                     touch $TRACKERSUBMITTEDFILE
                     echo "      </output>"     
                     if [ -e $TRACKERSETTINGSFILE ]; then
