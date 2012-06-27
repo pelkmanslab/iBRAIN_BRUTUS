@@ -21,3 +21,54 @@ version: 2009-08-03
 date_last_modified: 2011-08-24 14:36:07.683457953
 
 
+ Installation
+ ------------
+
+Please put the following into the crontab of iBRAIN cluster user:
+
+$ crontab -l
+SHELL=/bin/bash
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+MAILTO=bsnijder
+MAIL=/var/spool/mail/bsnijder
+
+# Minute   Hour   Day of Month       Month          Day of Week        Command
+# (0-59)  (0-23)     (1-31)    (1-12 or Jan-Dec)  (0-6 or Sun-Sat)
+    */3        *          *             *               *           ~/scripts/crontab-wrapper ~/execute_ibrain_wrapper.sh
+    *       */1          *             *               *            ~/scripts/crontab-wrapper ~/iBRAIN/report_disk_usage.sh
+##    */1       *          *             *               *          ~/scripts/crontab-wrapper printenv > ~/berendwashere.txt
+    */20       *          *             *               *           ~/scripts/crontab-wrapper ~/iBRAIN/run_temp_parse_ibrain_jobcount.sh > /dev/null 2>&1
+
+
+
+$ cat scripts/crontab-wrapper 
+#!/bin/bash
+[ $(id -gn) = nas_bio3 ] || exec sg nas_bio3 "$0 $@"
+[ -r $HOME/.bashrc ] && . $HOME/.bashrc
+[ -r $HOME/.profile ] && . $HOME/.profile
+exec "$@"
+
+Example of .bashrc
+
+# .bashrc
+
+#newgrp nas_bio3
+[ $(id -gn) = nas_bio3 ] || exec newgrp nas_bio3
+
+# Source global definitions
+if [ -f /etc/bashrc ]; then
+    . /etc/bashrc
+fi
+
+# User specific aliases and functions
+ulimit -t 3600
+ulimit -u 50
+
+# Set group access by default to full access for the owner and the group on newly created files
+umask 0007
+
+# According to brutus wiki, module load commands should be here
+#module load matlab/7.8
+module load matlab/7.12 ffmpeg/0.8.2
+
+
