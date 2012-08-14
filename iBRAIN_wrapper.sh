@@ -334,7 +334,7 @@ for INCLUDEDPATH in $(sed -e 's/[[:cntrl:]]//g' $INCLUDEDPATHSFILE); do
 		            echo "$INCLUDEDPATH is newer than $LATESTPROJECTXMLOUTPUT, and there are fewer than 200 jobs present (run)"
 		            echo "</update_info>"
 		            BOOLRUN=1
-		        elif [ "./ibrain_wrapper.sh" -nt "$LATESTPROJECTXMLOUTPUT" ] || [ "./ibrain_project.sh" -nt "$LATESTPROJECTXMLOUTPUT" ] || [ "./iBRAIN" -nt "$LATESTPROJECTXMLOUTPUT" ] || [ "$MATLABCODEPATH" -nt "$LATESTPROJECTXMLOUTPUT" ]; then
+		        elif [ "./iBRAIN_wrapper.sh" -nt "$LATESTPROJECTXMLOUTPUT" ] || [ "./iBRAIN_project.sh" -nt "$LATESTPROJECTXMLOUTPUT" ] || [ "./iBRAIN" -nt "$LATESTPROJECTXMLOUTPUT" ] || [ "$MATLABCODEPATH" -nt "$LATESTPROJECTXMLOUTPUT" ]; then
 		            echo "<update_info update=\"yes\" reason=\"ibrain_update\">"
 		            echo "iBRAIN (and components) has been updated (run)"
 		            echo "</update_info>"
@@ -398,7 +398,7 @@ for INCLUDEDPATH in $(sed -e 's/[[:cntrl:]]//g' $INCLUDEDPATHSFILE); do
 	            	echo "<!-- submitting 8h (long) ibrain_project.sh on $INCLUDEDPATH"
 		        	# submit job: run ibrain_project. sed-transform the xml to be web-friendly. store output in new XML output file
 bsub -W 08:00 -oo $PROJECTXMLDIR/ibrain_project_sh_output.results "
-./ibrain_project.sh "$INCLUDEDPATH" "$PRECLUSTERBACKUPPATH" "$PROJECTXMLDIR" "$NEWPROJECTXMLOUTPUT" 2>&1 | ./iBRAIN/sedTransformLogWeb.sed > $NEWPROJECTXMLOUTPUT 2>&1;
+./iBRAIN_project.sh "$INCLUDEDPATH" "$PRECLUSTERBACKUPPATH" "$PROJECTXMLDIR" "$NEWPROJECTXMLOUTPUT" 2>&1 | ./iBRAIN/sedTransformLogWeb.sed > $NEWPROJECTXMLOUTPUT 2>&1;
 xsltproc -o $NEWPROJECTHTMLOUTPUT $NEWPROJECTXMLOUTPUT;
 "
                 	echo "-->"
@@ -406,7 +406,7 @@ xsltproc -o $NEWPROJECTHTMLOUTPUT $NEWPROJECTXMLOUTPUT;
 	            	echo "<!-- submitting 1h (short) ibrain_project.sh on $INCLUDEDPATH"
         			# submit job: run ibrain_project. sed-transform the xml to be web-friendly. store output in new XML output file
 bsub -W 01:00 -oo $PROJECTXMLDIR/ibrain_project_sh_output.results "
-./ibrain_project.sh "$INCLUDEDPATH" "$PRECLUSTERBACKUPPATH" "$PROJECTXMLDIR" "$NEWPROJECTXMLOUTPUT" 2>&1 | ./iBRAIN/sedTransformLogWeb.sed > $NEWPROJECTXMLOUTPUT 2>&1;
+./iBRAIN_project.sh "$INCLUDEDPATH" "$PRECLUSTERBACKUPPATH" "$PROJECTXMLDIR" "$NEWPROJECTXMLOUTPUT" 2>&1 | ./iBRAIN/sedTransformLogWeb.sed > $NEWPROJECTXMLOUTPUT 2>&1;
 xsltproc -o $NEWPROJECTHTMLOUTPUT $NEWPROJECTXMLOUTPUT;
 "
                 	echo "-->"	            

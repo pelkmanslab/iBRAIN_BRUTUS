@@ -133,7 +133,7 @@
 
             echo "      <output>"
             ### [091208 BS] Add a TIMEOUT progress bar!
-	        TIMELASTMODIFIED=$(stat -c %Y ibrain_project.sh)
+	        TIMELASTMODIFIED=$(stat -c %Y iBRAIN_project.sh)
 	        TIMENOW=$(date +%s)
 	        TIME_DIFF=$(expr $TIMENOW - $TIMELASTMODIFIED) 
 	        # calculate as time in seconds since last modified date / 1800 (1800 sec = 30 min)
