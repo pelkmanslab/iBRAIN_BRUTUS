@@ -147,7 +147,6 @@ if [ -e ~/logs/diskusage.txt ]; then
 fi
 ###
 
-
 ### PARSE ALL QUEUED JOBS FOR UNIQUE JOB NAMES/PROCESSES/ETC.
 echo "  <job_overview>"
 echo "   <running>"
@@ -290,6 +289,7 @@ for INCLUDEDPATH in $(sed -e 's/[[:cntrl:]]//g' $INCLUDEDPATHSFILE); do
 								echo "$PLATEDIR (or TIFF) is newer than $(basename $LATESTPROJECTXMLOUTPUT)"
 								break  # We have found a data-change, so skip rest of loop.
 						    elif [ -d "$PLATEDIR/BATCH" ] && [ "${PLATEDIR}/BATCH" -nt "$LATESTPROJECTXMLOUTPUT" ]; then
+				#echo "checking $PLATEDIR/BATCH"
                                 BOOLDATACHANGE=1
                                 echo "$PLATEDIR/BATCH is newer than $(basename $LATESTPROJECTXMLOUTPUT)"
                                 break  # We have found a data-change, so skip rest of loop.
@@ -370,8 +370,8 @@ for INCLUDEDPATH in $(sed -e 's/[[:cntrl:]]//g' $INCLUDEDPATHSFILE); do
 	    	fi
 		fi
         
-        # Do a quick cleanup of old project xml files for each project.
-        echo "<!-- CLEANING UP OLDER PROJECT_XML FILES: MAXIMUM NUMBER ALLOWED IS 5"
+                # Do a quick cleanup of old project xml files for each project.
+                echo "<!-- CLEANING UP OLDER PROJECT_XML FILES: MAXIMUM NUMBER ALLOWED IS 5"
 		counter=0
 		deletedcounter=0
 		for projectxmlfilename in $(ls -r $PROJECTXMLDIR/*_project.xml 2>/dev/null); do
