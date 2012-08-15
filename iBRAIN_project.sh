@@ -1,26 +1,16 @@
 #! /bin/sh	
-echo "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>"
-echo "<?xml-stylesheet type=\"text/xsl\" href=\"../../project.xsl\"?>"
 
 INCLUDEDPATH="$1"
 PRECLUSTERBACKUPPATH="$2"
 PROJECTXMLDIR="$3"
 NEWPROJECTXMLOUTPUT="$4"    
 
-echo "<project>"
-echo "<!--"
-if [ -d $INCLUDEDPATH ]; then
-echo "INCLUDEDPATH=$1 (OK)"
-else
-echo "INCLUDEDPATH=$1 (NOT OK!)"
-fi
-if [ -d $PRECLUSTERBACKUPPATH ]; then
-echo "PRECLUSTERBACKUPPATH=$2 (OK)"
-else
-echo "PRECLUSTERBACKUPPATH=$2 (NOT OK!)"
-fi
-echo "-->"
-    
+# Essential parameter check
+${INCLUDEDPATH:?"Need to set INCLUDEDPATH non-empty; INCLUDEDPATH is the path to the current project directory"} &> /dev/null 
+
+echo "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>"
+echo "<?xml-stylesheet type=\"text/xsl\" href=\"../../project.xsl\"?>"
+echo "<project>" 
 echo " <project_xml_dir>$PROJECTXMLDIR</project_xml_dir>"
 echo " <this_file_name>$NEWPROJECTXMLOUTPUT</this_file_name>"
 echo " <now>$(date +"%y%m%d_%H%M%S")</now>"

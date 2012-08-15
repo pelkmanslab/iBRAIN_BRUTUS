@@ -2,10 +2,11 @@
 #
 # fuse_basic_data.sh
 
-############################ 
-#  INCLUDE PARAMETER CHECK #
-. ./sub/parameter_check.sh #
-############################ 
+############################# 
+##  INCLUDE PARAMETER CHECK #
+# . ./sub/parameter_check.sh # fuse_basic_data.sh should not do parameter check as it is run even on a project with 0 plates, leading to several parameters not fulfilling their minimal criteria. Perhaps it should not be run on an empty project? But even then, single plate parameters are not needed for fuse_basic_data.sh, it's requirements are special.
+${INCLUDEDPATH:?"Need to set INCLUDEDPATH non-empty; INCLUDEDPATH is the path to the current project directory"} &> /dev/null
+############################# 
 
     ##################################
     ### ADD LINKS TO ALL THE PROJECT FILES THAT MAY BE OF INTEREST FOR USERS/BROWSING
