@@ -220,7 +220,7 @@ if [ "$INCLUDEDPATH" ] && [ -d $INCLUDEDPATH ]; then
 
     echo "   </plates>"
 
-    # I'm not sure if the include of fuse_basic_data.sh should be inside or outside the "plates" xml element.. probably inside
+    # Basic data fusion, sort of a special module as it does not depend on plate parameters. It therefore does not include parameter_check.sh
     ##########################
     . ./sub/fuse_basic_data.sh
     ##########################
