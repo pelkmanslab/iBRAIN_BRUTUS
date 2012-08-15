@@ -154,7 +154,7 @@ if [ "$INCLUDEDPATH" ] && [ -d $INCLUDEDPATH ]; then
         fi
         #################################################################
 
-        # - JPG creation (is of course dependent on the dataset being complete)
+        # - JPG creation (is of course dependent on the dataset being complete, and is better run after pngconversion)
         if [ -e ${BATCHDIR}/ConvertAllTiff2Png.complete ]; then
             . ./sub/create_jpgs.sh
         fi
@@ -220,7 +220,7 @@ if [ "$INCLUDEDPATH" ] && [ -d $INCLUDEDPATH ]; then
 
     echo "   </plates>"
 
-    # Basic data fusion, sort of a special module as it does not depend on plate parameters. It therefore does not include parameter_check.sh
+    # I'm not sure if the include of fuse_basic_data.sh should be inside or outside the "plates" xml element.. probably inside
     ##########################
     . ./sub/fuse_basic_data.sh
     ##########################
