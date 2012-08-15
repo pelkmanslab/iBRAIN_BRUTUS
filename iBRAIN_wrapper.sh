@@ -334,7 +334,7 @@ for INCLUDEDPATH in $(sed -e 's/[[:cntrl:]]//g' $INCLUDEDPATHSFILE); do
 		            echo "$INCLUDEDPATH is newer than $LATESTPROJECTXMLOUTPUT, and there are fewer than 200 jobs present (run)"
 		            echo "</update_info>"
 		            BOOLRUN=1
-		        elif [ "./iBRAIN_wrapper.sh" -nt "$LATESTPROJECTXMLOUTPUT" ] || [ "./iBRAIN_project.sh" -nt "$LATESTPROJECTXMLOUTPUT" ] || [ "./iBRAIN" -nt "$LATESTPROJECTXMLOUTPUT" ] || [ "$MATLABCODEPATH" -nt "$LATESTPROJECTXMLOUTPUT" ]; then
+		        elif [ "./iBRAIN_wrapper.sh" -nt "$LATESTPROJECTXMLOUTPUT" ] || [ "./iBRAIN_project.sh" -nt "$LATESTPROJECTXMLOUTPUT" ] || [ "./iBRAIN" -nt "$LATESTPROJECTXMLOUTPUT" ] || [ "$MATLABCODEPATH" -nt "$LATESTPROJECTXMLOUTPUT" ] || [ "./sub" -nt "$LATESTPROJECTXMLOUTPUT" ]; then
 		            echo "<update_info update=\"yes\" reason=\"ibrain_update\">"
 		            echo "iBRAIN (and components) has been updated (run)"
 		            echo "</update_info>"

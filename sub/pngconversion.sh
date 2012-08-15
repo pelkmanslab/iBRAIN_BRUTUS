@@ -7,6 +7,12 @@
 . ./sub/parameter_check.sh #
 ############################ 
 
+
+# TIFF 2 PNG CONVERSION
+COMPLETEDPNGCONVERSIONCHECK=$(find $BATCHDIR -maxdepth 1 -type f -name "ConvertAllTiff2Png.complete" | wc -l)
+CONVERTALLTIFF2PNGRESULTCOUNT=$(find $BATCHDIR -maxdepth 1 -type f -name "ConvertAllTiff2Png_*.results" | wc -l)
+
+
 if [ $COMPLETEDPNGCONVERSIONCHECK -eq 0 ]; then 
 	            	
 	            ### AT THE START OF IBRAIN, DO A PNG CONVERSION OF ALL TIF FILES IN THE TIFF DIRECTORY. 
@@ -235,6 +241,8 @@ M_PROG
 	                rm -v $PROJECTDIR/ConvertAllTiff2Png.submitted
 	                echo "      </output>"                                      
 	                echo "     </status>"
+
+
 	
 	            else
 	                
@@ -254,5 +262,7 @@ M_PROG
 	                echo "     </status>"                     
 	                	                
 	            fi                
-	            
-			fi # check if png conversion was completed 
+else
+                        echo "     <status action=\"convert-all-tiff-2-png\">completed</status>"
+	           
+fi # check if png conversion was completed 

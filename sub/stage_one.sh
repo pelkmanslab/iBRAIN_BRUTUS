@@ -41,71 +41,36 @@
             echo "<!-- TIFFCOUNT=$TIFFCOUNT -->"
         fi
 
-        
-            # TIFF 2 PNG CONVERSION
-            COMPLETEDPNGCONVERSIONCHECK=$(find $BATCHDIR -maxdepth 1 -type f -name "ConvertAllTiff2Png.complete" | wc -l)
-            CONVERTALLTIFF2PNGRESULTCOUNT=$(find $BATCHDIR -maxdepth 1 -type f -name "ConvertAllTiff2Png_*.results" | wc -l)
 
-            # ILLUMINATION CORRECTION MEASUREMENTS            
-            # CHECK HOW MANY ILLUMINATION CORRECTION SETTINGS FILES ARE PRESENT. IF THIS IS BIGGER THAN 0, 
-            # AND FOR EACH EXISTS AN OUTPUT FILE, THAN CONSIDER STEP COMPLETE
-		TOTALILLCORJOBCOUNT=$(~/iBRAIN/countjobs.sh batch_measure_illcor_stats)            
-        	ALLILLCORSETTINGSFILESCOUNT=$(find $BATCHDIR -maxdepth 1 -type f -name "batch_illcor_*.mat" | wc -l)
-        	if [ $ALLILLCORSETTINGSFILESCOUNT -gt 0 ]; then
-        		# ALSO ACCUMULATE XML FOR REPORTING OUTSIDE OF STAGE-1 NODE. 
-        		XMLSTRREPORT="<status action=\"illumination-correction\">completed<message>All $ALLILLCORSETTINGSFILESCOUNT illumination correction settings are completed</message>"
-        		COMPLETEDILLCORMEASUREMENTCHECK=1;
-	            for ILLCORSETTINGSFILE in $(find $BATCHDIR -maxdepth 1 -type f -name "batch_illcor_*.mat"); do
-	                ILLCOROUTPUTFILE="${BATCHDIR}Measurements_$(basename $ILLCORSETTINGSFILE)"
-	                ILLCOROVERVIEWPDFFILE="${POSTANALYSISDIR}Measurements_$(basename $ILLCORSETTINGSFILE .mat).pdf"
-	                if [ ! -e $ILLCOROUTPUTFILE ]; then
-	                	COMPLETEDILLCORMEASUREMENTCHECK=0;
-	                	break
-	                fi
-	            	if [ -e $ILLCOROVERVIEWPDFFILE ]; then
-    					XMLSTRREPORT=$XMLSTRREPORT"<status action=\"$(basename $ILLCORSETTINGSFILE)\">completed<file type=\"pdf\">$ILLCOROVERVIEWPDFFILE</file></status>"
-	                fi
-	            done
-				XMLSTRREPORT=$XMLSTRREPORT"</status>"
-				if [ $COMPLETEDILLCORMEASUREMENTCHECK -eq 1 ]; then
-					# REPORT XML WHEN ALL CORRECTIONS ARE DONE AND STAGE-1 HAS CONTINUED.
-					echo $XMLSTRREPORT
-				fi
-        	else
-        		COMPLETEDILLCORMEASUREMENTCHECK=0;
-        	fi
+        PRECLUSTERCHECK=$(find $BATCHDIR -maxdepth 1 -type f -name "PreCluster_*.results" | wc -l)
 
+        CPCLUSTERRESULTCOUNT=$(find $BATCHDIR -maxdepth 1 -type f -name "Batch_*.results" | wc -l)            
 
+        BATCHJOBCOUNT=$(find $BATCHDIR -maxdepth 1 -type f -name "Batch_*.txt" | wc -l)
+        echo "     <total_batch_job_count>$BATCHJOBCOUNT</total_batch_job_count>"
 
-            PRECLUSTERCHECK=$(find $BATCHDIR -maxdepth 1 -type f -name "PreCluster_*.results" | wc -l)
+        OUTPUTCOUNT=$(find $BATCHDIR -maxdepth 1 -type f -name "Batch_*_OUT.mat" | wc -l)
+        echo "     <completed_batch_job_count>$OUTPUTCOUNT</completed_batch_job_count>"                
 
-            CPCLUSTERRESULTCOUNT=$(find $BATCHDIR -maxdepth 1 -type f -name "Batch_*.results" | wc -l)            
-
-            BATCHJOBCOUNT=$(find $BATCHDIR -maxdepth 1 -type f -name "Batch_*.txt" | wc -l)
-            echo "     <total_batch_job_count>$BATCHJOBCOUNT</total_batch_job_count>"
-
-            OUTPUTCOUNT=$(find $BATCHDIR -maxdepth 1 -type f -name "Batch_*_OUT.mat" | wc -l)
-            echo "     <completed_batch_job_count>$OUTPUTCOUNT</completed_batch_job_count>"                
-
-            #################### BATCHDIR CLEANUP #################### 
-            # Some projects are big, let's delete all Batch_*_to_*.mat, Batch_*_to_*.txt & Batch_*_to_*.results files
-            if [ $OUTPUTCOUNT -gt 1 ] && [ -e $PROJECTDIR/iBRAIN_Stage_1.completed ]; then
-            	echo "<!-- cleaning up BATCH directory a bit..."
-				rm -f $BATCHDIR/Batch_*_to_*.mat
-				rm -f $BATCHDIR/Batch_*_to_*.txt
-				rm -f $BATCHDIR/Batch_*_to_*.results
-            	echo "-->"
-            fi
+        #################### BATCHDIR CLEANUP #################### 
+        # Some projects are big, let's delete all Batch_*_to_*.mat, Batch_*_to_*.txt & Batch_*_to_*.results files
+        if [ $OUTPUTCOUNT -gt 1 ] && [ -e $PROJECTDIR/iBRAIN_Stage_1.completed ]; then
+        	echo "<!-- cleaning up BATCH directory a bit..."
+		rm -f $BATCHDIR/Batch_*_to_*.mat
+		rm -f $BATCHDIR/Batch_*_to_*.txt
+		rm -f $BATCHDIR/Batch_*_to_*.results
+	     	echo "-->"
+        fi
             ################ END OF BATCHDIR CLEANUP ################
 
-            # DATAFUSION  
-            DATAFUSIONRESULTCOUNT=$(find $BATCHDIR -maxdepth 1 -type f -name "Measurements_*.mat" | wc -l)
-            EXPECTEDMEASUREMENTS=$(find $BATCHDIR -maxdepth 1 -type f -name "Batch_2_to_*_Measurements_*.mat" | wc -l)
+        # DATAFUSION  
+        DATAFUSIONRESULTCOUNT=$(find $BATCHDIR -maxdepth 1 -type f -name "Measurements_*.mat" | wc -l)
+        EXPECTEDMEASUREMENTS=$(find $BATCHDIR -maxdepth 1 -type f -name "Batch_2_to_*_Measurements_*.mat" | wc -l)
 
             
-            #DATAFUSION CHECK AND CLEANUP
-            FAILEDDATACHECKRESULTCOUNT=$(find $BATCHDIR -maxdepth 1 -type f -name "Measurements_*.datacheck-*"| wc -l)
-            DATAFUSIONCHECKRESULTCOUNT=$(find $BATCHDIR -maxdepth 1 -type f -name "DataFusionCheckAndCleanup_*.results" | wc -l)
+        #DATAFUSION CHECK AND CLEANUP
+        FAILEDDATACHECKRESULTCOUNT=$(find $BATCHDIR -maxdepth 1 -type f -name "Measurements_*.datacheck-*"| wc -l)
+        DATAFUSIONCHECKRESULTCOUNT=$(find $BATCHDIR -maxdepth 1 -type f -name "DataFusionCheckAndCleanup_*.results" | wc -l)
             
 
 
@@ -114,94 +79,24 @@
 #### WORKFLOW LOGIC ####
 ########################
 
-        
-        ### CHECK IF IMAGE FOLDER IS COMPLETE
-        if [ $COMPLETEFILECHECK -eq 0 ] && [ $TIFFCOUNT -eq 0 ]; then
-        	
-            echo "     <status action=\"check-image-set\">paused"
-            echo "      <message>"
-            echo "    Paused because the TIFF directory contains no tif images."
-            echo "      </message>"
-            echo "     </status>"
-
-        elif [ $COMPLETEFILECHECK -eq 0 ] && [ $TIFFDIRLASTMODIFIED -eq 0 ]; then
-            
-            echo "     <status action=\"check-image-set\">waiting"
-            echo "      <message>"
-            echo "    Waiting because the TIFF directory has been modified in the last 30 minutes."
-            echo "      </message>"
-
-            echo "      <output>"
-            ### [091208 BS] Add a TIMEOUT progress bar!
-	        TIMELASTMODIFIED=$(stat -c %Y iBRAIN_project.sh)
-	        TIMENOW=$(date +%s)
-	        TIME_DIFF=$(expr $TIMENOW - $TIMELASTMODIFIED) 
-	        # calculate as time in seconds since last modified date / 1800 (1800 sec = 30 min)
-			PROGRESSBARVALUE=$(echo "scale=2; (${TIME_DIFF} / 1800) * 100;" | bc)
-        	if [ "$PROGRESSBARVALUE" ]; then
-    			echo "       <progressbar text=\"waiting for data timeout\">$PROGRESSBARVALUE</progressbar>"
-        	fi
-        	echo "TIMELASTMODIFIED=$TIMELASTMODIFIED"
-        	echo "TIMENOW=$TIMENOW"
-        	echo "TIME_DIFF=$TIME_DIFF"
-            echo "      </output>"                    
-            
-            
-            
-            echo "     </status>"
-        
-        #elif [ $COMPLETEFILECHECK -eq 0 ] && [ $TIFFDIRLASTMODIFIED -eq 1 ]; then
-        elif [ $COMPLETEFILECHECK -eq 0 ] && [ ! -e $BATCHDIR/ConvertAllTiff2Png.complete ]; then
-        
-
-            TOUCHOUTPUT=$(touch $TIFFDIR/CheckImageSet_${TIFFCOUNT}.complete 2>&1)
-            
-            if [ ! -e $TIFFDIR/CheckImageSet_${TIFFCOUNT}.complete ]; then
-
-                echo "     <status action=\"check-image-set\">failed"
-                echo "      <warning>"
-                echo "       check-image-set FAILED: CAN NOT WRITE TO TIFF DIRECTORY!"
-                echo "      </warning>"
-                echo "       <output>"     
-                echo "$TOUCHOUTPUT"
-                echo "       </output>"
-                echo "     </status>"                         
-            else
-                echo "     <status action=\"check-image-set\">submitting"
-                echo "      <message>"
-                echo "    TIFF directory has passed waiting fase. Creating BATCH directory and starting iBRAIN analysis."
-                echo "      </message>"
-                echo "      <output>"
-                echo "$TOUCHOUTPUT"                    
-                if [ ! -e $BATCHDIR ]; then
-                    mkdir -p $BATCHDIR
-                fi
-                if [ ! -d $POSTANALYSISDIR ]; then
-                    mkdir -p $POSTANALYSISDIR
-                fi
-                echo "      </output>"                  
-                echo "     </status>"
-            fi
-            
-
-        elif [ ! $COMPLETEFILECHECK -eq 0 ] && ([ $COMPLETEDPNGCONVERSIONCHECK -eq 0 ] || [ $COMPLETEDILLCORMEASUREMENTCHECK -eq 0 ]); then
-            
-            ###############################
-            # INCLUDE PNG CONVERSION CODE #
-            . ./sub/pngconversion.sh	  #
-            ###############################
-
-            ########################################    
-            # INCLUDE ILLUMINATION CORRECTION CODE #
-            . ./sub/illuminationcorrection.sh      #
-            ########################################    
+#        elif [ ! $COMPLETEFILECHECK -eq 0 ] && ([ $COMPLETEDPNGCONVERSIONCHECK -eq 0 ] || [ $COMPLETEDILLCORMEASUREMENTCHECK -eq 0 ]); then
+#            
+#            ###############################
+#            # INCLUDE PNG CONVERSION CODE #
+#            . ./sub/pngconversion.sh	  #
+#            ###############################
+#
+#            ########################################    
+#            # INCLUDE ILLUMINATION CORRECTION CODE #
+#            . ./sub/illuminationcorrection.sh      #
+#            ########################################    
             
             
         ##################
         ### PRECLUSTER ###
         
         ### CHECK IF IT HAS BEEN PRECLUSTERED ALREADY
-        elif [ ! -e $PROJECTDIR/iBRAIN_Stage_1.completed ] && ( [ ! -d $BATCHDIR ] || [ $BATCHJOBCOUNT -eq 0 ] ) && [ ! -e $PROJECTDIR/PreCluster.submitted ]; then
+        if [ ! -e $PROJECTDIR/iBRAIN_Stage_1.completed ] && ( [ ! -d $BATCHDIR ] || [ $BATCHJOBCOUNT -eq 0 ] ) && [ ! -e $PROJECTDIR/PreCluster.submitted ]; then
             
             # LOOK FOR SETTINGS FILE IN PROJECTDIR
             # PLATEPRECLUSTERSETTINGS=$(~/iBRAIN/searchforpreclusterfile.sh ${PROJECTDIR} ${PLATEPRECLUSTERSETTINGS} ${PRECLUSTERBACKUPPATH})

@@ -6,8 +6,18 @@
 #  INCLUDE PARAMETER CHECK #
 . ./sub/parameter_check.sh #
 ############################ 
-        
-        if [ ! $COMPLETEFILECHECK -eq 0 ] && [ ! $COMPLETEDPNGCONVERSIONCHECK -eq 0 ] && [ ! -d $JPGDIR ]; then
+
+        # Report any plate overview files for linking on the website
+        echo "     <files>"
+        if [ -d $JPGDIR ]; then
+            for file in $(find $JPGDIR -maxdepth 1 -type f -name "*PlateOverview.jpg"); do
+            echo "     <file type=\"plate_overview_jpg\">$file</file>"
+            done
+        fi
+        echo "     </files>"
+       
+ 
+        if [ ! -d $JPGDIR ]; then
             echo "     <status action=\"jpg-creation\">preparing"
             #echo "      <message>"
             #echo "    PROCESSING: creating JPG directory"
@@ -42,7 +52,7 @@
             echo "      </output>"                                        
             echo "     </status>"                  
         
-        elif [ ! $COMPLETEFILECHECK -eq 0 ] && [ ! $COMPLETEDPNGCONVERSIONCHECK -eq 0 ] && [ -d $JPGDIR ] && [ ! -e $PROJECTDIR/CreateJPGs.submitted ] && [ $JPGCOUNT -eq 0 ]; then
+        elif [ -d $JPGDIR ] && [ ! -e $PROJECTDIR/CreateJPGs.submitted ] && [ $JPGCOUNT -eq 0 ]; then
                 
             echo "     <status action=\"jpg-creation\">submitting"
             #echo "      <message>"

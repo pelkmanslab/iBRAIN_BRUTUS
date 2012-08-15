@@ -10,6 +10,26 @@
         ###
         ### CREATE PLATE OVERVIEW
         ###
+
+
+        # Store (log) links to external files that are linked in the iBRAIN website. Note that the BASICDATA_*.mat files are logged for some matlab functions.
+        echo "     <files>"
+        if [ -d $BATCHDIR ]; then
+            for file in $(find $BATCHDIR -maxdepth 1 -type f -name "BASICDATA_*.mat"); do
+                echo "     <file type=\"plate_basic_data_mat\">$file</file>"
+            done
+        fi
+        if [ -d $POSTANALYSISDIR ]; then
+            for file in $(find $POSTANALYSISDIR -maxdepth 1 -type f -name "*_plate_overview.pdf"); do
+                echo "     <file type=\"plate_overview_pdf\">$file</file>"
+           done
+           for file in $(find $POSTANALYSISDIR -maxdepth 1 -type f -name "*_plate_overview.csv"); do
+                echo "     <file type=\"plate_overview_csv\">$file</file>"
+           done
+        fi
+        echo "     </files>"
+
+
         
             # PLATE OVERVIEW GENERATION
             if [ -d $POSTANALYSISDIR ]; then

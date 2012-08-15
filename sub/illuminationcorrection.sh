@@ -6,8 +6,33 @@
 #  INCLUDE PARAMETER CHECK #
 . ./sub/parameter_check.sh #
 ############################ 
+
+### VARIABLE CHECKING 
+
+
+COMPLETEDILLCORMEASUREMENTCHECK=0
+
+            # ILLUMINATION CORRECTION MEASUREMENTS
+            # CHECK HOW MANY ILLUMINATION CORRECTION SETTINGS FILES ARE PRESENT. IF THIS IS BIGGER THAN 0,
+            # AND FOR EACH EXISTS AN OUTPUT FILE, THAN CONSIDER STEP COMPLETE
+            TOTALILLCORJOBCOUNT=$(~/iBRAIN/countjobs.sh batch_measure_illcor_stats)
+            ALLILLCORSETTINGSFILESCOUNT=$(find $BATCHDIR -maxdepth 1 -type f -name "batch_illcor_*.mat" | wc -l)
+            if [ $ALLILLCORSETTINGSFILESCOUNT -gt 0 ]; then
+                COMPLETEDILLCORMEASUREMENTCHECK=1;
+                for ILLCORSETTINGSFILE in $(find $BATCHDIR -maxdepth 1 -type f -name "batch_illcor_*.mat"); do
+                    ILLCOROUTPUTFILE="${BATCHDIR}Measurements_$(basename $ILLCORSETTINGSFILE)"
+                    ILLCOROVERVIEWPDFFILE="${POSTANALYSISDIR}Measurements_$(basename $ILLCORSETTINGSFILE .mat).pdf"
+                    if [ ! -e $ILLCOROUTPUTFILE ]; then
+                        COMPLETEDILLCORMEASUREMENTCHECK=0;
+                        break
+                    fi
+                done
+            else
+                COMPLETEDILLCORMEASUREMENTCHECK=0;
+            fi
+
+
 	        
-	        if [ $COMPLETEDILLCORMEASUREMENTCHECK -eq 0 ]; then
 
 		
 		        ###
@@ -17,18 +42,33 @@
 		        ### IF THERE ARE NO SETTINGS FILE PRESENT, RUN MATLAB LOCALLY TO CREATE BATCH SETTINGS FILES FOR ILLUMINATION CORRECTION
 		        ### PER INDIVIDUAL CHANNEL AND Z-STACK
 		        ILLCORSETTINGSFILE=$(find $BATCHDIR -maxdepth 1 -type f -name "batch_illcor_*.mat" | wc -l)
-				if [ $ILLCORSETTINGSFILE -eq 0 ]; then
+			if [ $ILLCORSETTINGSFILE -eq 0 ] && [ ! -e ${PROJECTDIR}/IllumCorrectionSettingsFileCreation.submitted ]; then
 echo "<!-- STARTING MATLAB CREATION OF BATCH ILLUMINATION CORRECTION SETTINGS FILES"					
-matlab -singleCompThread -nodisplay -nojvm << M_PROG
-prepare_batch_measure_illcor_stats('${TIFFDIR}');
-M_PROG
+echo $(matlab -singleCompThread -nodisplay -nojvm << M_PROG
+prepare_batch_measure_illcor_stats('${TIFFDIR}'); 
+M_PROG)
+touch ${PROJECTDIR}/IllumCorrectionSettingsFileCreation.submitted
 echo "-->"
 					ILLCORSETTINGSFILE=$(find $BATCHDIR -maxdepth 1 -type f -name "batch_illcor_*.mat" | wc -l)
-				fi
+			fi
+
+                        if [ $ILLCORSETTINGSFILE -eq 0 ] && [ -e ${PROJECTDIR}/IllumCorrectionSettingsFileCreation.submitted ]; then
+                            echo "     <status action=\"illumination-correction\">skipping"
+                            echo "      <message>"
+                            echo "    $ILLCORSETTINGSFILE illumination correction settings files produced by matlab."
+                            echo "      </message>"
+			    echo "     </status>"
+                            
+                            # Report module is finished
+                            COMPLETEDILLCORMEASUREMENTCHECK=1
+			fi
 		        
 		        if [ $ILLCORSETTINGSFILE -gt 0 ]; then
-		
-		            echo "     <status action=\"illumination-correction\">"
+                            if [ $COMPLETEDILLCORMEASUREMENTCHECK -eq 1 ]; then		
+		            echo "     <status action=\"illumination-correction\">completed"
+                            else
+                            echo "     <status action=\"illumination-correction\">"
+                            fi
 		            echo "      <message>"
 		            echo "    $ILLCORSETTINGSFILE illumination correction settings files found"
 		            echo "      </message>"
@@ -42,9 +82,7 @@ echo "-->"
 		                ILLCOROVERVIEWPDFFILE="${POSTANALYSISDIR}Measurements_$(basename $ILLCORSETTINGSFILE .mat).pdf"
 		                ILLCORRESULTFILEBASE="IllumCorrection_$(basename $ILLCORSETTINGSFILE .mat)_"
 		                ILLCORSUBMITTEDFILE="${PROJECTDIR}/IllumCorrection_$(basename $ILLCORSETTINGSFILE .mat).submitted"
-		                #ILLCORRUNLIMITFILE="${PROJECTDIR}/IllumCorrection_$(basename $ILLCORSETTINGSFILE .mat).runlimit"
 		                ILLCORRESULTFILECOUNT=$(find $BATCHDIR -maxdepth 1 -type f -name "$ILLCORRESULTFILEBASE*.results" | wc -l)
-		                #ILLCORJOBCOUNT=$(~/iBRAIN/countjobs.sh $(basename $ILLCORSETTINGSFILE))
 		                ILLCORJOBCOUNT=$(grep $ILLCORSETTINGSFILE $JOBSFILE -c)
 		                if [ ! -d $POSTANALYSISDIR ]; then
 		                    mkdir -p $POSTANALYSISDIR
@@ -176,10 +214,15 @@ M_PROG"
 		            done #LOOP OVER ILLCORSETTINGS FILES
 		            echo "     </status>"
 		                                
-				fi # end of illumination correction
+			fi # end of illumination correction
+
+# Report module is finished
+if [ $COMPLETEDILLCORMEASUREMENTCHECK -eq 1 ]; then
+touch ${BATCHDIR}/illuminationcorrection.complete
+fi
+
 				#############################################
 				#### END OF ILLUMINATION CORRECTION BLOCK ###
 				#############################################
 		
-			fi # check if illumination correction is completed 
 	

@@ -1,16 +1,26 @@
 #! /bin/sh	
+echo "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>"
+echo "<?xml-stylesheet type=\"text/xsl\" href=\"../../project.xsl\"?>"
 
 INCLUDEDPATH="$1"
 PRECLUSTERBACKUPPATH="$2"
 PROJECTXMLDIR="$3"
 NEWPROJECTXMLOUTPUT="$4"    
 
-# Essential parameter check
-${INCLUDEDPATH:?"Need to set INCLUDEDPATH non-empty; INCLUDEDPATH is the path to the current project directory"} &> /dev/null 
-
-echo "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>"
-echo "<?xml-stylesheet type=\"text/xsl\" href=\"../../project.xsl\"?>"
-echo "<project>" 
+echo "<project>"
+echo "<!--"
+if [ -d $INCLUDEDPATH ]; then
+echo "INCLUDEDPATH=$1 (OK)"
+else
+echo "INCLUDEDPATH=$1 (NOT OK!)"
+fi
+if [ -d $PRECLUSTERBACKUPPATH ]; then
+echo "PRECLUSTERBACKUPPATH=$2 (OK)"
+else
+echo "PRECLUSTERBACKUPPATH=$2 (NOT OK!)"
+fi
+echo "-->"
+    
 echo " <project_xml_dir>$PROJECTXMLDIR</project_xml_dir>"
 echo " <this_file_name>$NEWPROJECTXMLOUTPUT</this_file_name>"
 echo " <now>$(date +"%y%m%d_%H%M%S")</now>"
@@ -88,6 +98,7 @@ if [ "$INCLUDEDPATH" ] && [ -d $INCLUDEDPATH ]; then
         if [ "$(echo $PROJECTDIR | sed 's|/|__|g')" == "$(echo $INCLUDEDPATH | sed 's|/|__|g')" ]; then
         	PLATEJOBCOUNT=$(( $PLATEJOBCOUNT - 1 ))
         fi 
+        echo "     <job_count_total>$PLATEJOBCOUNT</job_count_total>"
         
         ###############################################################
         ### CHECK IF ALL CRUCIAL DIRECTORIES ARE WRITABLE BY IBRAIN ###
@@ -112,60 +123,55 @@ if [ "$INCLUDEDPATH" ] && [ -d $INCLUDEDPATH ]; then
 
         # let's just create the batch directory, we need this in any case, and I've seen some cases where iBRAIN was behaving strangely because this directory was missing...
         if [ ! -d $BATCHDIR ]; then
-        	echo "<!-- creating BATCH directory.."
-    		mkdir -p $BATCHDIR
-    		echo "-->"
+            echo "<!-- creating BATCH directory.."
+    	    mkdir -p $BATCHDIR
+    	    echo "-->"
         fi
 
 
-        ##################################
-        ### ADD LINKS TO ALL THE FILES THAT MAY BE OF INTEREST FOR USERS/BROWSING
-        ### (If the xsl can handle multiple files-elements, then each of these files can be linked in it's corresponding sub module code, which would be nicer.
-        ###
-        echo "     <files>"
-        if [ -d $JPGDIR ]; then
-            for file in $(find $JPGDIR -maxdepth 1 -type f -name "*PlateOverview.jpg"); do
-            echo "     <file type=\"plate_overview_jpg\">$file</file>"  
-            done
-        fi
-        if [ -d $BATCHDIR ]; then
-            for file in $(find $BATCHDIR -maxdepth 1 -type f -name "BASICDATA_*.mat"); do
-            	echo "     <file type=\"plate_basic_data_mat\">$file</file>"  
-            done
-        fi
-        if [ -d $POSTANALYSISDIR ]; then
-            for file in $(find $POSTANALYSISDIR -maxdepth 1 -type f -name "*_plate_overview.pdf"); do
-                echo "     <file type=\"plate_overview_pdf\">$file</file>"  
-           done
-           for file in $(find $POSTANALYSISDIR -maxdepth 1 -type f -name "*_plate_overview.csv"); do
-                echo "     <file type=\"plate_overview_csv\">$file</file>"  
-           done
-        fi
-        echo "     </files>"
-        ##################################
 
+        ##############################
+        ### DO TIMEOUTS ON DATA... ###
+        . ./sub/checkimageset.sh
+        ##############################
         
-        
+
+        #################################################################
+        ### START STAGE 0: png conversion and illumination correction ###
+        if [ -e ${BATCHDIR}/checkimageset.complete ]; then
+
+            # - PNG conversion
+            . ./sub/illuminationcorrection.sh
+ 
+            # - illumination correction
+            . ./sub/pngconversion.sh
+
+            # add backwards compatibility...
+            if [ -e ${PROJECTDIR}/iBRAIN_Stage_1.completed ]; then
+                touch ${BATCHDIR}/illuminationcorrection.complete
+            fi
+
+        fi
+        #################################################################
+
+        # - JPG creation (is of course dependent on the dataset being complete)
+        if [ -e ${BATCHDIR}/ConvertAllTiff2Png.complete ]; then
+            . ./sub/create_jpgs.sh
+        fi
+
+
         ##################################
         ### START MAIN LOGICS: STAGE 1 ###
-	. ./sub/stage_one.sh
+        if [ -e ${BATCHDIR}/ConvertAllTiff2Png.complete ] && [ -e ${BATCHDIR}/illuminationcorrection.complete ]; then
+            . ./sub/stage_one.sh
+        fi
         # includes the following steps: 
-	# - timeouts
-	# - PNG conversion (might be taken out of stage_one.sh)
-	# - illumination correction (might be taken out of stage_one.sh)
 	# - PreCluster
 	# - cpcluster
 	# - datafusion & check & cleanup
         ##################################
         
 
-
-        ######################################
-        ### STAGE INDEPENDENT JPG CREATION ###
-	. ./sub/create_jpgs.sh             ###
-        ######################################        
-        
-        
 
         #####################################################################################
         ### START MAIN LOGICS: STAGE 2, i.e. depends on successfull CellProfiler analysis ###
@@ -185,7 +191,8 @@ if [ "$INCLUDEDPATH" ] && [ -d $INCLUDEDPATH ]; then
             . ./sub/stitch_segmentation_per_well.sh
   
             . ./sub/create_plate_overview.sh
- 
+            
+            # Note, SVM classification is dependent on plate_normalization... 
             . ./sub/svm_classification.sh
  
             . ./sub/bin_correction.sh
@@ -211,12 +218,13 @@ if [ "$INCLUDEDPATH" ] && [ -d $INCLUDEDPATH ]; then
     done # end loop over TIFF folders
 
 
+    echo "   </plates>"
+
     # I'm not sure if the include of fuse_basic_data.sh should be inside or outside the "plates" xml element.. probably inside
     ##########################
     . ./sub/fuse_basic_data.sh
     ##########################
 
-    echo "   </plates>"
     
     # clean up jobsfile
     echo "   <!-- cleaning up jobsfile"
