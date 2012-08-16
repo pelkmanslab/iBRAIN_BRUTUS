@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 #
 # fuse_basic_data.sh
 

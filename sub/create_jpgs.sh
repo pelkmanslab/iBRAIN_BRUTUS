@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 #
 # create_jpgs.sh
 

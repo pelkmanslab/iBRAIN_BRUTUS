@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 #
 # plate_normalization.sh
 

@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 #
 # illuminationcorrection.sh
 
@@ -6,6 +6,8 @@
 #  INCLUDE PARAMETER CHECK #
 . ./sub/parameter_check.sh #
 ############################ 
+
+function 
 
 ### VARIABLE CHECKING 
 

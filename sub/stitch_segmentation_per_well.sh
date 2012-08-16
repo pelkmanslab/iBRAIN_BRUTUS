@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 #
 # stitch_segmentation_per_well.sh
 

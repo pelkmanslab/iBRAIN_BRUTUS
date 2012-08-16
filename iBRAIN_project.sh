@@ -1,4 +1,4 @@
-#! /bin/sh	
+#! /bin/bash	
 echo "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>"
 echo "<?xml-stylesheet type=\"text/xsl\" href=\"../../project.xsl\"?>"
 

@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 #
 # cell_tracker.sh
 

@@ -1,4 +1,4 @@
-#! /bin/sh	
+#! /bin/bash	
 
 # This document should be included at the beginning of each sub-module, and checks if strictly essential parameters are set. 
 

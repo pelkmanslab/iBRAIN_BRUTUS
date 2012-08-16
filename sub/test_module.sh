@@ -1,4 +1,4 @@
-#! /bin/sh	
+#! /bin/bash	
 
 # This is a wrapper for testing individual modules one at a time. Useful for debugging 
 

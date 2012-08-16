@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 #
 # iBRAIN_wrapper.sh
 # 081009: udpate: split iBRAIN.sh (wrapper) and iBRAIN_project.sh, and store iBRAIN_project.sh output as project specific XML
