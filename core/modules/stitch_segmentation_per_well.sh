@@ -29,7 +29,7 @@ function main {
 	                         
 	            if [ $currentjobcount -lt 30 ]; then
 	            	
-	                echo "     <status action=\"stitch-segmentation-per-well\">submitting"
+	                echo "     <status action=\"${MODULENAME}\">submitting"
 	                #echo "      <message>"
 	                #echo "    PROCESSING: submitting plate segmentation stitching"
 	                #echo "      </message>"
@@ -44,7 +44,7 @@ function main {
 	
 	            else
 	            
-	                echo "     <status action=\"stitch-segmentation-per-well\">waiting"
+	                echo "     <status action=\"${MODULENAME}\">waiting"
 	                echo "      <message>"
 	                echo "    WAITING: not yet submitting segmentation stitching per well, too many jobs of this kind present"
 	                echo "      </message>"
@@ -56,7 +56,7 @@ function main {
 	        ### SEGMENTATION STITCHING HAS BEEN SUBMITTED BUT DID NOT PRODUCE OUTPUT FILES YET
 	        elif [ $STITCHINGMEASUREMENTCOUNT -lt 1 ] && [ -e $PROJECTDIR/StitchSegmentationPerWell.submitted ] && [ $STITCHINRESULTCOUNT -lt 1 ]; then
 	            
-	            echo "     <status action=\"stitch-segmentation-per-well\">waiting"
+	            echo "     <status action=\"${MODULENAME}\">waiting"
 	            #echo "      <message>"
 	            #echo "    PROCESSING: waiting for SEGMENTATION STITCHING to finish"
 	            #echo "      </message>"
@@ -73,7 +73,7 @@ function main {
 	        ### PLATE NORMALIZATION HAS BEEN COMPLETED BUT FAILED TO PRODUCE OUTPUT FILES
 	        elif [ $STITCHINGMEASUREMENTCOUNT -lt 1 ] && [ -e $PROJECTDIR/StitchSegmentationPerWell.submitted ] && [ $STITCHINRESULTCOUNT -gt 0 ]; then
 	            
-	            echo "     <status action=\"stitch-segmentation-per-well\">failed"
+	            echo "     <status action=\"${MODULENAME}\">failed"
 	            echo "      <warning>"
 	            echo "    ALERT: segmentation stitching FAILED"
 	            echo "      </warning>"
@@ -88,7 +88,7 @@ function main {
 	        elif [ $STITCHINGMEASUREMENTCOUNT -gt 0 ]; then
 	            
 	            
-	            echo "     <status action=\"stitch-segmentation-per-well\">completed"
+	            echo "     <status action=\"${MODULENAME}\">completed"
 	            echo "     </status>"                     
 	            
 	        fi        

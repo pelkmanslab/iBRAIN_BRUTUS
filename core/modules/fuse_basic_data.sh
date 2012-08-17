@@ -2,8 +2,11 @@
 #
 # fuse_basic_data.sh
 
-
 # Fuse_basic_data is not a standard module. It is run outside of the plate-loop, and therefore should not check if all plate-wise variables are properly set in parameter_check.sh
+
+MODULEPATH=${BASH_SOURCE}
+MODULENAME=$(basename ${BASH_SOURCE} .sh)
+echo "<!-- current module including parameter_test.sh = ${MODULENAME} -->"
 
 function main {
 

@@ -52,7 +52,7 @@ echo "-->"
 			fi
 
                         if [ $ILLCORSETTINGSFILE -eq 0 ] && [ -e ${PROJECTDIR}/IllumCorrectionSettingsFileCreation.submitted ]; then
-                            echo "     <status action=\"illumination-correction\">skipping"
+                            echo "     <status action=\"${MODULENAME}\">skipping"
                             echo "      <message>"
                             echo "    $ILLCORSETTINGSFILE illumination correction settings files produced by matlab."
                             echo "      </message>"
@@ -64,9 +64,9 @@ echo "-->"
 		        
 		        if [ $ILLCORSETTINGSFILE -gt 0 ]; then
                             if [ $COMPLETEDILLCORMEASUREMENTCHECK -eq 1 ]; then		
-		            echo "     <status action=\"illumination-correction\">completed"
+		            echo "     <status action=\"${MODULENAME}\">completed"
                             else
-                            echo "     <status action=\"illumination-correction\">"
+                            echo "     <status action=\"${MODULENAME}\">"
                             fi
 		            echo "      <message>"
 		            echo "    $ILLCORSETTINGSFILE illumination correction settings files found"

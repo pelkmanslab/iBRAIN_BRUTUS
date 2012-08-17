@@ -577,7 +577,7 @@ fi
         ### FLAG STAGE 1 AS COMPLETED
         elif [ ! -e $PROJECTDIR/iBRAIN_Stage_1.completed ] && [ $FAILEDDATACHECKRESULTCOUNT -eq 0 ] && [ $EXPECTEDMEASUREMENTS -eq 0 ] && [ $DATAFUSIONCHECKRESULTCOUNT -gt 0 ]; then
 
-            echo "     <status action=\"stage-1\">completed"
+            echo "     <status action=\"${MODULENAME}\">completed"
 			if [ $OBJECTCOUNTCOUNT -eq 0 ]; then        
 		        echo "      <message>"
 		        echo "  NOTE, You did not create any objects in your CellProfiler pipeline, as Measurements_Image_ObjectCount.mat is missing."
@@ -593,7 +593,7 @@ fi
         ### FLAG STAGE 1 AS COMPLETED, BECAUSE IT WAS PREVIOUSLY FLAGGED AS COMPLETED 
         elif [ -e $PROJECTDIR/iBRAIN_Stage_1.completed ]; then
 
-            echo "     <status action=\"stage-1\">completed"
+            echo "     <status action=\"${MODULENAME}\">completed"
 			if [ $OBJECTCOUNTCOUNT -eq 0 ]; then        
 		        echo "      <message>"
 		        echo "  NOTE, You did not create any objects in your CellProfiler pipeline, as Measurements_Image_ObjectCount.mat is missing."
@@ -603,7 +603,7 @@ fi
              
         else 
 
-            echo "     <status action=\"stage-1\">unknown"
+            echo "     <status action=\"${MODULENAME}\">unknown"
             echo "      <warning>"
             echo "  UNKNOWN STATUS $(basename $PROJECTDIR) ($PLATEJOBCOUNT JOBS): but most likely finished"
             echo "      </warning>"                                        
