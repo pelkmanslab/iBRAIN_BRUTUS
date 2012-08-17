@@ -4,7 +4,7 @@
 
 ############################
 #  INCLUDE PARAMETER CHECK #
-. ./sub/parameter_check.sh #
+. ./core/modules/parameter_check.sh #
 ############################
 
 
@@ -22,7 +22,7 @@ function main {
        
  
         if [ ! -d $JPGDIR ]; then
-            echo "     <status action=\"jpg-creation\">preparing"
+            echo "     <status action=\"${MODULENAME}\">preparing"
             #echo "      <message>"
             #echo "    PROCESSING: creating JPG directory"
             #echo "      </message>"
@@ -47,7 +47,7 @@ function main {
         
         if [ -d $JPGDIR ] && [ ! -w $JPGDIR ]; then
         
-            echo "     <status action=\"jpg-creation\">skipping"
+            echo "     <status action=\"${MODULENAME}\">skipping"
             echo "      <message>"
             echo "    ALERT: JPG DIRECTORY NOT WRITABLE BY iBRAIN"
             echo "      </message>"
@@ -58,7 +58,7 @@ function main {
         
         elif [ -d $JPGDIR ] && [ ! -e $PROJECTDIR/CreateJPGs.submitted ] && [ $JPGCOUNT -eq 0 ]; then
                 
-            echo "     <status action=\"jpg-creation\">submitting"
+            echo "     <status action=\"${MODULENAME}\">submitting"
             #echo "      <message>"
             #echo "    PROCESSING: submitting jpg creation"
             #echo "      </message>"
@@ -82,7 +82,7 @@ M_PROG"
             
         elif [ -e $PROJECTDIR/CreateJPGs.submitted ] && [ ! -e $PROJECTDIR/CreateJPGs.resubmitted ] && ([ $JPGCOUNT -eq 0 ] || [ $JPGPLATEOVERVIEWCOUNT -eq 0 ]) && [ $CREATEJPGRESULTCOUNT -eq 0 ]; then
                 
-            echo "     <status action=\"jpg-creation\">waiting"
+            echo "     <status action=\"${MODULENAME}\">waiting"
             #echo "      <message>"
             #echo "    PROCESSING: waiting for jpg creation"
             #echo "      </message>"
@@ -97,7 +97,7 @@ M_PROG"
 
         elif [ -e $PROJECTDIR/CreateJPGs.submitted ] && [ ! -e $PROJECTDIR/CreateJPGs.resubmitted ] && ([ $JPGCOUNT -eq 0 ] || [ $JPGPLATEOVERVIEWCOUNT -eq 0 ]) && [ $CREATEJPGRESULTCOUNT -gt 0 ]; then
 
-            echo "     <status action=\"jpg-creation\">resubmitting"
+            echo "     <status action=\"${MODULENAME}\">resubmitting"
             #echo "      <message>"
             #echo "    PROCESSING: resubmitting jpg creation"
             #echo "      </message>"
@@ -121,7 +121,7 @@ M_PROG"
 
         elif [ -e $PROJECTDIR/CreateJPGs.submitted ] && [ -e $PROJECTDIR/CreateJPGs.resubmitted ] && ([ $JPGCOUNT -eq 0 ] || [ $JPGPLATEOVERVIEWCOUNT -eq 0 ]) && [ $CREATEJPGRESULTCOUNT -eq 1 ]; then
                
-            echo "     <status action=\"jpg-creation\">waiting"
+            echo "     <status action=\"${MODULENAME}\">waiting"
             #echo "      <message>"
             #echo "    PROCESSING: waiting for jpg re-submission"
             #echo "      </message>"
@@ -137,7 +137,7 @@ M_PROG"
             
         elif [ -e $PROJECTDIR/CreateJPGs.submitted ] && [ -e $PROJECTDIR/CreateJPGs.resubmitted ] && ([ $JPGCOUNT -eq 0 ] || [ $JPGPLATEOVERVIEWCOUNT -eq 0 ]) && [ $CREATEJPGRESULTCOUNT -gt 1 ]; then
             
-            echo "     <status action=\"jpg-creation\">failed"
+            echo "     <status action=\"${MODULENAME}\">failed"
             echo "      <warning>"
             echo "    ALERT: JPG CREATION FAILED TWICE"
             echo "      </warning>"
@@ -150,7 +150,7 @@ M_PROG"
         elif [ $JPGCOUNT -gt 0 ]; then
             
 
-            echo "     <status action=\"jpg-creation\">completed"
+            echo "     <status action=\"${MODULENAME}\">completed"
             #echo "      <message>"
             #echo "    COMPLETED: jpg creation"
             #echo "      </message>"

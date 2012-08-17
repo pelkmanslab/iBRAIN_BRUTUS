@@ -4,7 +4,7 @@
 
 ############################
 #  INCLUDE PARAMETER CHECK #
-. ./sub/parameter_check.sh #
+. ./core/modules/parameter_check.sh #
 ############################
 
 function main {
@@ -33,7 +33,7 @@ PLATEBASICDATACOUNT=$(find $BATCHDIR -maxdepth 1 -type f -name "BASICDATA_*.mat"
 	        	
 	        	#if [ $(find $INCLUDEDPATH -maxdepth 1 -type f -cmin +480 -name "FuseBasicData_*.results") ]; then
 	        	#	### [2010-02-18] TEMPORARY HACK, PAULI MADE GATHER_CELLTYPE_DATA_IBRAIN2 RESETTING ALL OLD MEASUREMENTS... 
-		        #    echo "     <status action=\"celltype-overview-generation\">resetting"
+		        #    echo "     <status action=\"${MODULENAME}\">resetting"
 		        #    echo "      <message>"
 		        #    echo "    [2010-02-18] TEMPORARY HACK: UPDATING TO NEWER VERSION OF GATHER_CELLTYPE_DATA_IBRAIN2.M, resetting cell type overview"
 		        #    echo "      </message>"
@@ -47,7 +47,7 @@ PLATEBASICDATACOUNT=$(find $BATCHDIR -maxdepth 1 -type f -name "BASICDATA_*.mat"
 	        	#fi
 	        		        	
 	        	if [ $NEWERSVMFILECOUNT -gt 0 ]; then
-		            echo "     <status action=\"celltype-overview-generation\">resetting"
+		            echo "     <status action=\"${MODULENAME}\">resetting"
 		            echo "      <message>"
 		            echo "    UPDATING: new SVM files found, resetting cell type overview"
 		            echo "      </message>"
@@ -90,7 +90,7 @@ PLATEBASICDATACOUNT=$(find $BATCHDIR -maxdepth 1 -type f -name "BASICDATA_*.mat"
 	        #        NEWERSVMFILECOUNT1=$(( $(find $BATCHDIR -maxdepth 1 -type f -newer $CELLTYPEOVERVIEWFILE -name "Measurements_SVM_*.mat" | wc -l) + 0))
 	        #        NEWERSVMFILECOUNT2=$(( $(find $BATCHDIR -maxdepth 1 -type f -newer $CELLTYPEOVERVIEWSUBMITTEDFILE -name "Measurements_SVM_*.mat" | wc -l) + 0))
 	        #        if [ ! $NEWERSVMFILECOUNT1 -eq 0 ] && [ ! $NEWERSVMFILECOUNT2 -eq 0 ]; then
-		    #            echo "     <status action=\"celltype-overview-generation\">resetting"
+		    #            echo "     <status action=\"${MODULENAME}\">resetting"
 		    #            echo "      <message>"
 		    #            echo "    UPDATING: SVM files found that are newer than Measurements_Nuclei_CellType_Overview.mat, resetting CellType overview generation"
 		    #            echo "      </message>"
@@ -115,7 +115,7 @@ PLATEBASICDATACOUNT=$(find $BATCHDIR -maxdepth 1 -type f -name "BASICDATA_*.mat"
 	        #                 
 	        if [ $NEWERSVMFILECOUNT -gt 0 ] && [ ! -e $PROJECTDIR/CreateCellTypeOverview.submitted ]; then
 	             
-	            echo "     <status action=\"celltype-overview-generation\">submitting"
+	            echo "     <status action=\"${MODULENAME}\">submitting"
 	            echo "      <output>"                    
 	
 	            ### NOTE: Create_CellType_Overview and Create_CellType_ClassificationPerColumn have been replaced
@@ -131,7 +131,7 @@ M_PROG"
 	        ### CHECK CreateCellTypeOverview HAS BEEN SUBMITTED BUT DID NOT PRODUCE OUTPUT FILES YET
 	        elif [ $NEWERSVMFILECOUNT -gt 0 ] && [ ! -e $CELLTYPEOVERVIEWFILE ] && [ -e $PROJECTDIR/CreateCellTypeOverview.submitted ] && [ $CELLTYPEOVERVIEWRESULTCOUNT -eq 0 ]; then
 	            
-	            echo "     <status action=\"celltype-overview-generation\">waiting"
+	            echo "     <status action=\"${MODULENAME}\">waiting"
 	            echo "      <output>"                    
 	
 	            ### EXPERIMENTAL: IF NO JOBS ARE FOUND FOR THIS PROJECT, WAITING IS SENSELESS. REMOVE .submitted FILE AND TRY AGAIN
@@ -146,7 +146,7 @@ M_PROG"
 	        ### CHECK CreateCellTypeOverview HAS BEEN COMPLETED BUT FAILED TO PRODUCE OUTPUT FILES
 	        elif [ $NEWERSVMFILECOUNT -gt 0 ] && [ ! -e $CELLTYPEOVERVIEWFILE ] && [ -e $PROJECTDIR/CreateCellTypeOverview.submitted ] && [ $CELLTYPEOVERVIEWRESULTCOUNT -gt 0 ]; then
 	            
-	            echo "     <status action=\"celltype-overview-generation\">failed"
+	            echo "     <status action=\"${MODULENAME}\">failed"
 	            echo "      <warning>"
 	            echo "    ALERT: celltype overview generation FAILED"
 	            echo "      </warning>"
@@ -168,7 +168,7 @@ M_PROG"
 	        
 	        elif [ $NEWERSVMFILECOUNT -eq 0 ] && [ -e $CELLTYPEOVERVIEWFILE ]; then
 	     
-	            echo "     <status action=\"celltype-overview-generation\">completed"
+	            echo "     <status action=\"${MODULENAME}\">completed"
 	            #echo "      <message>"
 	            # (This was a request from Pauli... Disabled now)
 	            #TIMELASTMODIFIEDRESULTS=$(stat -c %y ${BATCHDIR}Measurements_Nuclei_CellType_Overview.mat)	            
@@ -183,7 +183,7 @@ M_PROG"
 	            
 	        else
 	            
-	            echo "     <status action=\"celltype-overview-generation\">unknown"
+	            echo "     <status action=\"${MODULENAME}\">unknown"
 	            echo "      <warning>"
 	            echo "  UNKNOWN STATUS FOR celltype-overview-generation ACTION"
 	            #echo "  APPLYING TEMPORARY BUGFIX TO RERUN CRASHED GATHERCELLTYPE OVERVIEW STUFF"                

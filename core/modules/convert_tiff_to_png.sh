@@ -4,7 +4,7 @@
 
 ############################
 #  INCLUDE PARAMETER CHECK #
-. ./sub/parameter_check.sh #
+. ./core/modules/parameter_check.sh #
 ############################
 
 
@@ -12,7 +12,7 @@ function main {
 
 ############################ 
 #  INCLUDE PARAMETER CHECK #
-# . ./sub/parameter_check.sh #
+# . ./core/modules/parameter_check.sh #
 ############################ 
 
 
@@ -46,7 +46,7 @@ if [ $COMPLETEDPNGCONVERSIONCHECK -eq 0 ]; then
 	                 
 	                if [ $TIFFCOUNT -gt 0 ] && [ $TIFF2PNGCONVERSIONJOBS -lt 15 ] && [ $TIFF2PNGCONVERSIONJOBSPERPLATE -eq 0 ]; then
 	                    
-	                    echo "     <status action=\"convert-all-tiff-2-png\">submitting"
+	                    echo "     <status action=\"${MODULENAME}\">submitting"
 	                    echo "      <output>"
 	
 	                    # create batch files for png conversion (and clean up previous ones if present?)
@@ -71,7 +71,7 @@ M_PROG
 	
 	                elif [ $TIFFCOUNT -gt 0 ] && [ $TIFF2PNGCONVERSIONJOBS -gt 14 ] && [ $TIFF2PNGCONVERSIONJOBSPERPLATE -eq 0 ]; then
 	
-	                    echo "     <status action=\"convert-all-tiff-2-png\">waiting"
+	                    echo "     <status action=\"${MODULENAME}\">waiting"
 	                    echo "      <message>"
 	                    echo "    not yet submitting plate tiff to png conversion, too many jobs of this kind present. waiting for some jobs to finish."
 	                    echo "    TIFF2PNGCONVERSIONJOBS = $TIFF2PNGCONVERSIONJOBS"
@@ -83,7 +83,7 @@ M_PROG
 	
 	                elif [ $TIFFCOUNT -eq 0 ] && [ $PNGCOUNT -gt 0 ]; then
 	
-	                    echo "     <status action=\"convert-all-tiff-2-png\">waiting"
+	                    echo "     <status action=\"${MODULENAME}\">waiting"
 	                    echo "      <message>"
 	                    echo "    No TIFF files found, png files are present, and ConvertAllTiff2Png.submitted was missing, creating ConvertAllTiff2Png.submitted and ConvertAllTiff2Png.complete"
 	                    echo "    TIFF2PNGCONVERSIONJOBSPERPLATE = $TIFF2PNGCONVERSIONJOBSPERPLATE"
@@ -103,7 +103,7 @@ M_PROG
 	            
 					elif [ $TIFF2PNGCONVERSIONJOBSPERPLATE -eq 0 ]; then
 					
-	                    echo "     <status action=\"convert-all-tiff-2-png\">waiting"
+	                    echo "     <status action=\"${MODULENAME}\">waiting"
 	                    echo "      <message>"
 	                    echo "    Jobs still running but and ConvertAllTiff2Png.submitted was missing, creating ConvertAllTiff2Png.submitted"
 	                    echo "      </message>"
@@ -118,7 +118,7 @@ M_PROG
 	                    			
 		            else
 		                
-		                echo "     <status action=\"convert-all-tiff-2-png\">unknown"
+		                echo "     <status action=\"${MODULENAME}\">unknown"
 		                echo "      <warning>"
 		                echo "  UNKNOWN STATUS FOR convert-all-tiff-2-png ACTION"
 		                if [ -e $BATCHDIR/ConvertAllTiff2Png.complete ]; then
@@ -138,7 +138,7 @@ M_PROG
 	            ### PLATE NORMALIZATION HAS BEEN SUBMITTED BUT DID NOT PRODUCE OUTPUT FILES YET
 	            elif [ -e $PROJECTDIR/ConvertAllTiff2Png.submitted ] && [ $CONVERTALLTIFF2PNGRESULTCOUNT -lt 1 ]; then
 	                
-	                echo "     <status action=\"convert-all-tiff-2-png\">waiting"
+	                echo "     <status action=\"${MODULENAME}\">waiting"
 	                #echo "      <message>"
 	                #echo "    PROCESSING: waiting for tiff-2-png conversion to finish"
 	                #echo "      </message>"
@@ -166,7 +166,7 @@ M_PROG
 	
 					elif [ $TIFFCOUNT -gt 0 ] && [ -e $PROJECTDIR/ConvertAllTiff2Png.submitted ] && [ $CONVERTALLTIFF2PNGRESULTCOUNT -gt 0 ] && [ $TIFF2PNGCONVERSIONJOBSPERPLATE -gt 0 ]; then
 	 
-	                echo "     <status action=\"convert-all-tiff-2-png\">waiting"
+	                echo "     <status action=\"${MODULENAME}\">waiting"
 	                echo "      <message>"
 	                echo "    PROCESSING: waiting for tiff-2-png conversion to finish"
 	                echo "      </message>"
@@ -184,7 +184,7 @@ M_PROG
 	            ### PLATE NORMALIZATION HAS BEEN COMPLETED BUT FAILED TO REMOVE ALL TIFF FILES
 	            elif [ $TIFFCOUNT -gt 0 ] && [ -e $PROJECTDIR/ConvertAllTiff2Png.submitted ] && [ $CONVERTALLTIFF2PNGRESULTCOUNT -gt 0 ] && [ $TIFF2PNGCONVERSIONJOBSPERPLATE -eq 0 ]; then
 	                
-	                echo "     <status action=\"convert-all-tiff-2-png\">failed"
+	                echo "     <status action=\"${MODULENAME}\">failed"
 	                echo "      <warning>"
 	                echo "    convert-all-tiff-2-png FAILED"
 	                echo "      </warning>"
@@ -216,7 +216,7 @@ M_PROG
 	            ### IF PLATE NORMALIZATION FILE IS PRESENT, FLAG AS COMPLETED
 	            elif [ $TIFFCOUNT -eq 0 ] && [ $PNGCOUNT -gt 0 ] && [ $TIFFDIRLASTMODIFIED -eq 0 ]; then
 	                
-	                echo "     <status action=\"convert-all-tiff-2-png\">waiting"
+	                echo "     <status action=\"${MODULENAME}\">waiting"
 	                echo "      <message>"
 	                echo "    COMPLETED: png conversion is complete. waiting for second timeout"
 	                echo "      </message>"
@@ -228,7 +228,7 @@ M_PROG
 	
 	            elif [ $TIFFCOUNT -eq 0 ] && [ $PNGCOUNT -gt 0 ] && [ $TIFFDIRLASTMODIFIED -eq 1 ]; then
 	                
-	                echo "     <status action=\"convert-all-tiff-2-png\">completed, waiting"
+	                echo "     <status action=\"${MODULENAME}\">completed, waiting"
 	                #echo "      <message>"
 	                #echo "    COMPLETED: plate normalization"
 	                #echo "      </message>"
@@ -240,7 +240,7 @@ M_PROG
 	
 	            elif [ $TIFFCOUNT -gt 0 ] && [ $PNGCOUNT -gt 0 ] && [ $TIFFDIRLASTMODIFIED -eq 1 ]; then
 	                
-	                echo "     <status action=\"convert-all-tiff-2-png\">resetting"
+	                echo "     <status action=\"${MODULENAME}\">resetting"
 	                echo "      <message>"
 	                echo "    Finished waiting for the second timeout after png conversion, but new tif files were found, resetting pngconversion."
 	                echo "      </message>"
@@ -254,7 +254,7 @@ M_PROG
 	
 	            else
 	                
-	                echo "     <status action=\"convert-all-tiff-2-png\">unknown"
+	                echo "     <status action=\"${MODULENAME}\">unknown"
 	                echo "      <warning>"
 	                echo "  UNKNOWN STATUS FOR convert-all-tiff-2-png ACTION"
 	                if [ -e $BATCHDIR/ConvertAllTiff2Png.complete ]; then
@@ -271,7 +271,7 @@ M_PROG
 	                	                
 	            fi                
 else
-                        echo "     <status action=\"convert-all-tiff-2-png\">completed</status>"
+                        echo "     <status action=\"${MODULENAME}\">completed</status>"
 	           
 fi # check if png conversion was completed 
 

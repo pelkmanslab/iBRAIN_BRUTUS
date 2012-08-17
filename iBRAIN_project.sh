@@ -177,7 +177,7 @@ if [ "$INCLUDEDPATH" ] && [ -d $INCLUDEDPATH ]; then
 
         ##############################
         ### DO TIMEOUTS ON DATA... ###
-        . ./sub/checkimageset.sh
+        . ./core/modules/check_image_set.sh
         ##############################
         
 
@@ -186,10 +186,10 @@ if [ "$INCLUDEDPATH" ] && [ -d $INCLUDEDPATH ]; then
         if [ -e ${BATCHDIR}/checkimageset.complete ]; then
 
             # - PNG conversion
-            . ./sub/illuminationcorrection.sh
+            . ./core/modules/do_illumination_correction.sh
  
             # - illumination correction
-            . ./sub/pngconversion.sh
+            . ./core/modules/convert_tiff_to_png.sh
 
             # add backwards compatibility...
             if [ -e ${PROJECTDIR}/iBRAIN_Stage_1.completed ]; then
@@ -201,14 +201,14 @@ if [ "$INCLUDEDPATH" ] && [ -d $INCLUDEDPATH ]; then
 
         # - JPG creation (is of course dependent on the dataset being complete, and is better run after pngconversion)
         if [ -e ${BATCHDIR}/ConvertAllTiff2Png.complete ]; then
-            . ./sub/create_jpgs.sh
+            . ./core/modules/create_jpgs.sh
         fi
 
 
         ##################################
         ### START MAIN LOGICS: STAGE 1 ###
         if [ -e ${BATCHDIR}/ConvertAllTiff2Png.complete ] && [ -e ${BATCHDIR}/illuminationcorrection.complete ]; then
-            . ./sub/stage_one.sh
+            . ./core/modules/stage_one.sh
         fi
         # includes the following steps: 
 	# - PreCluster
@@ -226,24 +226,23 @@ if [ "$INCLUDEDPATH" ] && [ -d $INCLUDEDPATH ]; then
         # if stage 1 is completed, and if there are object count measurements, perform the following checks
         if [ -e $PROJECTDIR/iBRAIN_Stage_1.completed ] && [ $OBJECTCOUNTCOUNT -gt 0 ]; then
 
-	    . ./sub/score_out_of_focus.sh        
+	    . ./core/modules/create_out_of_focus_measurement.sh        
  
-            . ./sub/plate_normalization.sh 
+            . ./core/modules/create_plate_normalization.sh 
  
-            . ./sub/get_populationcontext.sh
+            . ./core/modules/create_population_context_measurements.sh
  
-            . ./sub/stitch_segmentation_per_well.sh
+            . ./core/modules/stitch_segmentation_per_well.sh
   
-            . ./sub/create_plate_overview.sh
-            
-            # Note, SVM classification is dependent on plate_normalization... 
-            . ./sub/svm_classification.sh
+            . ./core/modules/create_plate_overview.sh
+             
+            . ./core/modules/do_svm_classification.sh
  
-            . ./sub/bin_correction.sh
+            . ./core/modules/do_bin_correction.sh
 
-            . ./sub/cell_tracker.sh
+            . ./core/modules/do_cell_tracking.sh
 
-            . ./sub/create_celltype_overview.sh
+            . ./core/modules/create_celltype_overview.sh
 
         fi # end check if stage 1 has been completed. end of stage 2.
         #####################################################################################        
@@ -266,7 +265,7 @@ if [ "$INCLUDEDPATH" ] && [ -d $INCLUDEDPATH ]; then
 
     # I'm not sure if the include of fuse_basic_data.sh should be inside or outside the "plates" xml element.. probably inside
     ##########################
-    . ./sub/fuse_basic_data.sh
+    . ./core/modules/fuse_basic_data.sh
     ##########################
 
     

@@ -4,7 +4,7 @@
 
 ############################
 #  INCLUDE PARAMETER CHECK #
-. ./sub/parameter_check.sh #
+. ./core/modules/parameter_check.sh #
 ############################
 
 function main {
@@ -38,7 +38,7 @@ function main {
         ### CHECK IF IMAGE FOLDER IS COMPLETE
         if [ $COMPLETEFILECHECK -eq 0 ] && [ $TIFFCOUNT -eq 0 ]; then
 
-            echo "     <status action=\"check-image-set\">paused"
+            echo "     <status action=\"${MODULENAME}\">paused"
             echo "      <message>"
             echo "    Paused because the TIFF directory contains no tif images."
             echo "      </message>"
@@ -46,7 +46,7 @@ function main {
 
         elif [ $COMPLETEFILECHECK -eq 0 ] && [ $TIFFDIRLASTMODIFIED -eq 0 ]; then
 
-            echo "     <status action=\"check-image-set\">waiting"
+            echo "     <status action=\"${MODULENAME}\">waiting"
             echo "      <message>"
             echo "    Waiting because the TIFF directory has been modified in the last 30 minutes."
             echo "      </message>"
@@ -76,7 +76,7 @@ function main {
 
             if [ ! -e $TIFFDIR/CheckImageSet_${TIFFCOUNT}.complete ]; then
 
-                echo "     <status action=\"check-image-set\">failed"
+                echo "     <status action=\"${MODULENAME}\">failed"
                 echo "      <warning>"
                 echo "       check-image-set FAILED: CAN NOT WRITE TO TIFF DIRECTORY!"
                 echo "      </warning>"
@@ -86,7 +86,7 @@ function main {
                 echo "       </output>"
                 echo "     </status>"
             else
-                echo "     <status action=\"check-image-set\">submitting"
+                echo "     <status action=\"${MODULENAME}\">submitting"
                 echo "      <message>"
                 echo "    TIFF directory has passed waiting fase. Creating BATCH directory and starting iBRAIN analysis."
                 echo "      </message>"
@@ -108,7 +108,7 @@ function main {
             if [ ! -e ${BATCHDIR}/checkimageset.complete ]; then
                 touch ${BATCHDIR}/checkimageset.complete
             fi
-            echo "     <status action=\"check-image-set\">completed</status>"
+            echo "     <status action=\"${MODULENAME}\">completed</status>"
        
 fi
 

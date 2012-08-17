@@ -4,7 +4,7 @@
         
 ############################ 
 #  INCLUDE PARAMETER CHECK #
-. ./sub/parameter_check.sh #
+. ./core/modules/parameter_check.sh #
 ############################ 
 
 function main {
@@ -85,12 +85,12 @@ function main {
 #            
 #            ###############################
 #            # INCLUDE PNG CONVERSION CODE #
-#            . ./sub/pngconversion.sh	  #
+#            . ./core/modules/pngconversion.sh	  #
 #            ###############################
 #
 #            ########################################    
 #            # INCLUDE ILLUMINATION CORRECTION CODE #
-#            . ./sub/illuminationcorrection.sh      #
+#            . ./core/modules/illuminationcorrection.sh      #
 #            ########################################    
             
             

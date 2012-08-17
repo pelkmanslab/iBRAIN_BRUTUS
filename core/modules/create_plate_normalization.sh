@@ -4,7 +4,7 @@
 
 ############################ 
 #  INCLUDE PARAMETER CHECK #
-. ./sub/parameter_check.sh #
+. ./core/modules/parameter_check.sh #
 ############################ 
 
 function main {
@@ -32,7 +32,7 @@ function main {
                          
             if [ $currentjobcount -lt 60 ]; then
             	
-                echo "     <status action=\"plate-normalization\">submitting"
+                echo "     <status action=\"${MODULENAME}\">submitting"
                 #echo "      <message>"
                 #echo "    PROCESSING: submitting plate normalization calculations"
                 #echo "      </message>"
@@ -44,7 +44,7 @@ function main {
 
             else
             
-                echo "     <status action=\"plate-normalization\">waiting"
+                echo "     <status action=\"${MODULENAME}\">waiting"
                 #echo "      <message>"
                 #echo "    WAITING: not yet submitting plate normalization calculations, too many jobs of this kind present"
                 #echo "      </message>"
@@ -56,7 +56,7 @@ function main {
         ### PLATE NORMALIZATION HAS BEEN SUBMITTED BUT DID NOT PRODUCE OUTPUT FILES YET
         elif [ $NORMALIZATIONCOUNT -lt 1 ] && [ -e $PROJECTDIR/MeasurementsMeanStd.submitted ] && [ $NORMALIZATIONRESULTCOUNT -lt 1 ]; then
             
-            echo "     <status action=\"plate-normalization\">waiting"
+            echo "     <status action=\"${MODULENAME}\">waiting"
             #echo "      <message>"
             #echo "    PROCESSING: waiting for plate normalization to finish"
             #echo "      </message>"
@@ -73,7 +73,7 @@ function main {
         ### PLATE NORMALIZATION HAS BEEN COMPLETED BUT FAILED TO PRODUCE OUTPUT FILES
         elif [ $NORMALIZATIONCOUNT -lt 1 ] && [ -e $PROJECTDIR/MeasurementsMeanStd.submitted ] && [ $NORMALIZATIONRESULTCOUNT -gt 0 ]; then
             
-            echo "     <status action=\"plate-normalization\">failed"
+            echo "     <status action=\"${MODULENAME}\">failed"
             echo "      <warning>"
             echo "    ALERT: plate normalization FAILED"
             echo "      </warning>"
@@ -100,7 +100,7 @@ function main {
         elif [ $NORMALIZATIONCOUNT -gt 0 ]; then
             
             
-            echo "     <status action=\"plate-normalization\">completed"
+            echo "     <status action=\"${MODULENAME}\">completed"
             #echo "      <message>"
             #echo "    COMPLETED: plate normalization"
             #echo "      </message>"

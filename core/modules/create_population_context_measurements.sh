@@ -5,7 +5,7 @@
 
 ############################
 #  INCLUDE PARAMETER CHECK #
-. ./sub/parameter_check.sh #
+. ./core/modules/parameter_check.sh #
 ############################
 
 
@@ -23,7 +23,7 @@ function main {
 
 
         if [ ! -e $PROJECTDIR/GetLocalCellDensityPerWell_Auto.submitted ]; then
-                echo "     <status action=\"get-local-cell-density-per-well\">submitting"
+                echo "     <status action=\"${MODULENAME}\">submitting"
                 #echo "      <message>"
                 #echo "    PROCESSING: submitting plate normalization calculations"
                 #echo "      </message>"
@@ -47,7 +47,7 @@ M_PROG" 2> /dev/null
         ### PLATE NORMALIZATION HAS BEEN SUBMITTED BUT DID NOT PRODUCE OUTPUT FILES YET
         elif [ $LCDCOUNT -lt 1 ] && [ -e $PROJECTDIR/GetLocalCellDensityPerWell_Auto.submitted ] && [ $LCDRESULTCOUNT -lt 1 ]; then
             
-            echo "     <status action=\"get-local-cell-density-per-well\">waiting"
+            echo "     <status action=\"${MODULENAME}\">waiting"
             #echo "      <message>"
             #echo "    PROCESSING: waiting for plate normalization to finish"
             #echo "      </message>"
@@ -64,7 +64,7 @@ M_PROG" 2> /dev/null
         ### PLATE NORMALIZATION HAS BEEN COMPLETED BUT FAILED TO PRODUCE OUTPUT FILES
         elif [ $LCDCOUNT -lt 1 ] && [ -e $PROJECTDIR/GetLocalCellDensityPerWell_Auto.submitted ] && [ $LCDRESULTCOUNT -gt 0 ]; then
             
-            echo "     <status action=\"get-local-cell-density-per-well\">failed"
+            echo "     <status action=\"${MODULENAME}\">failed"
             echo "      <warning>"
             echo "    ALERT: local cell density measurement FAILED"
             echo "      </warning>"
@@ -78,7 +78,7 @@ M_PROG" 2> /dev/null
         ### IF PLATE NORMALIZATION FILE IS PRESENT, FLAG AS COMPLETED
         elif [ $LCDCOUNT -gt 0 ]; then
             
-            echo "     <status action=\"get-local-cell-density-per-well\">completed"
+            echo "     <status action=\"${MODULENAME}\">completed"
             if [ -e $POSTANALYSISDIR/getLocalCellDensityPerWell_auto.pdf ]; then
                 echo "     <file type=\"pdf\">$POSTANALYSISDIR/getLocalCellDensityPerWell_auto.pdf</file>"
                 echo "     <file type=\"pdf\">$POSTANALYSISDIR/getLocalCellDensityPerWell_auto_auto.pdf</file>"

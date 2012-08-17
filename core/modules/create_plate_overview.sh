@@ -4,7 +4,7 @@
 
 ############################
 #  INCLUDE PARAMETER CHECK #
-. ./sub/parameter_check.sh #
+. ./core/modules/parameter_check.sh #
 ############################
 
 
@@ -63,7 +63,7 @@ function main {
         
         if [ ! -e $PROJECTDIR/CreatePlateOverview.submitted ]; then
 
-            echo "     <status action=\"plate-overview-generation\">submitting"
+            echo "     <status action=\"${MODULENAME}\">submitting"
             echo "      <output>"
             if [ ! -d $POSTANALYSISDIR ]; then
                 mkdir -p $POSTANALYSISDIR
@@ -75,7 +75,7 @@ function main {
         ### CHECK createplateoverview HAS BEEN SUBMITTED BUT DID NOT PRODUCE OUTPUT FILES YET
         elif [ $PLATEBASICDATACOUNT -lt 1 ] && [ -e $PROJECTDIR/CreatePlateOverview.submitted ] && [ $PLATEOVERVIEWRESULTCOUNT -lt 1 ]; then
 
-            echo "     <status action=\"plate-overview-generation\">waiting"
+            echo "     <status action=\"${MODULENAME}\">waiting"
             #echo "      <message>"
             #echo "    PROCESSING: waiting for plate overview generation to finish"
             #echo "      </message>"
@@ -91,7 +91,7 @@ function main {
         ### CHECK createplateoverview HAS BEEN COMPLETED BUT FAILED TO PRODUCE OUTPUT FILES
         elif [ $PLATEBASICDATACOUNT -lt 1 ] && [ -e $PROJECTDIR/CreatePlateOverview.submitted ] && [ $PLATEOVERVIEWRESULTCOUNT -gt 0 ]; then
             
-            echo "     <status action=\"plate-overview-generation\">failed"
+            echo "     <status action=\"${MODULENAME}\">failed"
             echo "      <warning>"
             echo "    ALERT: plate overview generation FAILED"
             echo "      </warning>"
@@ -103,7 +103,7 @@ function main {
             
         elif [ $PLATEBASICDATACOUNT -gt 0 ]; then
             
-            echo "     <status action=\"plate-overview-generation\">completed"
+            echo "     <status action=\"${MODULENAME}\">completed"
             #echo "      <message>"
             #echo "    COMPLETED: plate overview generation"
             #echo "      </message>"

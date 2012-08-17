@@ -4,7 +4,7 @@
 
 ############################ 
 #  INCLUDE PARAMETER CHECK #
-. ./sub/parameter_check.sh #
+. ./core/modules/parameter_check.sh #
 ############################ 
 
 function main {
@@ -35,7 +35,7 @@ function main {
             # should we make some special XML structure for the SVM files? group them together all in the status[@action='bin-correction']/status[@action='bin-correction-file...']
             # note that in this case we group status-elements together in a parent status field!!!
 
-            echo "     <status action=\"bin-correction\">"
+            echo "     <status action=\"${MODULENAME}\">"
             echo "      <message>"
             echo "    $BINSETTINGSFILE Bin correction settings files found"
             echo "      </message>"

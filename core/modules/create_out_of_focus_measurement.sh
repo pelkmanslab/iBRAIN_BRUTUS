@@ -4,7 +4,7 @@
 
 ############################ 
 #  INCLUDE PARAMETER CHECK #
-. ./sub/parameter_check.sh #
+. ./core/modules/parameter_check.sh #
 ############################ 
        
 function main {
@@ -25,7 +25,7 @@ function main {
         
         if [ ! -e $PROJECTDIR/CheckOutOfFocus.submitted ] && [ $OUTOFFOCUSSETTINGFILECOUNT -gt 0 ]; then
              
-            echo "     <status action=\"outoffocus-scoring\">submitting"
+            echo "     <status action=\"${MODULENAME}\">submitting"
             #echo "      <message>"
             #echo "    PROCESSING: submitting outoffocus checking"
             #echo "      </message>"
@@ -38,7 +38,7 @@ function main {
         ### CHECK OUTOFFOCUS HAS BEEN SUBMITTED BUT DID NOT PRODUCE OUTPUT FILES YET
         elif [ $OUTOFFOCUSCOUNT -lt 1 ] && [ -e $PROJECTDIR/CheckOutOfFocus.submitted ] && [ $OUTOFFOCUSRESULTCOUNT -lt 1 ]; then
             
-            echo "     <status action=\"outoffocus-scoring\">waiting"
+            echo "     <status action=\"${MODULENAME}\">waiting"
             #echo "      <message>"
             #echo "    PROCESSING: waiting for outoffocus checking to finish"
             #echo "      </message>"
@@ -56,7 +56,7 @@ function main {
         ### CHECK OUTOFFOCUS HAS BEEN COMPLETED BUT FAILED TO PRODUCE OUTPUT FILES
         elif [ $OUTOFFOCUSCOUNT -lt 1 ] && [ -e $PROJECTDIR/CheckOutOfFocus.submitted ] && [ $OUTOFFOCUSRESULTCOUNT -gt 0 ]; then
             
-            echo "     <status action=\"outoffocus-scoring\">failed"
+            echo "     <status action=\"${MODULENAME}\">failed"
             echo "      <warning>"
             echo "    ALERT: checkoutoffocus FAILED"
             echo "      </warning>"
@@ -70,7 +70,7 @@ function main {
         ### IF OUTOFFOCUS FILE IS PRESENT, FLAG AS COMPLETED
         elif [ $OUTOFFOCUSCOUNT -gt 0 ]; then
             
-            echo "     <status action=\"outoffocus-scoring\">completed"
+            echo "     <status action=\"${MODULENAME}\">completed"
             #echo "      <message>"
             #echo "    COMPLETED: checkoutoffocus"
             #echo "      </message>"
@@ -80,7 +80,7 @@ function main {
             
         elif [ $OUTOFFOCUSSETTINGFILECOUNT -eq 0 ]; then
 
-            echo "     <status action=\"outoffocus-scoring\">skipping"
+            echo "     <status action=\"${MODULENAME}\">skipping"
             #echo "      <message>"
             #echo "    SKIPPING: checkoutoffocus"
             #echo "      </message>"
@@ -90,7 +90,7 @@ function main {
             
         else
 
-            echo "     <status action=\"outoffocus-scoring\">unknown"
+            echo "     <status action=\"${MODULENAME}\">unknown"
             echo "      <warning>"
             echo "    UNKNOWN STATUS: checkoutoffocus"
             echo "      </warning>"

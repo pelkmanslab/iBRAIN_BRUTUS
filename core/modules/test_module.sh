@@ -72,11 +72,6 @@ if [ $# -eq 1 ]; then
 
 . ${1}
 
-else
-
-# . ~/sub/illuminationcorrection.sh
-. ~/sub/pngconversion.sh
-
 fi
 
 
