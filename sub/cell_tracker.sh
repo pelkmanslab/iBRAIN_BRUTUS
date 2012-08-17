@@ -7,6 +7,8 @@
 . ./sub/parameter_check.sh #
 ############################ 
 
+function main {
+
         ###
         ### TRACKER
         ###
@@ -208,3 +210,11 @@ M_PROG"
             echo "     </status>"
                                 
 		fi # end of TRACKER
+
+}
+
+# run standardized bash-error handling of iBRAIN
+execute_ibrain_module
+
+# clear main module function
+unset -f main

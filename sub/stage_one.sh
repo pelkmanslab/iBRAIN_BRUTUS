@@ -7,6 +7,8 @@
 . ./sub/parameter_check.sh #
 ############################ 
 
+function main {
+
 ###################
 #### VARIABLES ####
 ###################
@@ -615,3 +617,10 @@ fi
             
         fi # if [ ! -e $PROJECTDIR/iBRAIN_Stage_1.completed ] && [ $COMPLETEFILECHECK -eq 0 ]; then
         
+}
+
+# run standardized bash-error handling of iBRAIN
+execute_ibrain_module
+
+# clear main module function
+unset -f main

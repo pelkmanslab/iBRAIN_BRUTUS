@@ -7,6 +7,8 @@
 . ./sub/parameter_check.sh #
 ############################ 
 
+function main {
+
         ###        
         ### SVM CLASSIFICATION
         ###
@@ -22,6 +24,7 @@
         	fi
 
 
+        NORMALIZATIONCOUNT=$(find $BATCHDIR -maxdepth 1 -type f -name "Measurements_Mean_Std.mat" | wc -l)
 
 
         ### NOTE THAT SVMSETTINGSFILE IS THE SUM OF CLASSIFICATION FILES IN THE INCLUDEDPATH AND IN THE PROJECTDIR!
@@ -197,3 +200,11 @@ M_PROG"
             echo "     </status>"
                                 
 		fi # end of svms
+
+}
+
+# run standardized bash-error handling of iBRAIN
+execute_ibrain_module
+
+# clear main module function
+unset -f main

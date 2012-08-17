@@ -2,10 +2,14 @@
 #
 # create_celltype_overview.sh
 
-############################ 
+############################
 #  INCLUDE PARAMETER CHECK #
 . ./sub/parameter_check.sh #
-############################ 
+############################
+
+function main {
+
+PLATEBASICDATACOUNT=$(find $BATCHDIR -maxdepth 1 -type f -name "BASICDATA_*.mat" | wc -l)
 
         ###
         ### CREATE CELLTYPE OVERVIEW
@@ -210,3 +214,11 @@ M_PROG"
 	                            
 	        fi
 		fi
+
+}
+
+# run standardized bash-error handling of iBRAIN
+execute_ibrain_module
+
+# clear main module function
+unset -f main

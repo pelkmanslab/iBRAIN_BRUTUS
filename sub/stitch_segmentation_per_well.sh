@@ -2,10 +2,14 @@
 #
 # stitch_segmentation_per_well.sh
 
-############################ 
+
+############################
 #  INCLUDE PARAMETER CHECK #
 . ./sub/parameter_check.sh #
-############################ 
+############################
+
+
+function main {
 
         ###
         ### SEGMENTATION STITCHING PER WELL
@@ -91,3 +95,10 @@
         
 		fi #end of check if there's a segmentation directory present
         
+}
+
+# standardized bash-error handling of iBRAIN
+execute_ibrain_module
+
+# clear main module function
+unset -f main

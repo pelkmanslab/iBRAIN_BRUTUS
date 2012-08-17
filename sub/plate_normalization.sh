@@ -6,6 +6,8 @@
 #  INCLUDE PARAMETER CHECK #
 . ./sub/parameter_check.sh #
 ############################ 
+
+function main {
         
         ###
         ### PLATE NORMALIZATION
@@ -107,4 +109,11 @@
             
         fi
         
-        
+       
+}
+
+# run standardized bash-error handling of iBRAIN
+execute_ibrain_module
+
+# clear main module function
+unset -f main 

@@ -1,4 +1,49 @@
 #! /bin/bash	
+#
+# iBRAIN_project.sh
+
+
+# execute_ibrain_module is the standard function called at the end of iBRAIN modules that have a "main" function. 
+# It does basic BASH error handling & reporting, and imporves robustness to crashes from individual modules by 
+# escaping their XML output.
+function execute_ibrain_module {
+
+	echo "<!-- executing module function"
+	ERRORLOG=$(mktemp)
+	MODULEOUT=$( main 2> $ERRORLOG)
+	MODULEEXITCODE=$?
+	MODULERR=$(cat $ERRORLOG )
+	rm $ERRORLOG
+	echo "end of module function -->"
+        
+        # We can ignore certain errors,  such as "MATLAB job.", which our cluster throws upon submission of a matlab job :)
+        MODULERR=$(echo $MODULERR | sed -e"s/MATLAB job.//g")
+
+	if [ "$MODULERR" ]; then
+	    echo "     <status action=\"${MODULENAME}\">failed"
+	    echo "      <warning>"
+	    echo "    iBRAIN module \"${MODULEPATH}\" had a bash error. The error message is as follows: \"${MODULERR}\""
+	    echo "      </warning>"
+	    echo "      <output>"
+	# print output while escaping reserved xml characters
+	    echo $(echo ${MODULEOUT} | sed -e 's~&~\&amp;~g' -e 's~<~\&lt;~g' -e  's~>~\&gt;~g' -e 's~--~\-~g')
+	    echo "      </output>"
+	    echo "     </status>"
+
+	else
+
+	echo "${MODULEOUT}"
+
+	fi
+
+}
+
+
+
+
+
+
+
 echo "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>"
 echo "<?xml-stylesheet type=\"text/xsl\" href=\"../../project.xsl\"?>"
 
@@ -171,7 +216,6 @@ if [ "$INCLUDEDPATH" ] && [ -d $INCLUDEDPATH ]; then
 	# - datafusion & check & cleanup
         ##################################
         
-
 
         #####################################################################################
         ### START MAIN LOGICS: STAGE 2, i.e. depends on successfull CellProfiler analysis ###

@@ -2,10 +2,14 @@
 #
 # create_jpgs.sh
 
-############################ 
+############################
 #  INCLUDE PARAMETER CHECK #
 . ./sub/parameter_check.sh #
-############################ 
+############################
+
+
+function main {
+
 
         # Report any plate overview files for linking on the website
         echo "     <files>"
@@ -153,4 +157,11 @@ M_PROG"
             echo "     </status>"                    
             
         fi
-        
+      
+}
+
+# run standardized bash-error handling of iBRAIN
+execute_ibrain_module
+
+# clear main module function
+unset -f main

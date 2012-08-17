@@ -7,6 +7,8 @@
 . ./sub/parameter_check.sh #
 ############################
 
+function main {
+
 ###################
 #### VARIABLES ####
 ###################
@@ -109,3 +111,11 @@
             echo "     <status action=\"check-image-set\">completed</status>"
        
 fi
+
+} 
+
+# run standardized bash-error handling of iBRAIN
+execute_ibrain_module
+
+# clear main module function
+unset -f main

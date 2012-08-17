@@ -7,6 +7,8 @@
 . ./sub/parameter_check.sh #
 ############################ 
 
+function main {
+
         ###
         ### BIN CORRECTION
         ###
@@ -202,3 +204,11 @@ M_PROG"
             echo "     </status>"
                                 
 		fi # end of bins
+
+}
+
+# run standardized bash-error handling of iBRAIN
+execute_ibrain_module
+
+# clear main module function
+unset -f main

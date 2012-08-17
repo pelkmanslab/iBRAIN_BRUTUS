@@ -2,15 +2,16 @@
 #
 # illuminationcorrection.sh
 
-############################ 
+############################
 #  INCLUDE PARAMETER CHECK #
 . ./sub/parameter_check.sh #
-############################ 
+############################
 
-function 
+
+function main {
+
 
 ### VARIABLE CHECKING 
-
 
             # ILLUMINATION CORRECTION MEASUREMENTS
             # CHECK HOW MANY ILLUMINATION CORRECTION SETTINGS FILES ARE PRESENT. IF THIS IS BIGGER THAN 0,
@@ -223,4 +224,10 @@ fi
 				#### END OF ILLUMINATION CORRECTION BLOCK ###
 				#############################################
 		
-	
+}
+
+# run standardized bash-error handling of iBRAIN
+execute_ibrain_module
+
+# clear main module function
+unset -f main

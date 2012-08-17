@@ -1,4 +1,6 @@
 #! /bin/bash	
+#
+# parameter_test.sh
 
 # This document should be included at the beginning of each sub-module, and checks if strictly essential parameters are set. 
 
@@ -11,6 +13,10 @@
 # POSTANALYSISDIR
 # JPGDIR
 # JOBSFILE
+
+MODULEPATH=${BASH_SOURCE[1]}
+MODULENAME=$(basename ${BASH_SOURCE[1]} .sh)
+echo "<!-- current module including parameter_test.sh = ${MODULENAME} -->"
 
 # Here we could have a global test or debug variable, that bypasses these requirement-checks if we are in some sort of DEBUG or TEST mode.
 ${INCLUDEDPATH:?"Need to set INCLUDEDPATH non-empty; INCLUDEDPATH is the path to the current project directory"} &> /dev/null 

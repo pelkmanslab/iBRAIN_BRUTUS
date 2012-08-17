@@ -2,10 +2,10 @@
 #
 # fuse_basic_data.sh
 
-############################ 
-#  INCLUDE PARAMETER CHECK #
-#. ./sub/parameter_check.sh #
-############################ 
+
+# Fuse_basic_data is not a standard module. It is run outside of the plate-loop, and therefore should not check if all plate-wise variables are properly set in parameter_check.sh
+
+function main {
 
     ##################################
     ### ADD LINKS TO ALL THE PROJECT FILES THAT MAY BE OF INTEREST FOR USERS/BROWSING
@@ -123,3 +123,11 @@ M_PROG"
             #fi                 
         fi
     fi
+
+}
+
+# run standardized bash-error handling of iBRAIN
+execute_ibrain_module
+
+# clear main module function
+unset -f main

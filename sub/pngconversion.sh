@@ -2,9 +2,17 @@
 #
 # pngconversion.sh
 
-############################ 
+############################
 #  INCLUDE PARAMETER CHECK #
 . ./sub/parameter_check.sh #
+############################
+
+
+function main {
+
+############################ 
+#  INCLUDE PARAMETER CHECK #
+# . ./sub/parameter_check.sh #
 ############################ 
 
 
@@ -266,3 +274,11 @@ else
                         echo "     <status action=\"convert-all-tiff-2-png\">completed</status>"
 	           
 fi # check if png conversion was completed 
+
+}
+
+# run standardized bash-error handling of iBRAIN
+execute_ibrain_module
+
+# clear main module function
+unset -f main

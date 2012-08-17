@@ -2,10 +2,14 @@
 #
 # create_plate_overview.sh
 
-############################ 
+############################
 #  INCLUDE PARAMETER CHECK #
 . ./sub/parameter_check.sh #
-############################ 
+############################
+
+
+function main {
+
 
         ###
         ### CREATE PLATE OVERVIEW
@@ -57,14 +61,14 @@
         # removed:
         #  && ( [ $INFECTIONCOUNT -gt 1 ] || [ $INFECTIONSETTINGFILECOUNT -eq 0 ] || [ $BOOLINFECTIONSCORINGFAILED -eq 1 ] )
         
-        if ( [ $OUTOFFOCUSCOUNT -gt 0 ] || [ $OUTOFFOCUSSETTINGFILECOUNT -eq 0 ] ) && [ ! -e $PROJECTDIR/CreatePlateOverview.submitted ]; then
+        if [ ! -e $PROJECTDIR/CreatePlateOverview.submitted ]; then
 
             echo "     <status action=\"plate-overview-generation\">submitting"
             echo "      <output>"
             if [ ! -d $POSTANALYSISDIR ]; then
                 mkdir -p $POSTANALYSISDIR
             fi
-            ~/iBRAIN/createplateoverview.sh $BATCHDIR 
+            ~/iBRAIN/createplateoverview.sh $BATCHDIR 2> /dev/null
             echo "      </output>"
             echo "     </status>"
 
@@ -105,5 +109,12 @@
             #echo "      </message>"
             echo "     </status>"
             
-        fi # end of plate overview
-        
+        fi # end of plate overview 
+
+}
+
+# run standardized bash-error handling of iBRAIN
+execute_ibrain_module
+
+# clear main module function
+unset -f main

@@ -2,10 +2,14 @@
 #
 # get_populationcontext.sh
 
-############################ 
+
+############################
 #  INCLUDE PARAMETER CHECK #
 . ./sub/parameter_check.sh #
-############################ 
+############################
+
+
+function main {
 
         ###
         ### GET LOCAL CELL DENSITY PER WELL AUTO
@@ -29,12 +33,12 @@
 bsub -W 34:00 -o "${BATCHDIR}$LCDRESULTFILE" "matlab -singleCompThread -nodisplay << M_PROG
 getLocalCellDensityPerWell_auto('${BATCHDIR}');
 Detect_BorderCells('${BATCHDIR}');
-M_PROG"
+M_PROG" 2> /dev/null
                 	else
 bsub -W 8:00 -o "${BATCHDIR}$LCDRESULTFILE" "matlab -singleCompThread -nodisplay << M_PROG
 getLocalCellDensityPerWell_auto('${BATCHDIR}');
 Detect_BorderCells('${BATCHDIR}');
-M_PROG"
+M_PROG" 2> /dev/null
 		        fi
                 touch $PROJECTDIR/GetLocalCellDensityPerWell_Auto.submitted
                 echo "      </output>"                    
@@ -85,4 +89,10 @@ M_PROG"
         
         # end of local cell density measurement.
         
- 
+}
+
+# run standardized bash-error handling of iBRAIN
+execute_ibrain_module
+
+# clear main module function
+unset -f main
