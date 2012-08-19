@@ -30,7 +30,8 @@ if [ $COMPLETEDPNGCONVERSIONCHECK -eq 0 ]; then
 	            ###
 	            ### CONVERT ALL TIFF TO PNG
 	            ###
-	            
+
+                    TIFFDIRLASTMODIFIED=$(find $PROJECTDIR -maxdepth 1 -type d -mmin +30 -name "TIFF" | wc -l)	            
 	            TIFFCOUNT=$(find $TIFFDIR -maxdepth 1 -type f -iname "*.tif" | wc -l)
 	            PNGCOUNT=$(find $TIFFDIR -maxdepth 1 -type f -iname "*.png" | wc -l)
 	
@@ -38,7 +39,7 @@ if [ $COMPLETEDPNGCONVERSIONCHECK -eq 0 ]; then
 	            #TIFF2PNGCONVERSIONJOBS=$(grep "convert_all_tiff2png" $JOBSFILE -c)	 
 	            SEARCHSTRING="convert_all_tiff2png(${TIFFDIR})"
 	            TIFF2PNGCONVERSIONJOBSPERPLATE=$(($(grep $SEARCHSTRING $JOBSFILE -c) + 0))
-				TIFF2PNGCONVERSIONJOBS=$(~/iBRAIN/countjobs.sh "convert_all_tiff2png")
+		    TIFF2PNGCONVERSIONJOBS=$(~/iBRAIN/countjobs.sh "convert_all_tiff2png")
 				
 	            ### IF ALL EXPECTED MEASUREMENTS ARE PRESENT SUBMIT MEASUREMENTS_MEAN_STD
 	            
