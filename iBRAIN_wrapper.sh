@@ -220,13 +220,13 @@ for INCLUDEDPATH in $(sed -e 's/[[:cntrl:]]//g' $INCLUDEDPATHSFILE); do
 	        ERRORCOUNT=$(grep "<warning>" "$LATESTPROJECTXMLOUTPUT" -c)
 	        PLATECOUNT=$(grep "<plate>" "$LATESTPROJECTXMLOUTPUT" -c)
 
-        # [NEW BS THOUGHT]: To prevent endless resubmission of checking on iBRAIN projects that have errors, we can see if there are more than 4 project.xml files, if the oldest and newest were checked within 1h of each other, and if all of them reported 0 jobs running. If so, do not check this project again...
-        # The following line will be empty if all project.xml reported no jobs running anywhere.
-        if [ $(ls $PROJECTXMLDIR/*_project.xml 2>/dev/null | wc -l) -gt 4 ] && [ $(find $PROJECTXMLDIR -maxdepth 1 -type f -mmin +90 -name "*_project.xml" | wc -l) -eq 0 ]; then 
-            if [ $(grep "<job_count_total>" $PROJECTXMLDIR/*_project.xml | grep -v "<job_count_total>0</job_count_total>" -c) -eq 0 ]; then
-                BOOLCHECKINGSEEMSFUTILE=1
+            # [NEW BS THOUGHT]: To prevent endless resubmission of checking on iBRAIN projects that have errors, we can see if there are more than 4 project.xml files, if the oldest and newest were checked within 1h of each other, and if all of them reported 0 jobs running. If so, do not check this project again...
+            # The following line will be empty if all project.xml reported no jobs running anywhere.
+            if [ $(ls $PROJECTXMLDIR/*_project.xml 2>/dev/null | wc -l) -gt 4 ] && [ $(find $PROJECTXMLDIR -maxdepth 1 -type f -mmin +90 -name "*_project.xml" | wc -l) -eq 0 ]; then
+                if [ $(grep "<job_count_total>" $PROJECTXMLDIR/*_project.xml | grep -v "<job_count_total>0</job_count_total>" -c) -eq 0 ]; then
+                    BOOLCHECKINGSEEMSFUTILE=1
+                fi
             fi
-        fi
 
         else
            ERRORCOUNT=0;
@@ -299,7 +299,7 @@ for INCLUDEDPATH in $(sed -e 's/[[:cntrl:]]//g' $INCLUDEDPATHSFILE); do
 								echo "$PLATEDIR (or TIFF) is newer than $(basename $LATESTPROJECTXMLOUTPUT)"
 								break  # We have found a data-change, so skip rest of loop.
 						    elif [ -d "$PLATEDIR/BATCH" ] && [ "${PLATEDIR}/BATCH" -nt "$LATESTPROJECTXMLOUTPUT" ]; then
-				#echo "checking $PLATEDIR/BATCH"
+				                #echo "checking $PLATEDIR/BATCH"
                                 BOOLDATACHANGE=1
                                 echo "$PLATEDIR/BATCH is newer than $(basename $LATESTPROJECTXMLOUTPUT)"
                                 break  # We have found a data-change, so skip rest of loop.
@@ -349,11 +349,11 @@ for INCLUDEDPATH in $(sed -e 's/[[:cntrl:]]//g' $INCLUDEDPATHSFILE); do
 		            echo "iBRAIN (and components) has been updated (run)"
 		            echo "</update_info>"
 		            BOOLRUN=1
-                        elif [ $BOOLCHECKINGSEEMSFUTILE -eq 1 ]; then
-                            echo "<update_info update=\"no\" reason=\"five_last_attempts_were_futile\">"
-                            echo "All five last checks of this projects did not result in any jobs being submitted. Checking is therefore deemed futile."
-                            echo "</update_info>"
-                            BOOLRUN=0
+                elif [ $BOOLCHECKINGSEEMSFUTILE -eq 1 ]; then
+                    echo "<update_info update=\"no\" reason=\"five_last_attempts_were_futile\">"
+                    echo "All five last checks of this projects did not result in any jobs being submitted. Checking is therefore deemed futile."
+                    echo "</update_info>"
+                    BOOLRUN=0
 		        elif [ $CURRENTJOBCOUNT -lt 200 ] && [ $CURRENTJOBCOUNT -gt 0 ] || ([ "$LATESTPROJECTXMLOUTPUT" ] && [ "$PREVIOUSJOBCOUNTMATCHES" ]); then 
 		            echo "<update_info update=\"yes\" reason=\"expecting_new_jobs\">"
 		            echo "Previous check indicated jobs present, but $INCLUDEDPATH is older than $LATESTPROJECTXMLOUTPUT (run)"
@@ -384,9 +384,9 @@ for INCLUDEDPATH in $(sed -e 's/[[:cntrl:]]//g' $INCLUDEDPATHSFILE); do
 	            BOOLRUN=0
 	    	fi
 		fi
-        
-                # Do a quick cleanup of old project xml files for each project.
-                echo "<!-- CLEANING UP OLDER PROJECT_XML FILES: MAXIMUM NUMBER ALLOWED IS 5"
+
+        # Do a quick cleanup of old project xml files for each project.
+        echo "<!-- CLEANING UP OLDER PROJECT_XML FILES: MAXIMUM NUMBER ALLOWED IS 5"
 		counter=0
 		deletedcounter=0
 		for projectxmlfilename in $(ls -r $PROJECTXMLDIR/*_project.xml 2>/dev/null); do
@@ -452,7 +452,7 @@ xsltproc -o $NEWPROJECTHTMLOUTPUT $NEWPROJECTXMLOUTPUT;
     else # if [ -d $INCLUDEDPATH ]; then
 
         echo "   <warning type=\"InvalidPath\">$INCLUDEDPATH DOES NOT EXIST</warning>"
-    
+
     fi
     
     echo "  </project>"
@@ -474,19 +474,8 @@ echo "-->"
 
 # let's keep some statistics of job usage
 echo "<!-- storing job stats for overview plotting"
-#if [ -e $JOBCOUNTFILE ]; then
-    # if file exists, assume header is there and just append current numbers
-     echo "$(date +"%y%m%d %H:%M:%S") - $(busers 2>/dev/null | tail -n 1 )" >> $JOBCOUNTFILE
-#else
-    # if file does not exist, write all data including header to file
-#    echo "$(date +"%y%m%d %H:%M:%S") - $(busers 2>/dev/null)" > $JOBCOUNTFILE    
-#fi
-echo "-->" 
-
-## let's have a check to see if any job exceeds the maximum thread count of 8... 
-#echo "<!-- running iBRAIN/check_thread_count.sh"
-#~/iBRAIN/check_thread_counts.sh
-#echo "-->"
+echo "$(date +"%y%m%d %H:%M:%S") - $(busers 2>/dev/null | tail -n 1 )" >> $JOBCOUNTFILE
+echo "-->"
 
 # Close iBRAIN Log xml file element    
 echo "</ibrain_log>"

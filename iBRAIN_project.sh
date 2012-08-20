@@ -15,37 +15,35 @@ function execute_ibrain_module {
 	MODULERR=$(cat $ERRORLOG )
 	rm $ERRORLOG
 	echo "end of module function -->"
-        
-        # We can ignore certain errors,  such as "MATLAB job.", which our cluster throws upon submission of a matlab job :)
-        MODULERR=$(echo $MODULERR | sed -e "s/MATLAB job.//g")
-        MODULERR=$(echo $MODULERR | sed -e "s/Generic job.//g")
-        MODULERR=$(echo $MODULERR | sed -e "s/ //g")
 
-        # We can check if despite the error the module still produced valid xml. If so, just show the module xml, otherwise, revert to error-message
-        MODULEXMLVALIDATION=$(echo $MODULEOUT | xmllint --noout - 2>&1)
+    # We can ignore certain errors,  such as "MATLAB job.", which our cluster throws upon submission of a matlab job :)
+    MODULERR=$(echo $MODULERR | sed -e "s/MATLAB job.//g")
+    MODULERR=$(echo $MODULERR | sed -e "s/Generic job.//g")
+    MODULERR=$(echo $MODULERR | sed -e "s/ //g")
 
 	if [ "$MODULERR" ]; then
-            if [ "$MODULEXMLVALIDATION" ]; then
-	        echo "     <status action=\"${MODULENAME}\">failed"
-	        echo "      <warning>"
-	        echo "    iBRAIN module \"${MODULEPATH}\" had a bash error that resulted in invalid XML. The error message is as follows: \"${MODULERR}\""
-	        echo "      </warning>"
-	        echo "      <output>"
-	        # print output while escaping reserved xml characters
-	        echo $(echo ${MODULEOUT} | sed -e 's~&~\&amp;~g' -e 's~<~\&lt;~g' -e  's~>~\&gt;~g' -e 's~--~\-~g')
-	        echo "      </output>"
-	        echo "     </status>"
-            else
-                # As the xml was still valid, we will just show that and ignore the error. Error does get logged to errorlog.xml though.
-                echo "${MODULEOUT}"
-            fi
-            # Append result file link and description to some log file
-            echo "<MODULEFILE>$MODULEPATH</MODULEFILE><ERRORDESCRIPTION>$MODULERR</ERRORDESCRIPTION><ERRORTIME>$(date +'%Y%m%d%H%M')</ERRORTIME><MODULEOUT>$(echo ${MODULEOUT} | sed -e 's~&~\&amp;~g' -e 's~<~\&lt;~g' -e  's~>~\&gt;~g' -e 's~--~\-~g')</MODULEOUT>" >> ~/2NAS/Data/Code/iBRAIN/database/errorlog.xml
+        # We can check if despite the error the module still produced valid xml. If so, just show the module xml, otherwise, revert to error-message
+        MODULEXMLVALIDATION=$(echo $MODULEOUT | xmllint --noout - 2>&1)
+        if [ "$MODULEXMLVALIDATION" ]; then
+            echo "     <status action=\"${MODULENAME}\">failed"
+            echo "      <warning>"
+            echo "    iBRAIN module \"${MODULEPATH}\" had a bash error that resulted in invalid XML. The error message is as follows: \"${MODULERR}\""
+            echo "      </warning>"
+            echo "      <output>"
+            # print output while escaping reserved xml characters
+            echo $(echo ${MODULEOUT} | sed -e 's~&~\&amp;~g' -e 's~<~\&lt;~g' -e  's~>~\&gt;~g' -e 's~--~\-~g')
+            echo "      </output>"
+            echo "     </status>"
+        else
+            # As the xml was still valid, we will just show that and ignore the error. Error does get logged to errorlog.xml though.
+            echo "${MODULEOUT}"
+        fi
+        # Append result file link and description to some log file
+        echo "<MODULEFILE>$MODULEPATH</MODULEFILE><ERRORDESCRIPTION>$MODULERR</ERRORDESCRIPTION><ERRORTIME>$(date +'%Y%m%d%H%M')</ERRORTIME><MODULEOUT>$(echo ${MODULEOUT} | sed -e 's~&~\&amp;~g' -e 's~<~\&lt;~g' -e  's~>~\&gt;~g' -e 's~--~\-~g')</MODULEOUT>" >> ~/2NAS/Data/Code/iBRAIN/database/errorlog.xml
 	else
 	    echo "${MODULEOUT}"
 	fi
 }
-
 
 
 
@@ -153,23 +151,23 @@ if [ "$INCLUDEDPATH" ] && [ -d $INCLUDEDPATH ]; then
         
         ###############################################################
         ### CHECK IF ALL CRUCIAL DIRECTORIES ARE WRITABLE BY IBRAIN ###
-            if ([ -d $PROJECTDIR ] && [ ! -w $PROJECTDIR ]) || ([ -d $TIFFDIR ] && [ ! -w $TIFFDIR ]) || ([ -d $BATCHDIR ] && [ ! -w $BATCHDIR ]); then
-            	echo "     <status action=\"iBRAIN\">paused"        
-                echo "      <message>"
-                if [ -d $PROJECTDIR ] && [ ! -w $PROJECTDIR ]; then
-		    echo "    Paused because the $(basename $PROJECTDIR) directory is not writable by iBRAIN."
-                fi                    
-                if [ -d $TIFFDIR ] && [ ! -w $TIFFDIR ]; then
-                    echo "    Paused because the TIFF directory is not writable by iBRAIN."
-                fi
-                if [ -d $BATCHDIR ] && [ ! -w $BATCHDIR ]; then
-                    echo "    Paused because the BATCH directory is not writable by iBRAIN."
-                fi
-                echo "      </message>"
-                echo "       </status>"
-                echo "      </plate>"            
-                continue
+        if ([ -d $PROJECTDIR ] && [ ! -w $PROJECTDIR ]) || ([ -d $TIFFDIR ] && [ ! -w $TIFFDIR ]) || ([ -d $BATCHDIR ] && [ ! -w $BATCHDIR ]); then
+            echo "     <status action=\"iBRAIN\">paused"
+            echo "      <message>"
+            if [ -d $PROJECTDIR ] && [ ! -w $PROJECTDIR ]; then
+        echo "    Paused because the $(basename $PROJECTDIR) directory is not writable by iBRAIN."
             fi
+            if [ -d $TIFFDIR ] && [ ! -w $TIFFDIR ]; then
+                echo "    Paused because the TIFF directory is not writable by iBRAIN."
+            fi
+            if [ -d $BATCHDIR ] && [ ! -w $BATCHDIR ]; then
+                echo "    Paused because the BATCH directory is not writable by iBRAIN."
+            fi
+            echo "      </message>"
+            echo "       </status>"
+            echo "      </plate>"
+            continue
+        fi
         ###############################################################        
 
         # let's just create the batch directory, we need this in any case, and I've seen some cases where iBRAIN was behaving strangely because this directory was missing...
@@ -210,16 +208,15 @@ if [ "$INCLUDEDPATH" ] && [ -d $INCLUDEDPATH ]; then
             . ./core/modules/create_jpgs.sh
         fi
 
-
         ##################################
         ### START MAIN LOGICS: STAGE 1 ###
         if [ -e ${BATCHDIR}/ConvertAllTiff2Png.complete ] && [ -e ${BATCHDIR}/illuminationcorrection.complete ]; then
             . ./core/modules/stage_one.sh
         fi
         # includes the following steps: 
-	# - PreCluster
-	# - cpcluster
-	# - datafusion & check & cleanup
+        # - PreCluster
+        # - cpcluster
+        # - datafusion & check & cleanup
         ##################################
         
 

@@ -6,7 +6,6 @@
 
 MODULEPATH=${BASH_SOURCE}
 MODULENAME=$(basename ${BASH_SOURCE} .sh)
-echo "<!-- current module including parameter_test.sh = ${MODULENAME} -->"
 
 function main {
 
@@ -46,12 +45,12 @@ function main {
                 NEWERBASICDATAFILECOUNT=$(find $BATCHDIR -type f -name "BASICDATA_*.mat" -o -name "Measurements_Nuclei_CellType_Overview.mat" | wc -l)
             fi
         fi
+
         if [ $NEWERBASICDATAFILECOUNT -gt 0 ]; then
            FUSEBASICDATAFLAG=1
-        fi                    
+        fi
+
      done            
-
-
 
     #######################################################
     ### SUBMIT FUSE_BASIC_DATA IF FUSEBASICDATAFLAG > 0 ###
@@ -115,15 +114,6 @@ M_PROG"
                 echo "     </status>"
                 
             fi
-        #else
-        #
-            #if [ -e $INCLUDEDPATH/FuseBasicData.submitted ]; then
-            #    echo "     <status action=\"fuse-basic-data\">resetting"
-            #    echo "      <output>"                    
-            #    rm $INCLUDEDPATH/FuseBasicData.submitted
-            #    echo "      </output>"                    
-            #    echo "     </status>"                
-            #fi                 
         fi
     fi
 
