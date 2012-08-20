@@ -215,9 +215,19 @@ for INCLUDEDPATH in $(sed -e 's/[[:cntrl:]]//g' $INCLUDEDPATHSFILE); do
             LATESTPROJECTHTMLOUTPUT=""
         fi
 
+        BOOLCHECKINGSEEMSFUTILE=0
         if [ "$LATESTPROJECTXMLOUTPUT" ] && [ -e "$LATESTPROJECTXMLOUTPUT" ]; then 
 	        ERRORCOUNT=$(grep "<warning>" "$LATESTPROJECTXMLOUTPUT" -c)
 	        PLATECOUNT=$(grep "<plate>" "$LATESTPROJECTXMLOUTPUT" -c)
+
+        # [NEW BS THOUGHT]: To prevent endless resubmission of checking on iBRAIN projects that have errors, we can see if there are more than 4 project.xml files, if the oldest and newest were checked within 1h of each other, and if all of them reported 0 jobs running. If so, do not check this project again...
+        # The following line will be empty if all project.xml reported no jobs running anywhere.
+        if [ $(ls $PROJECTXMLDIR/*_project.xml 2>/dev/null | wc -l) -gt 4 ] && [ $(find $PROJECTXMLDIR -maxdepth 1 -type f -mmin +90 -name "*_project.xml" | wc -l) -eq 0 ]; then 
+            if [ $(grep "<job_count_total>" $PROJECTXMLDIR/*_project.xml | grep -v "<job_count_total>0</job_count_total>" -c) -eq 0 ]; then
+                BOOLCHECKINGSEEMSFUTILE=1
+            fi
+        fi
+
         else
            ERRORCOUNT=0;
            PLATECOUNT=0;
@@ -324,7 +334,7 @@ for INCLUDEDPATH in $(sed -e 's/[[:cntrl:]]//g' $INCLUDEDPATHSFILE); do
 		            BOOLRUN=1
 		        elif [ "$PREVIOUSXMLVALIDATION" ]; then
 		            echo "<update_info update=\"yes\" reason=\"previous_xml_invalid\">"
-		            echo "The previous project_xml file was invalid(run)"
+		            echo "The previous project_xml file was invalid (run)"
 		            echo "</update_info>"
 		            BOOLRUN=1            
 		        elif [ $BOOLDATACHANGE -eq 1 ]; then
@@ -339,6 +349,11 @@ for INCLUDEDPATH in $(sed -e 's/[[:cntrl:]]//g' $INCLUDEDPATHSFILE); do
 		            echo "iBRAIN (and components) has been updated (run)"
 		            echo "</update_info>"
 		            BOOLRUN=1
+                        elif [ $BOOLCHECKINGSEEMSFUTILE -eq 1 ]; then
+                            echo "<update_info update=\"no\" reason=\"five_last_attempts_were_futile\">"
+                            echo "All five last checks of this projects did not result in any jobs being submitted. Checking is therefore deemed futile."
+                            echo "</update_info>"
+                            BOOLRUN=0
 		        elif [ $CURRENTJOBCOUNT -lt 200 ] && [ $CURRENTJOBCOUNT -gt 0 ] || ([ "$LATESTPROJECTXMLOUTPUT" ] && [ "$PREVIOUSJOBCOUNTMATCHES" ]); then 
 		            echo "<update_info update=\"yes\" reason=\"expecting_new_jobs\">"
 		            echo "Previous check indicated jobs present, but $INCLUDEDPATH is older than $LATESTPROJECTXMLOUTPUT (run)"
