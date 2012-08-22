@@ -8,12 +8,11 @@
 . ./core/modules/parameter_check.sh #
 ############################
 
-
 function main {
        
     echo "     <status action=\"${MODULENAME}\">skipping"
     echo "      <message>"
-    echo "    This is a dummy module that does not do anything."
+    echo "       This is a dummy module that does not do anything."
     echo "      </message>"
     echo "     </status>"                  
 }

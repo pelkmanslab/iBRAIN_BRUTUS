@@ -16,30 +16,27 @@
 # escaping their XML output.
 function execute_ibrain_module {
 
-        echo "<!-- executing module function"
-        ERRORLOG=$(mktemp)
-        MODULEOUT=$( main 2> $ERRORLOG)
-        MODULEEXITCODE=$?
-        MODULERR=$(cat $ERRORLOG )
-        rm $ERRORLOG
-        echo "end of module function -->"
+    echo "<!-- executing module function"
+    ERRORLOG=$(mktemp)
+    MODULEOUT=$( main 2> $ERRORLOG)
+    MODULEEXITCODE=$?
+    MODULERR=$(cat $ERRORLOG )
+    rm $ERRORLOG
+    echo "end of module function -->"
 
-        if [ "$MODULERR" ]; then
-            echo "     <status action=\"${MODULENAME}\">failed"
-            echo "      <warning>"
-            echo "    iBRAIN module \"${MODULEPATH}\" had a bash error. The error message is as follows: \"${MODULERR}\""
-            echo "      </warning>"
-            echo "      <output>"
+    if [ "$MODULERR" ]; then
+        echo "     <status action=\"${MODULENAME}\">failed"
+        echo "      <warning>"
+        echo "    iBRAIN module \"${MODULEPATH}\" had a bash error. The error message is as follows: \"${MODULERR}\""
+        echo "      </warning>"
+        echo "      <output>"
         # print output while escaping reserved xml characters
-            echo $(echo ${MODULEOUT} | sed -e 's~&~\&amp;~g' -e 's~<~\&lt;~g' -e  's~>~\&gt;~g' -e 's~--~\-~g')
-            echo "      </output>"
-            echo "     </status>"
-
-        else
-
+        echo $(echo ${MODULEOUT} | sed -e 's~&~\&amp;~g' -e 's~<~\&lt;~g' -e  's~>~\&gt;~g' -e 's~--~\-~g')
+        echo "      </output>"
+        echo "     </status>"
+    else
         echo "${MODULEOUT}"
-
-        fi
+    fi
 
 }
 
@@ -66,11 +63,15 @@ bjobs -w 1> ${JOBSFILE} 2> /dev/null
 PLATEJOBCOUNT=$(grep "${PROJECTDIR}" $JOBSFILE -c)
 
 
-# Run your module of choice, or from input
+# Source the module of choice, as given by first input
 
-if [ $# -eq 1 ]; then  
+if [ $# -eq 1 ] && [ -f $1 ] && [ "${1}" ]; then
 
 . ${1}
+
+else
+
+    echo "First input must be the path to the module to test..."
 
 fi
 
