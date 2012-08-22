@@ -7,13 +7,14 @@
 ### INCLUDE IBRAIN CONFIGURATION
 if [ ! "$IBRAIN_ROOT" ]; then 
     IBRAIN_ROOT=$(dirname `readlink -m $0`)
+    if [ -f $IBRAIN_ROOT/etc/config ]; then
+        . $IBRAIN_ROOT/etc/config
+    else
+        echo "Aborting $(basename $0) (missing configuration at $IBRAIN_ROOT/etc/config)"
+        exit 1
+    fi
 fi
-if [ -f $IBRAIN_ROOT/etc/config ]; then
-    . $IBRAIN_ROOT/etc/config
-else
-    echo "Aborting $(basename $0) (missing configuration at $IBRAIN_ROOT/etc/config)"
-    exit 1
-fi
+# Assume configuration is set by this point.
 
 
 #############################################

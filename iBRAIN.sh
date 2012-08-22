@@ -17,20 +17,24 @@
 #############################################
 ### INCLUDE IBRAIN CONFIGURATION
 if [ ! "$IBRAIN_ROOT" ]; then 
+    echo "!$IBRAIN_ROOT"
     IBRAIN_ROOT=$(dirname `readlink -m $0`)
+    if [ -f $IBRAIN_ROOT/etc/config ]; then
+        . $IBRAIN_ROOT/etc/config
+    else
+        echo "Aborting $(basename $0) (missing configuration at $IBRAIN_ROOT/etc/config)"
+        exit 1
+    fi
 fi
-if [ -f $IBRAIN_ROOT/etc/config ]; then
-    . $IBRAIN_ROOT/etc/config
-else
-    echo "Aborting $(basename $0) (missing configuration at $IBRAIN_ROOT/etc/config)"
-    exit 1
-fi
+# Assume configuration is set by this point.
+# TODO: implement and run configuration check function here. 
 
 
 #############################################
 ### CHECK IF IBRAIN IS ALREADY RUNNING. 
 ### ONLY START IF NO INSTANCES ARE PRESENT
-INSTANCES=$( ps -u $IBRAIN_USER | grep $(basename $0 .sh) -c )
+#INSTANCES=$( ps -u $IBRAIN_USER | grep $(basename $0 .sh) -c )
+INSTANCES=$( pidof $(basename $0) | wc -w )
 
 ### current instance will be 2 for some reason, so more than 2 will be other iBRAIN.sh instances
 ### this should not be XML since this will never be included in the log files.
