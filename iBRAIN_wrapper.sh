@@ -13,13 +13,16 @@
 
 #############################################
 ### INCLUDE IBRAIN CONFIGURATION
-IBRAIN_ROOT=$(dirname `readlink -m $0`)
+if [ ! "$IBRAIN_ROOT" ]; then 
+    IBRAIN_ROOT=$(dirname `readlink -m $0`)
+fi
 if [ -f $IBRAIN_ROOT/etc/config ]; then
     . $IBRAIN_ROOT/etc/config
 else
     echo "Aborting $(basename $0) (missing configuration at $IBRAIN_ROOT/etc/config)"
     exit 1
 fi
+
 
 #############################################
 ### CHECK IF IBRAIN IS ALREADY RUNNING. 
