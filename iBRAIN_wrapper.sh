@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 #
 # iBRAIN_wrapper.sh
 # 081009: udpate: split iBRAIN.sh (wrapper) and iBRAIN_project.sh, and store iBRAIN_project.sh output as project specific XML
@@ -158,7 +158,6 @@ if [ -e ~/logs/diskusage.txt ]; then
 fi
 ###
 
-
 ### PARSE ALL QUEUED JOBS FOR UNIQUE JOB NAMES/PROCESSES/ETC.
 echo "  <job_overview>"
 echo "   <running>"
@@ -301,6 +300,7 @@ for INCLUDEDPATH in $(sed -e 's/[[:cntrl:]]//g' $INCLUDEDPATHSFILE); do
 								echo "$PLATEDIR (or TIFF) is newer than $(basename $LATESTPROJECTXMLOUTPUT)"
 								break  # We have found a data-change, so skip rest of loop.
 						    elif [ -d "$PLATEDIR/BATCH" ] && [ "${PLATEDIR}/BATCH" -nt "$LATESTPROJECTXMLOUTPUT" ]; then
+				#echo "checking $PLATEDIR/BATCH"
                                 BOOLDATACHANGE=1
                                 echo "$PLATEDIR/BATCH is newer than $(basename $LATESTPROJECTXMLOUTPUT)"
                                 break  # We have found a data-change, so skip rest of loop.
@@ -345,7 +345,7 @@ for INCLUDEDPATH in $(sed -e 's/[[:cntrl:]]//g' $INCLUDEDPATHSFILE); do
 		            echo "$INCLUDEDPATH is newer than $LATESTPROJECTXMLOUTPUT, and there are fewer than 200 jobs present (run)"
 		            echo "</update_info>"
 		            BOOLRUN=1
-		        elif [ "./ibrain_wrapper.sh" -nt "$LATESTPROJECTXMLOUTPUT" ] || [ "./ibrain_project.sh" -nt "$LATESTPROJECTXMLOUTPUT" ] || [ "./iBRAIN" -nt "$LATESTPROJECTXMLOUTPUT" ] || [ "$MATLABCODEPATH" -nt "$LATESTPROJECTXMLOUTPUT" ]; then
+		        elif [ "./iBRAIN_wrapper.sh" -nt "$LATESTPROJECTXMLOUTPUT" ] || [ "./iBRAIN_project.sh" -nt "$LATESTPROJECTXMLOUTPUT" ] || [ "./iBRAIN" -nt "$LATESTPROJECTXMLOUTPUT" ] || [ "$MATLABCODEPATH" -nt "$LATESTPROJECTXMLOUTPUT" ] || [ "./sub" -nt "$LATESTPROJECTXMLOUTPUT" ]; then
 		            echo "<update_info update=\"yes\" reason=\"ibrain_update\">"
 		            echo "iBRAIN (and components) has been updated (run)"
 		            echo "</update_info>"
@@ -381,8 +381,8 @@ for INCLUDEDPATH in $(sed -e 's/[[:cntrl:]]//g' $INCLUDEDPATHSFILE); do
 	    	fi
 		fi
         
-        # Do a quick cleanup of old project xml files for each project.
-        echo "<!-- CLEANING UP OLDER PROJECT_XML FILES: MAXIMUM NUMBER ALLOWED IS 5"
+                # Do a quick cleanup of old project xml files for each project.
+                echo "<!-- CLEANING UP OLDER PROJECT_XML FILES: MAXIMUM NUMBER ALLOWED IS 5"
 		counter=0
 		deletedcounter=0
 		for projectxmlfilename in $(ls -r $PROJECTXMLDIR/*_project.xml 2>/dev/null); do
@@ -409,7 +409,7 @@ for INCLUDEDPATH in $(sed -e 's/[[:cntrl:]]//g' $INCLUDEDPATHSFILE); do
 	            	echo "<!-- submitting 8h (long) ibrain_project.sh on $INCLUDEDPATH"
 		        	# submit job: run ibrain_project. sed-transform the xml to be web-friendly. store output in new XML output file
 bsub -W 08:00 -oo $PROJECTXMLDIR/ibrain_project_sh_output.results "
-./ibrain_project.sh "$INCLUDEDPATH" "$PRECLUSTERBACKUPPATH" "$PROJECTXMLDIR" "$NEWPROJECTXMLOUTPUT" 2>&1 | ./iBRAIN/sedTransformLogWeb.sed > $NEWPROJECTXMLOUTPUT 2>&1;
+./iBRAIN_project.sh "$INCLUDEDPATH" "$PRECLUSTERBACKUPPATH" "$PROJECTXMLDIR" "$NEWPROJECTXMLOUTPUT" 2>&1 | ./iBRAIN/sedTransformLogWeb.sed > $NEWPROJECTXMLOUTPUT 2>&1;
 xsltproc -o $NEWPROJECTHTMLOUTPUT $NEWPROJECTXMLOUTPUT;
 "
                 	echo "-->"
@@ -417,7 +417,7 @@ xsltproc -o $NEWPROJECTHTMLOUTPUT $NEWPROJECTXMLOUTPUT;
 	            	echo "<!-- submitting 1h (short) ibrain_project.sh on $INCLUDEDPATH"
         			# submit job: run ibrain_project. sed-transform the xml to be web-friendly. store output in new XML output file
 bsub -W 01:00 -oo $PROJECTXMLDIR/ibrain_project_sh_output.results "
-./ibrain_project.sh "$INCLUDEDPATH" "$PRECLUSTERBACKUPPATH" "$PROJECTXMLDIR" "$NEWPROJECTXMLOUTPUT" 2>&1 | ./iBRAIN/sedTransformLogWeb.sed > $NEWPROJECTXMLOUTPUT 2>&1;
+./iBRAIN_project.sh "$INCLUDEDPATH" "$PRECLUSTERBACKUPPATH" "$PROJECTXMLDIR" "$NEWPROJECTXMLOUTPUT" 2>&1 | ./iBRAIN/sedTransformLogWeb.sed > $NEWPROJECTXMLOUTPUT 2>&1;
 xsltproc -o $NEWPROJECTHTMLOUTPUT $NEWPROJECTXMLOUTPUT;
 "
                 	echo "-->"	            

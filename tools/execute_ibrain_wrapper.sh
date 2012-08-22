@@ -6,7 +6,7 @@ LOGFILENAME="$(date +"%y%m%d%H%M%S")"_wrapper_brutus.xml
 LOGFILENAME_PC="$(date +"%y%m%d%H%M%S")"_wrapper_brutus_pc.xml
 
 # run iBRAIN and store results locally
-~/ibrain_wrapper.sh > ~/logs/$LOGFILENAME 2>&1
+~/iBRAIN_wrapper.sh > ~/logs/$LOGFILENAME 2>&1
 
 # check if iBRAIN actually ran, or if it was already running
 if [ $(cat ~/logs/$LOGFILENAME | grep "^Aborting:" | wc -l) -eq 0 ]; then
