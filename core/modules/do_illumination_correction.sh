@@ -212,7 +212,7 @@ M_PROG"
     fi # end of illumination correction
 
     # Report module is finished
-    if [ $COMPLETEDILLCORMEASUREMENTCHECK -eq 1 ]; then
+    if [ $COMPLETEDILLCORMEASUREMENTCHECK -eq 1 ] && [ ! -e ${BATCHDIR}/illuminationcorrection.complete ]; then
         touch ${BATCHDIR}/illuminationcorrection.complete
     fi
 
