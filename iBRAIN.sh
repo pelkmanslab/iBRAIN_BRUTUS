@@ -1,6 +1,9 @@
 #! /bin/bash
 #
-# iBRAIN_wrapper.sh
+# iBRAIN.sh
+# 
+# 120822: renamed into iBRAIN.sh
+#
 # 081009: udpate: split iBRAIN.sh (wrapper) and iBRAIN_project.sh, and store iBRAIN_project.sh output as project specific XML
 #   Preferably, we only store the per project output if the data has changed, so we must do a 'diff -b -i -B old.xml new.xml'
 #	to check for this, and only store differences. Note that we should therefore not include any now-dates etc. in the project.xml 
@@ -358,7 +361,7 @@ for INCLUDEDPATH in $(sed -e 's/[[:cntrl:]]//g' $INCLUDEDPATHSFILE); do
 		            echo "$INCLUDEDPATH is newer than $LATESTPROJECTXMLOUTPUT, and there are fewer than 200 jobs present (run)"
 		            echo "</update_info>"
 		            BOOLRUN=1
-		        elif [ "./iBRAIN_wrapper.sh" -nt "$LATESTPROJECTXMLOUTPUT" ] || [ "./iBRAIN_project.sh" -nt "$LATESTPROJECTXMLOUTPUT" ] || [ "./iBRAIN" -nt "$LATESTPROJECTXMLOUTPUT" ] || [ "$MATLABCODEPATH" -nt "$LATESTPROJECTXMLOUTPUT" ] || [ "./sub" -nt "$LATESTPROJECTXMLOUTPUT" ]; then
+		        elif [ "$IBRAIN_ROOT/iBRAIN.sh" -nt "$LATESTPROJECTXMLOUTPUT" ] || [ "$IBRAIN_ROOT/iBRAIN_project.sh" -nt "$LATESTPROJECTXMLOUTPUT" ] || [ "$IBRAIN_ROOT/core" -nt "$LATESTPROJECTXMLOUTPUT" ] || [ "$MATLABCODEPATH" -nt "$LATESTPROJECTXMLOUTPUT" ] || [ "$IBRAIN_ROOT/core/functions" -nt "$LATESTPROJECTXMLOUTPUT" ] || [ "$IBRAIN_ROOT/core/modules" -nt "$LATESTPROJECTXMLOUTPUT" ]; then
 		            echo "<update_info update=\"yes\" reason=\"ibrain_update\">"
 		            echo "iBRAIN (and components) has been updated (run)"
 		            echo "</update_info>"

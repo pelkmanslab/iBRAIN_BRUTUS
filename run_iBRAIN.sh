@@ -2,7 +2,9 @@
 
 #############################################
 ### INCLUDE IBRAIN CONFIGURATION
-IBRAIN_ROOT=$(dirname `readlink -m $0`)
+if [ ! "$IBRAIN_ROOT" ]; then 
+    IBRAIN_ROOT=$(dirname `readlink -m $0`)
+fi
 if [ -f $IBRAIN_ROOT/etc/config ]; then
     . $IBRAIN_ROOT/etc/config
 else
@@ -17,7 +19,8 @@ LOGFILENAME="$(date +"%y%m%d%H%M%S")"_wrapper_brutus.xml
 LOGFILENAME_PC="$(date +"%y%m%d%H%M%S")"_wrapper_brutus_pc.xml
 
 # run iBRAIN and store results locally
-$IBRAIN_ROOT/iBRAIN_wrapper.sh > $IBRAIN_LOGS_PATH/$LOGFILENAME 2>&1
+
+$IBRAIN_ROOT/iBRAIN.sh > $IBRAIN_LOG_PATH/$LOGFILENAME 2>&1
 
 # check if iBRAIN actually ran, 
 if [ ! -f $IBRAIN_LOGS_PATH/$LOGFILENAME ]; then
