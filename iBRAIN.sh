@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 #
 # iBRAIN.sh
 # 
@@ -16,6 +16,16 @@
 
 #############################################
 ### INCLUDE IBRAIN CONFIGURATION
+
+# Best case scenario if we stay inside ROOT (thus relative pathnames will work).
+if [ -d "$IBRAIN_ROOT" ]; then
+    cd $IBRAIN_ROOT
+else
+    echo "Aborting $(basename $0) ($IBRAIN_ROOT folder does not exists)"
+    exit 1
+fi
+
+# Find and include configuration.
 if [ ! "$IBRAIN_ROOT" ]; then 
     echo "!$IBRAIN_ROOT"
     IBRAIN_ROOT=$(dirname `readlink -m $0`)
@@ -59,9 +69,9 @@ echo "<ibrain_log>"
 
 ### GET OVERVIEW OF JOBS ONLY ONCE, AND RE-PARSE PER PROJECT, 
 ### IN STEAD OF QUERYING ALL JOBS FOR EACH PROJECT.
-PRESENTJOBS=$(bjobs -w 1> ~/logs/bjobsw.txt)
-RUNNINGJOBS=$(bjobs -rw 1> ~/logs/bjobsrw.txt)
-ALLJOBS=$(bjobs -aw 1> ~/logs/bjobsaw.txt)
+PRESENTJOBS=$(bjobs -w 1> $IBRAIN_LOG_PATH/bjobsw.txt)
+RUNNINGJOBS=$(bjobs -rw 1> $IBRAIN_LOG_PATH/bjobsrw.txt)
+ALLJOBS=$(bjobs -aw 1> $IBRAIN_LOG_PATH/bjobsaw.txt)
 
 echo " <ibrain_meta>"
 echo "  <author>Berend Snijder</author>"
@@ -127,13 +137,13 @@ done
 # switch ALLOWSUBMISSION to 0 if there is not enough space 
 # left free.
 ALLOWSUBMISSION=1
-if [ -e ~/logs/diskusage.txt ]; then
-	SHARE2FREE=$(grep "/BIOL/imsb/fs2/bio3/bio3" ~/logs/diskusage.txt | awk '{print $4}')
-	SHARE2TOTAL=$(grep "/BIOL/imsb/fs2/bio3/bio3" ~/logs/diskusage.txt | awk '{print $2}')
+if [ -e $IBRAIN_LOG_PATH/diskusage.txt ]; then
+	SHARE2FREE=$(grep "/BIOL/imsb/fs2/bio3/bio3" $IBRAIN_LOG_PATH/diskusage.txt | awk '{print $4}')
+	SHARE2TOTAL=$(grep "/BIOL/imsb/fs2/bio3/bio3" $IBRAIN_LOG_PATH/diskusage.txt | awk '{print $2}')
 	echo "  <share_2_free>$SHARE2FREE</share_2_free>"
 	echo "  <share_2_total>$SHARE2TOTAL</share_2_total>"
-	SHARE3FREE=$(grep "/BIOL/imsb/fs3/bio3/bio3" ~/logs/diskusage.txt | awk '{print $4}')
-	SHARE3TOTAL=$(grep "/BIOL/imsb/fs3/bio3/bio3" ~/logs/diskusage.txt | awk '{print $2}')
+	SHARE3FREE=$(grep "/BIOL/imsb/fs3/bio3/bio3" $IBRAIN_LOG_PATH/diskusage.txt | awk '{print $4}')
+	SHARE3TOTAL=$(grep "/BIOL/imsb/fs3/bio3/bio3" $IBRAIN_LOG_PATH/diskusage.txt | awk '{print $2}')
 	echo "  <share_3_free>$SHARE3FREE</share_3_free>"
 	echo "  <share_3_total>$SHARE3TOTAL</share_3_total>"
 
@@ -149,8 +159,8 @@ if [ -e ~/logs/diskusage.txt ]; then
 		bkill 0
 
 		# if this flag is not present, sent a mail to the entire lab at once!
-		if [ ! -e ~/logs/sentmailtoentirelab.submitted ]; then
-			touch ~/logs/sentmailtoentirelab.submitted
+		if [ ! -e $IBRAIN_LOG_PATH/sentmailtoentirelab.submitted ]; then
+			touch $IBRAIN_LOG_PATH/sentmailtoentirelab.submitted
 			echo -e "Hi all,\n\nThere is not enough free space on our NAS shares. Here is how it breaks down:\n\nKBYTES FREE ON SHARE-2-$ = $SHARE2FREE.\nKBYTES FREE ON SHARE-3-$ = $SHARE3FREE.\n\nThis is an automatically generated message. See http://www.ibrain.ethz.ch/explorer for more details.\n\nKind regards,\nBerend." | mail -s "iBRAIN: PANIC! NOT ENOUGH FREE SPACE ON NAS SHARES!" pelkmans_lab@imls.lists.uzh.ch 
 		fi
 
@@ -161,9 +171,9 @@ if [ -e ~/logs/diskusage.txt ]; then
 	    #echo "</ibrain_log>"    
 		#exit 1
 		ALLOWSUBMISSION=0
-	elif [ -e ~/logs/sentmailtoentirelab.submitted ]; then
+	elif [ -e $IBRAIN_LOG_PATH/sentmailtoentirelab.submitted ]; then
 		# if there is enough free space, remove this flag if it exists, so that next time we run out of space, the e-mail will to the entire pelkmans_group will be sent ones.
-		rm ~/logs/sentmailtoentirelab.submitted
+		rm $IBRAIN_LOG_PATH/sentmailtoentirelab.submitted
 	fi
 fi
 ###
@@ -171,10 +181,10 @@ fi
 ### PARSE ALL QUEUED JOBS FOR UNIQUE JOB NAMES/PROCESSES/ETC.
 echo "  <job_overview>"
 echo "   <running>"
-~/iBRAIN/categorizejobs2.sh ~/logs/bjobsrw.txt
+~/iBRAIN/categorizejobs2.sh $IBRAIN_LOG_PATH/bjobsrw.txt
 echo "   </running>"
 echo "   <all>"
-~/iBRAIN/categorizejobs2.sh ~/logs/bjobsw.txt
+~/iBRAIN/categorizejobs2.sh $IBRAIN_LOG_PATH/bjobsw.txt
 echo "   </all>"
 echo "  </job_overview>"
 
@@ -214,9 +224,9 @@ for INCLUDEDPATH in $(sed -e 's/[[:cntrl:]]//g' $INCLUDEDPATHSFILE); do
         
         # get the number of ibrain_project.sh jobs running for this projectxmldir
         # add forward slash to end of grep string to prevent partial job-name matches from being counted 
-        IBRAINPROJECTJOBCOUNT=$(grep ${PROJECTXMLDIR} ~/logs/bjobsw.txt -c)
-        ALLIBRAINPROJECTJOBCOUNTS=$(grep ${PROJECTXMLDIR} ~/logs/bjobsaw.txt -c)
-        RUNNINGIBRAINPROJECTJOBCOUNT=$(grep ${PROJECTXMLDIR} ~/logs/bjobsrw.txt -c)        
+        IBRAINPROJECTJOBCOUNT=$(grep ${PROJECTXMLDIR} $IBRAIN_LOG_PATH/bjobsw.txt -c)
+        ALLIBRAINPROJECTJOBCOUNTS=$(grep ${PROJECTXMLDIR} $IBRAIN_LOG_PATH/bjobsaw.txt -c)
+        RUNNINGIBRAINPROJECTJOBCOUNT=$(grep ${PROJECTXMLDIR} $IBRAIN_LOG_PATH/bjobsrw.txt -c)        
         
         # store the last modified date of the project
         echo "   <date_last_modified>$(stat $INCLUDEDPATH | grep Modify | awk '{print $2,$3}')</date_last_modified>"        
@@ -261,11 +271,11 @@ for INCLUDEDPATH in $(sed -e 's/[[:cntrl:]]//g' $INCLUDEDPATHSFILE); do
         
         # store job_counts: running, present within last hour, and present. Note adding a slash to the searchstring would make it more specific...
         # Currently Running
-        echo "   <job_count_running>$(( $(grep $INCLUDEDPATH ~/logs/bjobsrw.txt -c) - $RUNNINGIBRAINPROJECTJOBCOUNT ))</job_count_running>"
+        echo "   <job_count_running>$(( $(grep $INCLUDEDPATH $IBRAIN_LOG_PATH/bjobsrw.txt -c) - $RUNNINGIBRAINPROJECTJOBCOUNT ))</job_count_running>"
         # Total present within last hour
-        echo "   <job_count_total>$(( $(grep $INCLUDEDPATH ~/logs/bjobsaw.txt -c) - $ALLIBRAINPROJECTJOBCOUNTS ))</job_count_total>"
+        echo "   <job_count_total>$(( $(grep $INCLUDEDPATH $IBRAIN_LOG_PATH/bjobsaw.txt -c) - $ALLIBRAINPROJECTJOBCOUNTS ))</job_count_total>"
         # Total currently present
-        CURRENTJOBCOUNT=$(($(grep $INCLUDEDPATH ~/logs/bjobsw.txt -c) - $IBRAINPROJECTJOBCOUNT))
+        CURRENTJOBCOUNT=$(($(grep $INCLUDEDPATH $IBRAIN_LOG_PATH/bjobsw.txt -c) - $IBRAINPROJECTJOBCOUNT))
         echo "   <job_count_present>$CURRENTJOBCOUNT</job_count_present>"
         
 
