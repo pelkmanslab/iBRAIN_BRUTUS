@@ -42,9 +42,9 @@ function main {
     ILLCORSETTINGSFILE=$(find $BATCHDIR -maxdepth 1 -type f -name "batch_illcor_*.mat" | wc -l)
     if [ $ILLCORSETTINGSFILE -eq 0 ] && [ ! -e ${PROJECTDIR}/IllumCorrectionSettingsFileCreation.submitted ]; then
         echo "<!-- STARTING MATLAB CREATION OF BATCH ILLUMINATION CORRECTION SETTINGS FILES"
-        echo $(matlab -singleCompThread -nodisplay -nojvm << M_PROG
-        prepare_batch_measure_illcor_stats('${TIFFDIR}');
-        M_PROG)
+matlab -singleCompThread -nodisplay -nojvm << M_PROG
+prepare_batch_measure_illcor_stats('${TIFFDIR}');
+M_PROG
         touch ${PROJECTDIR}/IllumCorrectionSettingsFileCreation.submitted
         echo "-->"
         ILLCORSETTINGSFILE=$(find $BATCHDIR -maxdepth 1 -type f -name "batch_illcor_*.mat" | wc -l)
