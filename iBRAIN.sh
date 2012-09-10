@@ -21,13 +21,12 @@
 if [ -d "$IBRAIN_ROOT" ]; then
     cd $IBRAIN_ROOT
 else
-    echo "Aborting $(basename $0) ($IBRAIN_ROOT folder does not exists)"
+    echo "Aborting $(basename $0) ('$IBRAIN_ROOT' folder does not exists)"
     exit 1
 fi
 
 # Find and include configuration.
 if [ ! "$IBRAIN_ROOT" ]; then 
-    echo "!$IBRAIN_ROOT"
     IBRAIN_ROOT=$(dirname `readlink -m $0`)
     if [ -f $IBRAIN_ROOT/etc/config ]; then
         . $IBRAIN_ROOT/etc/config
@@ -38,7 +37,6 @@ if [ ! "$IBRAIN_ROOT" ]; then
 fi
 # Assume configuration is set by this point.
 # TODO: implement and run configuration check function here. 
-
 
 #############################################
 ### CHECK IF IBRAIN IS ALREADY RUNNING. 
@@ -181,10 +179,10 @@ fi
 ### PARSE ALL QUEUED JOBS FOR UNIQUE JOB NAMES/PROCESSES/ETC.
 echo "  <job_overview>"
 echo "   <running>"
-~/iBRAIN/categorizejobs2.sh $IBRAIN_LOG_PATH/bjobsrw.txt
+$IBRAIN_BIN_PATH/categorizejobs2.sh $IBRAIN_LOG_PATH/bjobsrw.txt
 echo "   </running>"
 echo "   <all>"
-~/iBRAIN/categorizejobs2.sh $IBRAIN_LOG_PATH/bjobsw.txt
+$IBRAIN_BIN_PATH/categorizejobs2.sh $IBRAIN_LOG_PATH/bjobsw.txt
 echo "   </all>"
 echo "  </job_overview>"
 
@@ -472,7 +470,7 @@ xsltproc -o $NEWPROJECTHTMLOUTPUT $NEWPROJECTXMLOUTPUT;
 	        if [ $(find $PROJECTXMLDIR -maxdepth 1 -type f -mmin +10 -name "ibrain_project_sh_output.results" | wc -l) -gt 0 ]; then
 	            echo "<!-- ibrain project needs to be checked, and has not been checked within one hour. Prioritizing ibrain_project checking job."
 	            # Prioritize ibrain_project.sh job on PROJECTXMLDIR
-	            ~/iBRAIN/prioritizejobs.sh "$PROJECTXMLDIR/"
+	            $IBRAIN_BIN_PATH/prioritizejobs.sh "$PROJECTXMLDIR/"
                 # If prioritizing job, touch the ibrain_project_sh_output.results file to prevent repeated prioritization
                 touch -cm $PROJECTXMLDIR/ibrain_project_sh_output.results
 	            echo "-->"  

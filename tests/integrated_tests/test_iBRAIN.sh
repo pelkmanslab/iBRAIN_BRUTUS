@@ -2,7 +2,7 @@
 
 #############################################
 ### INCLUDE IBRAIN CONFIGURATION
-IBRAIN_ROOT=$(dirname `readlink -m $0`)/../mock/root
+export IBRAIN_ROOT=$(dirname `readlink -m $0`)/../mock/root
 if [ -f $IBRAIN_ROOT/etc/config ]; then
     . $IBRAIN_ROOT/etc/config
 else
