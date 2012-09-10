@@ -14,7 +14,7 @@ function dir_exists {
 }
 
 
-DIRS="bin etc var var/database var/logs var/pipelines"
+DIRS="bin etc var var/database var/log var/pipelines"
 # Test if those folders exists. If not - try to create them.
 for folder in $DIRS; do
     echo "Test if $folder exists.. "
