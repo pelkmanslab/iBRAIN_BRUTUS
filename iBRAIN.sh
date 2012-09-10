@@ -17,14 +17,6 @@
 #############################################
 ### INCLUDE IBRAIN CONFIGURATION
 
-# Best case scenario if we stay inside ROOT (thus relative pathnames will work).
-if [ -d "$IBRAIN_ROOT" ]; then
-    cd $IBRAIN_ROOT
-else
-    echo "Aborting $(basename $0) ('$IBRAIN_ROOT' folder does not exists)"
-    exit 1
-fi
-
 # Find and include configuration.
 if [ ! "$IBRAIN_ROOT" ]; then 
     IBRAIN_ROOT=$(dirname `readlink -m $0`)
@@ -37,6 +29,14 @@ if [ ! "$IBRAIN_ROOT" ]; then
 fi
 # Assume configuration is set by this point.
 # TODO: implement and run configuration check function here. 
+
+# Best case scenario if we stay inside ROOT (thus relative pathnames will work).
+if [ -d "$IBRAIN_ROOT" ]; then
+    cd $IBRAIN_ROOT
+else
+    echo "Aborting $(basename $0) ('$IBRAIN_ROOT' folder does not exists)"
+    exit 1
+fi
 
 #############################################
 ### CHECK IF IBRAIN IS ALREADY RUNNING. 
