@@ -1,0 +1,75 @@
+/* Put this inside a @media qualifier so Netscape 4 ignores it */
+@media screen, print { 
+
+/* some holy truths */
+a { text-decoration: none; }
+img { border: 0px; }
+br { clear: left; }
+
+body { font-family: arial; font-size: 90%; }
+h2.title { margin-bottom: 1px; padding-bottom: 0px; }
+
+div.projectContainer {
+display: inline;
+font-size: 10px;
+padding: 0px;
+padding-left: 25px;
+margin: 0px;
+margin-bottom: 10px;
+}
+
+.projectContainer a {
+text-decoration: none;
+}
+
+img.statusIcon {
+margin-right: 4px;
+}
+
+.output {
+font-family: courier;
+}
+
+.projectInfo { 
+font-size: 90%; 
+}
+
+.plateInfo { 
+color: #aaaaaa; 
+font-size: 90%; 
+}
+
+.ibrain_meta { 
+font-size: 70%; 
+color: #444444; 
+/* color: #444444; */
+padding-left: 39px;
+}
+
+.ibrain_meta_table {
+padding-left: 39px; /* that is 39 - 6 for the left padding*/
+}
+
+.ibrain_meta_table table {
+padding-top: 40px;
+}
+
+.ibrain_meta_table td {
+color: #888888; 
+padding-left: 6px;
+padding-right: 4px;
+border-bottom: 1px solid #cccccc;
+font-size: 70%;
+}
+
+.ibrain_meta_table td.header {
+padding-left: 0px;
+padding-right: 4px;
+border-bottom: 1px solid #cccccc;
+border-right: 1px solid #cccccc;
+font-weight: bold;
+color: #444444;
+text-align: right;
+}
+
+}

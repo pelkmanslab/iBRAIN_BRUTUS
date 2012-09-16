@@ -3,15 +3,16 @@
 	<xsl:output method="html" version="4.0" encoding="iso-8859-1" indent="yes"/>
 	<xsl:include href="date-time.xsl"/>
 	<xsl:include href="string.xsl"/>
+	<xsl:include href="config.xsl"/>
 	<xsl:template match="/">
-		<html>
+        <html>
 			<HEAD>
 				<TITLE>iBRAIN project overview</TITLE>
-				<link rel="icon" type="image/png" href="/img/favicon.png" />
-				<SCRIPT LANGUAGE="JavaScript" SRC="/js/ibrain3.js"/>
+				<link rel="icon" type="image/png" href="{$htmlpath}/img/favicon.png" />
+				<SCRIPT LANGUAGE="JavaScript" SRC="{$htmlpath}/js/ibrain3.js"/>
 				<!-- xmas snow flakes... Hohoho -->
-				<!-- SCRIPT LANGUAGE="JavaScript" SRC="/js/snowstorm.js"/ -->
-				<LINK REL="stylesheet" HREF="/css/ibrain3.css"/>
+				<!-- SCRIPT LANGUAGE="JavaScript" SRC="{$htmlpath}/js/snowstorm.js"/ -->
+				<LINK REL="stylesheet" HREF="{$htmlpath}/css/ibrain3.css"/>
 				<!-- meta http-equiv="refresh" content="1800"/ --><!-- refresh every 15 minutes -->
 			</HEAD>
 			<body onload="highlightRows();">
@@ -66,20 +67,20 @@
 									<xsl:with-param name="format" select="'%a, %d %b %Y %H:%M:%S GMT+0100'"/>
 								</xsl:call-template>
 							</div>							
-<!-- img alt="" src="/img/bullet.png" width="14" height="13"/><span style="color: #eeeeee;">author <xsl:value-of select="ibrain_log/ibrain_meta/author"/></span><img alt="" src="/img/bullet.png" width="14" height="13"/><span style="color: #dddddd;">version <xsl:value-of select="ibrain_log/ibrain_meta/version"/></span -->
+<!-- img alt="" src="{$htmlpath}/img/bullet.png" width="14" height="13"/><span style="color: #eeeeee;">author <xsl:value-of select="ibrain_log/ibrain_meta/author"/></span><img alt="" src="{$htmlpath}/img/bullet.png" width="14" height="13"/><span style="color: #dddddd;">version <xsl:value-of select="ibrain_log/ibrain_meta/version"/></span -->
 							</td>
 							<td height="79" valign="bottom" align="right" style="color: white; font-size: 9pt; padding-right: 24px; font-smooth: always; width: 70%;" nowrap="nowrap" width="70%">
 								
-								<a href="/share-2/Data/Code/iBRAIN/database/wrapper_xml/wrapper.html" style="float: right bottom;"><img alt="" src="/img/tab_home_2.png" width="70" height="24"/></a><!-- previous width 52 -->
-								<a target="projectFrame" href="https://wiki-bsse.ethz.ch/display/IMSBP/iBRAIN+Documentation" style="float: right bottom;"><img alt="" src="/img/tab_wiki_2.png" width="70" height="24"/></a><!-- previous width 52 -->
-								<!-- a href="/share-2/Data/Code/iBRAIN/database/wrapper_xml/wrapper.html" style="color: white; font-size: 9pt; font-weight: bold;">HOME</a><img alt="" src="/img/bullet.png" width="14" height="13"/>
-								<a target="projectFrame" href="https://wiki.systemsx.ch/x/TAPGAQ" style="color: white; font-size: 9pt; font-weight: bold;">WIKI</a><img alt="" src="/img/bullet.png" width="14" height="13"/ -->
+								<a href="/share-2/Data/Code/iBRAIN/database/wrapper_xml/wrapper.html" style="float: right bottom;"><img alt="" src="{$htmlpath}/img/tab_home_2.png" width="70" height="24"/></a><!-- previous width 52 -->
+								<a target="projectFrame" href="https://wiki-bsse.ethz.ch/display/IMSBP/iBRAIN+Documentation" style="float: right bottom;"><img alt="" src="{$htmlpath}/img/tab_wiki_2.png" width="70" height="24"/></a><!-- previous width 52 -->
+								<!-- a href="/share-2/Data/Code/iBRAIN/database/wrapper_xml/wrapper.html" style="color: white; font-size: 9pt; font-weight: bold;">HOME</a><img alt="" src="{$htmlpath}/img/bullet.png" width="14" height="13"/>
+								<a target="projectFrame" href="https://wiki.systemsx.ch/x/TAPGAQ" style="color: white; font-size: 9pt; font-weight: bold;">WIKI</a><img alt="" src="{$htmlpath}/img/bullet.png" width="14" height="13"/ -->
 							</td>
 						</tr>
 						<tr style="height: 100%;">
 							<td align="center" valign="top" width="30%" height="100%">
 								<!-- h2>
-									<img src="/img/text_bold.png" align="right" width="24" height="24" style="margin-left: 5px; margin-right: 5px; vertical-align: middle;"/>iBRAIN Log file: <xsl:value-of select="ibrain_log/ibrain_meta/start"/>
+									<img src="{$htmlpath}/img/text_bold.png" align="right" width="24" height="24" style="margin-left: 5px; margin-right: 5px; vertical-align: middle;"/>iBRAIN Log file: <xsl:value-of select="ibrain_log/ibrain_meta/start"/>
 								</h2>
 								<span style="font-size: 10px; font-family: arial;">
 									author <xsl:value-of select="ibrain_log/ibrain_meta/author"/> | 
@@ -94,8 +95,8 @@
 							</td>
 						</tr>
 						<tr>
-							<td style="background-image: url('/img/border_bottom.png'); background-repeat: repeat-x; height: 10px;"><img alt="error" src="/img/empty.gif" width="1" height="10"/></td>
-							<td><img alt="error" src="/img/empty.gif" width="1" height="1"/></td>
+							<td style="background-image: url('{$htmlpath}/img/border_bottom.png'); background-repeat: repeat-x; height: 10px;"><img alt="error" src="{$htmlpath}/img/empty.gif" width="1" height="10"/></td>
+							<td><img alt="error" src="{$htmlpath}/img/empty.gif" width="1" height="1"/></td>
 						</tr>
 					</tbody>
 				</table>				
@@ -106,11 +107,11 @@
 		<!-- only process those projects with valid paths -->
 		<table border="0" class="navTable" cellpadding="0" cellspacing="0" width="100%" id="navTable">
 			<tbody>
-				<tr class="noRow" id="columnTitle" style="height: 20px;" valign="bottom"> <!--  style="background: url(/img/header_bg_lightblue3.gif) top left repeat-x;  -->
+				<tr class="noRow" id="columnTitle" style="height: 20px;" valign="bottom"> <!--  style="background: url(<xsl:value-of select="$htmlpath" />/img/header_bg_lightblue3.gif) top left repeat-x;  -->
 				
 					<td colspan="6" align="center" style="font-size: 14px;padding-top: 2px; padding-bottom: 2px;" valign="bottom" id="columnTitleCell">
 					<span style="float: left; margin-left: 2px;"><a href="javascript:showAdvancedColumns();"  id="showAdvancedColumns" style="font-size: 12px; color: #988888;" title="toggle display advanced fields">&gt;&gt;</a></span>
-						<!-- img alt="" src="/img/empty.gif" width="1" height="16" align="left middle"/--> 
+						<!-- img alt="" src="{$htmlpath}/img/empty.gif" width="1" height="16" align="left middle"/--> 
 						Projects <!-- (<xsl:value-of select="/ibrain_log/ibrain_meta/start"/>) -->
 					</td>
 					<!-- td align="right" valign="middle"><a href="#"  id="showAdvancedColumns" onclick="javascript: showAdvancedColumns();" style="color: #988888;" title="toggle display advanced fields">&gt;&gt;</a></td -->
@@ -129,20 +130,20 @@
 						<b>Date modified</b>
 					</td>					
 					<td align="right" title="NAS share number">
-						<img alt="Share" src="/img/diskdrive.png" width="16" height="16" align="left"/>
+						<img alt="Share" src="{$htmlpath}/img/diskdrive.png" width="16" height="16" align="left"/>
 					</td>
 					<td align="left" title="NAS path">
-						<img alt="Path" src="/img/data.png" width="16" height="16"/>
+						<img alt="Path" src="{$htmlpath}/img/data.png" width="16" height="16"/>
 					</td>
 					<td align="right" title="Number of plates">
-						<img alt="Plates" src="/img/plate.gif" width="16" height="16"/>
+						<img alt="Plates" src="{$htmlpath}/img/plate.gif" width="16" height="16"/>
 					</td>
 					<!--td align="right" title="Number of jobs in queue (within last hour)" -->
 					<td align="right" title="Number of currently running jobs">
-						<img alt="Jobs" src="/img/gears_run.png" width="16" height="16"/>
+						<img alt="Jobs" src="{$htmlpath}/img/gears_run.png" width="16" height="16"/>
 					</td>
 					<td align="right" title="Number of warnings">
-						<img alt="Problems" src="/img/gear_warning.png" width="16" height="16"/>
+						<img alt="Problems" src="{$htmlpath}/img/gear_warning.png" width="16" height="16"/>
 					</td>
 				</tr>
 				<xsl:for-each select="project[not(warning[@type = 'InvalidPath'])]">
@@ -174,25 +175,25 @@
 							<xsl:when test="latest_project_html_file and not( normalize-space(latest_project_html_file) = '')">
 								<a href="{normalize-space(latest_project_html_file)}" target="projectFrame">
 									<xsl:attribute name="id"><xsl:value-of select="normalize-space(project_id)"/></xsl:attribute>
-									<img alt="error" src="/img/empty.gif" width="1" height="1"/>
+									<img alt="error" src="{$htmlpath}/img/empty.gif" width="1" height="1"/>
 								</a>
 							</xsl:when>
 							<xsl:otherwise>
 								<a href="no_project_yet.html" target="projectFrame">
 									<xsl:attribute name="id"><xsl:value-of select="normalize-space(project_id)"/></xsl:attribute>
-									<img alt="error" src="/img/empty.gif" width="1" height="1"/>
+									<img alt="error" src="{$htmlpath}/img/empty.gif" width="1" height="1"/>
 								</a>
 							</xsl:otherwise>
 						</xsl:choose>						
 							<xsl:choose>
 								<xsl:when test="warning_count &gt; 0">
-									<img alt="error" src="/img/warning.png" width="16" height="16" class="statusIcon"/>
+									<img alt="error" src="{$htmlpath}/img/warning.png" width="16" height="16" class="statusIcon"/>
 								</xsl:when>
 								<xsl:when test="job_count_present &gt; 0">
-									<img alt="running" src="/img/media_play_green.png" width="16" height="16" class="statusIcon"/>
+									<img alt="running" src="{$htmlpath}/img/media_play_green.png" width="16" height="16" class="statusIcon"/>
 								</xsl:when>
 								<xsl:otherwise>
-									<img alt="ok" src="/img/check.png" width="16" height="16" class="statusIcon"/>
+									<img alt="ok" src="{$htmlpath}/img/check.png" width="16" height="16" class="statusIcon"/>
 								</xsl:otherwise>
 							</xsl:choose>
 							<!-- we should add the update status and reason to the HTML overview! -->
@@ -266,7 +267,7 @@
 				<xsl:for-each select="project[warning[@type = 'InvalidPath'] and substring(path, 1, 3) != 'DIS']">
 					<tr onclick="changeiFrameUrl('incorrect_path.html')" class="errorRow">
 						<td align="right">
-							<img alt="Error" src="/img/error.png" width="16" height="16" class="statusIcon"/>
+							<img alt="Error" src="{$htmlpath}/img/error.png" width="16" height="16" class="statusIcon"/>
 						</td>
 						<td/>
 						<td colspan="8" style="font-size: 11px;">
