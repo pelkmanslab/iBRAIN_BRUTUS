@@ -2,6 +2,7 @@
 #
 # iBRAIN_project.sh
 
+# set -u # makes unser variables be thrown as error. Might be nice to use this. Now breaks on undeclard input parameters.
 
 # execute_ibrain_module is the standard function called at the end of iBRAIN modules that have a "main" function. 
 # It does basic BASH error handling & reporting, and imporves robustness to crashes from individual modules by 

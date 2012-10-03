@@ -10,6 +10,7 @@
 #   we loose the annoying problem that bigger projects block the analysis of smaller projects. Gotta think what the consequences 
 #   are for the wrapper.html creation... Let's see.   
 
+
 #############################################
 ### CHECK IF IBRAIN IS ALREADY RUNNING. 
 ### ONLY START IF NO INSTANCES ARE PRESENT
@@ -100,6 +101,7 @@ for iOutputFile in $(find ~/.lsbatch/ -size +1G 2> /dev/null); do
     echo "  </error>"
 done
 ###
+
 
 ###
 # report disk space free for share-2 & share-3, and set panic 
@@ -261,11 +263,11 @@ for INCLUDEDPATH in $(sed -e 's/[[:cntrl:]]//g' $INCLUDEDPATHSFILE); do
     	
     	
     	if [ "$LATESTPROJECTXMLOUTPUT" ]; then
-    		
+    	  	
     		# check for number of jobs present, or keywords that indicate activity on a certain project.
-            PREVIOUSJOBCOUNTMATCHES=$(grep -i -e 'checking' -e 'resetting' -e 'waiting' -e '\[KNOWN ERROR FOUND\]' -e 'is submitted to queue' -e '<job_count_total>[1-9]*</job_count_total>' $LATESTPROJECTXMLOUTPUT)
+            PREVIOUSJOBCOUNTMATCHES=$(grep -i -e 'checking' -e 'resubmitting' -e 'resetting' -e 'waiting' -e '\[KNOWN ERROR FOUND\]' -e 'is submitted to queue' -e '<job_count_total>[1-9]*</job_count_total>' $LATESTPROJECTXMLOUTPUT)
             echo "<!-- PREVIOUSJOBCOUNTMATCHES: (escaping html/xml characters)"
-            echo "$(echo $PREVIOUSJOBCOUNTMATCHES | sed 's|[<>!]| |g')"
+            echo "$(echo $PREVIOUSJOBCOUNTMATCHES | sed -e 's|[<>!]| |g' -e 's/[[:cntrl:]]//g')"
             echo "    END OF PREVIOUSJOBCOUNTMATCHES -->"
             
             if [ $IBRAINPROJECTJOBCOUNT -eq 0 ]; then
@@ -421,6 +423,7 @@ xsltproc -o $NEWPROJECTHTMLOUTPUT $NEWPROJECTXMLOUTPUT;
 	            	echo "<!-- submitting 1h (short) ibrain_project.sh on $INCLUDEDPATH"
         			# submit job: run ibrain_project. sed-transform the xml to be web-friendly. store output in new XML output file
 bsub -W 01:00 -oo $PROJECTXMLDIR/ibrain_project_sh_output.results "
+ls -l "$PROJECTXMLDIR"
 ./iBRAIN_project.sh "$INCLUDEDPATH" "$PRECLUSTERBACKUPPATH" "$PROJECTXMLDIR" "$NEWPROJECTXMLOUTPUT" 2>&1 | ./iBRAIN/sedTransformLogWeb.sed > $NEWPROJECTXMLOUTPUT 2>&1;
 xsltproc -o $NEWPROJECTHTMLOUTPUT $NEWPROJECTXMLOUTPUT;
 "
