@@ -130,6 +130,7 @@ for iOutputFile in $(find ~/.lsbatch/ -size +1G 2> /dev/null); do
 done
 ###
 
+
 ###
 # report disk space free for share-2 & share-3, and set panic 
 # switch ALLOWSUBMISSION to 0 if there is not enough space 
@@ -290,11 +291,11 @@ for INCLUDEDPATH in $(sed -e 's/[[:cntrl:]]//g' $INCLUDEDPATHSFILE); do
     	
     	
     	if [ "$LATESTPROJECTXMLOUTPUT" ]; then
-    		
+    	  	
     		# check for number of jobs present, or keywords that indicate activity on a certain project.
-            PREVIOUSJOBCOUNTMATCHES=$(grep -i -e 'checking' -e 'resetting' -e 'waiting' -e '\[KNOWN ERROR FOUND\]' -e 'is submitted to queue' -e '<job_count_total>[1-9]*</job_count_total>' $LATESTPROJECTXMLOUTPUT)
+            PREVIOUSJOBCOUNTMATCHES=$(grep -i -e 'checking' -e 'resubmitting' -e 'resetting' -e 'waiting' -e '\[KNOWN ERROR FOUND\]' -e 'is submitted to queue' -e '<job_count_total>[1-9]*</job_count_total>' $LATESTPROJECTXMLOUTPUT)
             echo "<!-- PREVIOUSJOBCOUNTMATCHES: (escaping html/xml characters)"
-            echo "$(echo $PREVIOUSJOBCOUNTMATCHES | sed 's|[<>!]| |g')"
+            echo "$(echo $PREVIOUSJOBCOUNTMATCHES | sed -e 's|[<>!]| |g' -e 's/[[:cntrl:]]//g')"
             echo "    END OF PREVIOUSJOBCOUNTMATCHES -->"
             
             if [ $IBRAINPROJECTJOBCOUNT -eq 0 ]; then
@@ -450,12 +451,11 @@ xsltproc -o $NEWPROJECTHTMLOUTPUT $NEWPROJECTXMLOUTPUT;
 	            	echo "<!-- submitting 1h (short) ibrain_project.sh on $INCLUDEDPATH"
         			# submit job: run ibrain_project. sed-transform the xml to be web-friendly. store output in new XML output file
 bsub -W 01:00 -oo $PROJECTXMLDIR/ibrain_project_sh_output.results "
-./iBRAIN_project.sh "$INCLUDEDPATH" "$PRECLUSTERBACKUPPATH" "$PROJECTXMLDIR" "$NEWPROJECTXMLOUTPUT" 2>&1 | $IBRAIN_BIN_PATH/sedTransformLogWeb.sed > $NEWPROJECTXMLOUTPUT 2>&1;
+$IBRAIN_BIN_PATH/iBRAIN_project.sh "$INCLUDEDPATH" "$PRECLUSTERBACKUPPATH" "$PROJECTXMLDIR" "$NEWPROJECTXMLOUTPUT" 2>&1 | $IBRAIN_BIN_PATH/sedTransformLogWeb.sed > $NEWPROJECTXMLOUTPUT 2>&1;
 xsltproc -o $NEWPROJECTHTMLOUTPUT $NEWPROJECTXMLOUTPUT;
 "
-                	echo "-->"	            
+                	echo "-->"
         		fi
-
                 
 	        else
 	           echo "<!-- NOT submitting ibrain_project.sh on $INCLUDEDPATH... already running -->"

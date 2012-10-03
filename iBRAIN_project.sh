@@ -2,6 +2,7 @@
 #
 # iBRAIN_project.sh
 
+# set -u # makes unser variables be thrown as error. Might be nice to use this. Now breaks on undeclard input parameters.
 
 #############################################
 ### INCLUDE IBRAIN CONFIGURATION

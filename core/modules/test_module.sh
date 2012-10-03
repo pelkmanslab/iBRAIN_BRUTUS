@@ -42,7 +42,7 @@ function execute_ibrain_module {
 
 
 # Just point this to any directory that contains a TIFF directory:
-INCLUDEDPATH="/BIOL/imsb/fs2/bio3/bio3/Data/Users/Katharina/iBrain/120713-MZ-FNp-LMp"
+INCLUDEDPATH="/cluster/scratch_xl/shareholder/pelkmans/Data/Users/RNAFish/PLATES/120617_InSitu_CP104-1aa_Corr"
 #INCLUDEDPATH="/BIOL/imsb/fs2/bio3/bio3/Data/Users/Gabriele/20120507_FixedOranoids"
 
 # And the rest is all relative
