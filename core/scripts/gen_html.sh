@@ -12,7 +12,12 @@ elif [ $(cat $IBRAIN_LOG_PATH/$LOGFILENAME | grep "^Aborting:" | wc -l) -eq 0 ];
 
     # if it actually did a full run, execute script (on brutus) that does XML-fixing, and possibly url-fixing for PC
     $IBRAIN_BIN_PATH/sedTransformLogWeb.sed $IBRAIN_LOG_PATH/$LOGFILENAME > $IBRAIN_LOG_PATH/$LOGFILENAME_PC
-    
+    # optionaly include user corrections
+    if [ -f $IBRAIN_ETC_PATH/sedTransformLogWebUser.sed ];
+        $IBRAIN_ETC_PATH/sedTransformLogWebUser.sed $IBRAIN_LOG_PATH/$LOGFILENAME_PC > $IBRAIN_LOG_PATH/${LOGFILENAME_PC}_user
+        mv $IBRAIN_LOG_PATH/${LOGFILENAME_PC}_user $IBRAIN_LOG_PATH/$LOGFILENAME_PC
+    fi
+
     # or calculate directly on login-node
     xsltproc -o $IBRAIN_LOG_PATH/wrapper.html $IBRAIN_DATABASE_PATH/wrapper.xsl $IBRAIN_LOG_PATH/$LOGFILENAME_PC
     xsltproc -o $IBRAIN_LOG_PATH/home.html $IBRAIN_DATABASE_PATH/home.xsl $IBRAIN_LOG_PATH/$LOGFILENAME_PC
