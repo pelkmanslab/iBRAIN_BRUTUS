@@ -70,9 +70,12 @@
 <!-- img alt="" src="{$htmlpath}/img/bullet.png" width="14" height="13"/><span style="color: #eeeeee;">author <xsl:value-of select="ibrain_log/ibrain_meta/author"/></span><img alt="" src="{$htmlpath}/img/bullet.png" width="14" height="13"/><span style="color: #dddddd;">version <xsl:value-of select="ibrain_log/ibrain_meta/version"/></span -->
 							</td>
 							<td height="79" valign="bottom" align="right" style="color: white; font-size: 9pt; padding-right: 24px; font-smooth: always; width: 70%;" nowrap="nowrap" width="70%">
-								
-								<a href="/share-2/Data/Code/iBRAIN/database/wrapper_xml/wrapper.html" style="float: right bottom;"><img alt="" src="{$htmlpath}/img/tab_home_2.png" width="70" height="24"/></a><!-- previous width 52 -->
-								<a target="projectFrame" href="https://wiki-bsse.ethz.ch/display/IMSBP/iBRAIN+Documentation" style="float: right bottom;"><img alt="" src="{$htmlpath}/img/tab_wiki_2.png" width="70" height="24"/></a><!-- previous width 52 -->
+								<xsl:if test="$ibrainurl != ''">
+                                    <a href="{$ibrainurl}" style="float: right bottom;"><img alt="" src="{$htmlpath}/img/tab_home_2.png" width="70" height="24"/></a><!-- previous width 52 -->
+                                </xsl:if>
+								<xsl:if test="$wikiurl != ''">
+                                    <a target="projectFrame" href="{$wikiurl}" style="float: right bottom;"><img alt="" src="{$htmlpath}/img/tab_wiki_2.png" width="70" height="24"/></a><!-- previous width 52 -->
+                                </xsl:if>
 								<!-- a href="/share-2/Data/Code/iBRAIN/database/wrapper_xml/wrapper.html" style="color: white; font-size: 9pt; font-weight: bold;">HOME</a><img alt="" src="{$htmlpath}/img/bullet.png" width="14" height="13"/>
 								<a target="projectFrame" href="https://wiki.systemsx.ch/x/TAPGAQ" style="color: white; font-size: 9pt; font-weight: bold;">WIKI</a><img alt="" src="{$htmlpath}/img/bullet.png" width="14" height="13"/ -->
 							</td>
