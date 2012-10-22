@@ -75,7 +75,7 @@ create_jpgs('${TIFFDIR}','${JPGDIR}');
 merge_jpgs_per_plate('${JPGDIR}');
 M_PROG"
         	fi            
-            #~/iBRAIN/createjpgs.sh $TIFFDIR $JPGDIR
+            #$IBRAIN_BIN_PATH/createjpgs.sh $TIFFDIR $JPGDIR
             touch $PROJECTDIR/CreateJPGs.submitted
             echo "      </output>"                                        
             echo "     </status>"
@@ -114,7 +114,7 @@ create_jpgs('${TIFFDIR}','${JPGDIR}');
 merge_jpgs_per_plate('${JPGDIR}');
 M_PROG"
         	fi     
-        	#~/iBRAIN/createjpgs.sh $TIFFDIR $JPGDIR
+        	#$IBRAIN_BIN_PATH/createjpgs.sh $TIFFDIR $JPGDIR
             touch $PROJECTDIR/CreateJPGs.resubmitted
             echo "      </output>"                                        
             echo "     </status>"
@@ -143,7 +143,7 @@ M_PROG"
             echo "      </warning>"
             echo "      <output>"
             ### check resultfiles for known errors, reset/resubmit jobs if appropriate 
-            ~/iBRAIN/check_resultfiles_for_known_errors.sh $BATCHDIR "CreateJPGs" $PROJECTDIR/CreateJPGs.resubmitted
+            $IBRAIN_BIN_PATH/check_resultfiles_for_known_errors.sh $BATCHDIR "CreateJPGs" $PROJECTDIR/CreateJPGs.resubmitted
             echo "      </output>"                                        
             echo "     </status>"                    
             

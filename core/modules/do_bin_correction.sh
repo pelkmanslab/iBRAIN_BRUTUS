@@ -58,7 +58,7 @@ function main {
                 BINSUBMITTEDFILE="${PROJECTDIR}/BINClassification_$(basename $BINSETTINGSFILE .txt).submitted"
                 BINRUNLIMITFILE="${PROJECTDIR}/BINClassification_$(basename $BINSETTINGSFILE .txt).runlimit"
                 BINRESULTFILECOUNT=$(find $BATCHDIR -maxdepth 1 -type f -name "$BINRESULTFILEBASE*.results" | wc -l)
-                #BINJOBCOUNT=$(~/iBRAIN/countjobs.sh $(basename $BINSETTINGSFILE))
+                #BINJOBCOUNT=$($IBRAIN_BIN_PATH/countjobs.sh $(basename $BINSETTINGSFILE))
                 BINJOBCOUNT=$(grep $(basename $BINSETTINGSFILE) $JOBSFILE -c)
                 if [ ! -d $POSTANALYSISDIR ]; then
                     mkdir -p $POSTANALYSISDIR
@@ -128,7 +128,7 @@ M_PROG"
                     echo "      </warning>"
                     echo "      <output>"                    
                     ### check resultfiles for known errors, reset/resubmit jobs if appropriate 
-                    ~/iBRAIN/check_resultfiles_for_known_errors.sh $BATCHDIR "$BINRESULTFILEBASE" $BINSUBMITTEDFILE                            
+                    $IBRAIN_BIN_PATH/check_resultfiles_for_known_errors.sh $BATCHDIR "$BINRESULTFILEBASE" $BINSUBMITTEDFILE                            
                     rm -fv $BINSUBMITTEDFILE
                     echo "      </output>"                    
                     echo "     </status>"
@@ -142,7 +142,7 @@ M_PROG"
                     echo "      </warning>"
                     echo "      <output>"                    
                     ### check resultfiles for known errors, reset/resubmit jobs if appropriate 
-                    ~/iBRAIN/check_resultfiles_for_known_errors.sh $BATCHDIR "$BINRESULTFILEBASE" $BINSUBMITTEDFILE
+                    $IBRAIN_BIN_PATH/check_resultfiles_for_known_errors.sh $BATCHDIR "$BINRESULTFILEBASE" $BINSUBMITTEDFILE
                     echo "      </output>"                    
                     echo "     </status>"
                     
@@ -191,7 +191,7 @@ M_PROG"
                     echo "      </warning>"
                     echo "      <output>"                            
                     ### check resultfiles for known errors, reset/resubmit jobs if appropriate 
-                    ~/iBRAIN/check_resultfiles_for_known_errors.sh $BATCHDIR "$BINRESULTFILEBASE" $BINSUBMITTEDFILE                            
+                    $IBRAIN_BIN_PATH/check_resultfiles_for_known_errors.sh $BATCHDIR "$BINRESULTFILEBASE" $BINSUBMITTEDFILE                            
                     echo "      </output>"
                     
                     echo "     </status>"

@@ -153,7 +153,7 @@ M_PROG"
 	            echo "      <output>"                    
 	
 	            ### check resultfiles for known errors, reset/resubmit jobs if appropriate 
-	            ~/iBRAIN/check_resultfiles_for_known_errors.sh $BATCHDIR "CreateCellTypeOverview_" $PROJECTDIR/CreateCellTypeOverview.submitted
+	            $IBRAIN_BIN_PATH/check_resultfiles_for_known_errors.sh $BATCHDIR "CreateCellTypeOverview_" $PROJECTDIR/CreateCellTypeOverview.submitted
 	                                
 	            ## TEMP BS_BUGFIX. RESET ALL CRASHED CELLTYPEOVERVIEWS!
 	            # echo "APPLYING TEMPORARY BUGFIX. RESETTING ALL CRASHED CreateCellTypeOverview JOBS"
@@ -207,7 +207,7 @@ M_PROG"
 	            
 	
 	            ### check resultfiles for known errors, reset/resubmit jobs if appropriate 
-	            ~/iBRAIN/check_resultfiles_for_known_errors.sh $BATCHDIR "CreateCellTypeOverview_" $PROJECTDIR/CreateCellTypeOverview.submitted
+	            $IBRAIN_BIN_PATH/check_resultfiles_for_known_errors.sh $BATCHDIR "CreateCellTypeOverview_" $PROJECTDIR/CreateCellTypeOverview.submitted
 	                                
 	            echo "      </output>"                    
 	            echo "     </status>"     

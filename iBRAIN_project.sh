@@ -17,6 +17,13 @@ if [ ! "$IBRAIN_ROOT" ]; then
 fi
 # Assume configuration is set by this point.
 
+# Best case scenario if we stay inside ROOT (thus relative pathnames will work).
+if [ -d "$IBRAIN_ROOT" ]; then
+    cd $IBRAIN_ROOT
+else
+    echo "Aborting $(basename $0) ('$IBRAIN_ROOT' folder does not exists)"
+    exit 1
+fi
 
 #############################################
 ### SOURCE FUNCTIONS
@@ -54,7 +61,7 @@ if [ "$INCLUDEDPATH" ] && [ -d $INCLUDEDPATH ]; then
 
 
     # to speed up ibrain_project.sh, request full information on all jobs once, store in a file, and grep from there...
-    JOBSFILE=~/logs/"temp_bjobs_w_$(date +"%y%m%d_%H%M%S_%N").txt"
+    JOBSFILE=$IBRAIN_LOG_PATH/"temp_bjobs_w_$(date +"%y%m%d_%H%M%S_%N").txt"
     echo "   <!-- gather job information in $JOBSFILE"
  	bjobs -w 1> $JOBSFILE 
     echo "   -->"
@@ -65,7 +72,7 @@ if [ "$INCLUDEDPATH" ] && [ -d $INCLUDEDPATH ]; then
     
     ### CHECK FOR PROJECT SPECIFIC PRECLUSTER SETTINGS FILE
     # echo "  LOOKING FOR PIPELINE IN ${INCLUDEDPATH}"
-    PRECLUSTERSETTINGS=$(~/iBRAIN/searchforpreclusterfile.sh "${INCLUDEDPATH}" " " "${PRECLUSTERBACKUPPATH}")
+    PRECLUSTERSETTINGS=$($IBRAIN_BIN_PATH/searchforpreclusterfile.sh "${INCLUDEDPATH}" " " "${PRECLUSTERBACKUPPATH}")
     # store this as separate file as well...
     PROJECTPRECLUSTERFILE=$PRECLUSTERSETTINGS
     echo "   <pipeline>$PRECLUSTERSETTINGS</pipeline>"

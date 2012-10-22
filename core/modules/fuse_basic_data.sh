@@ -55,7 +55,7 @@ function main {
     #######################################################
     ### SUBMIT FUSE_BASIC_DATA IF FUSEBASICDATAFLAG > 0 ###
     SEARCHSTRING="fuse_basic_data_v5('${INCLUDEDPATH}')"
-    #FUSEBASICDATAJOBCOUNT=$(($(~/iBRAIN/countjobs.sh $SEARCHSTRING) + 0))
+    #FUSEBASICDATAJOBCOUNT=$(($($IBRAIN_BIN_PATH/countjobs.sh $SEARCHSTRING) + 0))
     FUSEBASICDATAJOBCOUNT=$(($(grep $SEARCHSTRING $JOBSFILE -c) + 0))
     if [ ! -w $INCLUDEDPATH ]; then
     	

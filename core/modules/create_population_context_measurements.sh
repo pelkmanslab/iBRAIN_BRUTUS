@@ -70,7 +70,7 @@ M_PROG" 2> /dev/null
             echo "      </warning>"
             echo "      <output>"                    
             ### check resultfiles for known errors, reset/resubmit jobs if appropriate 
-            ~/iBRAIN/check_resultfiles_for_known_errors.sh $BATCHDIR "getLocalCellDensityPerWell_auto" $PROJECTDIR/GetLocalCellDensityPerWell_Auto.submitted
+            $IBRAIN_BIN_PATH/check_resultfiles_for_known_errors.sh $BATCHDIR "getLocalCellDensityPerWell_auto" $PROJECTDIR/GetLocalCellDensityPerWell_Auto.submitted
             echo "      </output>"
 
             echo "     </status>"

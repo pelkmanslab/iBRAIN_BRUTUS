@@ -15,7 +15,7 @@ function main {
     # ILLUMINATION CORRECTION MEASUREMENTS
     # CHECK HOW MANY ILLUMINATION CORRECTION SETTINGS FILES ARE PRESENT. IF THIS IS BIGGER THAN 0,
     # AND FOR EACH EXISTS AN OUTPUT FILE, THAN CONSIDER STEP COMPLETE
-    TOTALILLCORJOBCOUNT=$(~/iBRAIN/countjobs.sh batch_measure_illcor_stats)
+    TOTALILLCORJOBCOUNT=$($IBRAIN_BIN_PATH/countjobs.sh batch_measure_illcor_stats)
     ALLILLCORSETTINGSFILESCOUNT=$(find $BATCHDIR -maxdepth 1 -type f -name "batch_illcor_*.mat" | wc -l)
     if [ $ALLILLCORSETTINGSFILESCOUNT -gt 0 ]; then
         COMPLETEDILLCORMEASUREMENTCHECK=1;
@@ -141,7 +141,7 @@ M_PROG"
                 echo "      </warning>"
                 echo "      <output>"
                 ### check resultfiles for known errors, reset/resubmit jobs if appropriate
-                ~/iBRAIN/check_resultfiles_for_known_errors.sh $BATCHDIR "$ILLCORRESULTFILEBASE" $ILLCORSUBMITTEDFILE
+                $IBRAIN_BIN_PATH/check_resultfiles_for_known_errors.sh $BATCHDIR "$ILLCORRESULTFILEBASE" $ILLCORSUBMITTEDFILE
                 rm -fv $ILLCORSUBMITTEDFILE
                 echo "      </output>"
                 echo "     </status>"
@@ -155,7 +155,7 @@ M_PROG"
                 echo "      </warning>"
                 echo "      <output>"
                 ### check resultfiles for known errors, reset/resubmit jobs if appropriate
-                ~/iBRAIN/check_resultfiles_for_known_errors.sh $BATCHDIR "$ILLCORRESULTFILEBASE" $ILLCORSUBMITTEDFILE
+                $IBRAIN_BIN_PATH/check_resultfiles_for_known_errors.sh $BATCHDIR "$ILLCORRESULTFILEBASE" $ILLCORSUBMITTEDFILE
                 echo "      </output>"
                 echo "     </status>"
 
@@ -200,7 +200,7 @@ M_PROG"
                 echo "      </warning>"
                 echo "      <output>"
                 ### check resultfiles for known errors, reset/resubmit jobs if appropriate
-                ~/iBRAIN/check_resultfiles_for_known_errors.sh $BATCHDIR "$ILLCORRESULTFILEBASE" $ILLCORSUBMITTEDFILE
+                $IBRAIN_BIN_PATH/check_resultfiles_for_known_errors.sh $BATCHDIR "$ILLCORRESULTFILEBASE" $ILLCORSUBMITTEDFILE
                 echo "      </output>"
                 echo "     </status>"
 

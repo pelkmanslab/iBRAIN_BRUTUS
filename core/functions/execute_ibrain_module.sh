@@ -38,7 +38,7 @@ function execute_ibrain_module {
             echo "${MODULEOUT}"
         fi
         # Append result file link and description to some log file
-        echo "<MODULEFILE>$MODULEPATH</MODULEFILE><ERRORDESCRIPTION>$MODULERR</ERRORDESCRIPTION><ERRORTIME>$(date +'%Y%m%d%H%M')</ERRORTIME><MODULEOUT>$(echo ${MODULEOUT} | sed -e 's~&~\&amp;~g' -e 's~<~\&lt;~g' -e  's~>~\&gt;~g' -e 's~--~\-~g')</MODULEOUT>" >> ~/2NAS/Data/Code/iBRAIN/database/errorlog.xml
+        echo "<MODULEFILE>$MODULEPATH</MODULEFILE><ERRORDESCRIPTION>$MODULERR</ERRORDESCRIPTION><ERRORTIME>$(date +'%Y%m%d%H%M')</ERRORTIME><MODULEOUT>$(echo ${MODULEOUT} | sed -e 's~&~\&amp;~g' -e 's~<~\&lt;~g' -e  's~>~\&gt;~g' -e 's~--~\-~g')</MODULEOUT>" >> $IBRAIN_DATABASE_PATH/errorlog.xml
 	else
 	    echo "${MODULEOUT}"
 	fi

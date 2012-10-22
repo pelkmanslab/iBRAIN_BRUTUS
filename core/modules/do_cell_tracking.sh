@@ -61,7 +61,7 @@ function main {
                 TRACKERSUBMITTEDFILE="${PROJECTDIR}/TRACKER_$(basename $TRACKERSETTINGSFILE .txt | sed 's|SetTracker_||g').submitted"
                 TRACKERRUNLIMITFILE="${PROJECTDIR}/TRACKER_$(basename $TRACKERSETTINGSFILE .txt | sed 's|SetTracker_||g').runlimit"
                 TRACKERRESULTFILECOUNT=$(find $BATCHDIR -maxdepth 1 -type f -name "$TRACKERRESULTFILEBASE*.results" | wc -l)
-                #TRACKERJOBCOUNT=$(~/iBRAIN/countjobs.sh $(basename $TRACKERSETTINGSFILE))
+                #TRACKERJOBCOUNT=$($IBRAIN_BIN_PATH/countjobs.sh $(basename $TRACKERSETTINGSFILE))
                 TRACKERJOBCOUNT=$(grep $(basename $TRACKERSETTINGSFILE) $JOBSFILE -c)
                 if [ ! -d $POSTANALYSISDIR ]; then
                     mkdir -p $POSTANALYSISDIR
@@ -129,7 +129,7 @@ M_PROG"
                     echo "      </warning>"
                     echo "      <output>"                    
                     ### check resultfiles for known errors, reset/resubmit jobs if appropriate 
-                    ~/iBRAIN/check_resultfiles_for_known_errors.sh $BATCHDIR "$TRACKERRESULTFILEBASE" $TRACKERSUBMITTEDFILE                            
+                    $IBRAIN_BIN_PATH/check_resultfiles_for_known_errors.sh $BATCHDIR "$TRACKERRESULTFILEBASE" $TRACKERSUBMITTEDFILE                            
                     rm -fv $TRACKERSUBMITTEDFILE
                     echo "      </output>"   
             		if [ -e $TRACKERSETTINGSFILE ]; then
@@ -146,7 +146,7 @@ M_PROG"
                     echo "      </warning>"
                     echo "      <output>"                    
                     ### check resultfiles for known errors, reset/resubmit jobs if appropriate 
-                    ~/iBRAIN/check_resultfiles_for_known_errors.sh $BATCHDIR "$TRACKERRESULTFILEBASE" $TRACKERSUBMITTEDFILE
+                    $IBRAIN_BIN_PATH/check_resultfiles_for_known_errors.sh $BATCHDIR "$TRACKERRESULTFILEBASE" $TRACKERSUBMITTEDFILE
                     echo "      </output>"   
             		if [ -e $TRACKERSETTINGSFILE ]; then
                         echo "     <file type=\"txt\">$TRACKERSETTINGSFILE</file>"
@@ -195,7 +195,7 @@ M_PROG"
                     echo "      </warning>"
                     echo "      <output>"                            
                     ### check resultfiles for known errors, reset/resubmit jobs if appropriate 
-                    ~/iBRAIN/check_resultfiles_for_known_errors.sh $BATCHDIR "$TRACKERRESULTFILEBASE" $TRACKERSUBMITTEDFILE                            
+                    $IBRAIN_BIN_PATH/check_resultfiles_for_known_errors.sh $BATCHDIR "$TRACKERRESULTFILEBASE" $TRACKERSUBMITTEDFILE                            
                     echo "      </output>"
 					if [ -e $TRACKERSETTINGSFILE ]; then
                         echo "     <file type=\"txt\">$TRACKERSETTINGSFILE</file>"

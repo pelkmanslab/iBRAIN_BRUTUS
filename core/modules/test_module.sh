@@ -54,7 +54,7 @@ POSTANALYSISDIR="${INCLUDEDPATH}/POSTANALYSIS/"
 JPGDIR="${INCLUDEDPATH}/JPG/"
 
 # Jobsfile contains the output of "bjobs -w"
-JOBSFILE=~/logs/"temp_bjobs_w_$(date +"%y%m%d_%H%M%S_%N").txt"
+JOBSFILE=$IBRAIN_LOG_PATH/"temp_bjobs_w_$(date +"%y%m%d_%H%M%S_%N").txt"
 
 bjobs -w 1> ${JOBSFILE} 2> /dev/null
 

@@ -27,7 +27,7 @@ function main {
         #
         if [ ! -e $PROJECTDIR/MeasurementsMeanStd.submitted ]; then
 
-            currentjobcount=$(~/iBRAIN/countjobs.sh "Measurements_mean_std_iBRAIN")
+            currentjobcount=$($IBRAIN_BIN_PATH/countjobs.sh "Measurements_mean_std_iBRAIN")
             #currentjobcount=$(grep "Measurements_mean_std_iBRAIN" $JOBSFILE -c)
                          
             if [ $currentjobcount -lt 60 ]; then
@@ -37,7 +37,7 @@ function main {
                 #echo "    PROCESSING: submitting plate normalization calculations"
                 #echo "      </message>"
                 echo "      <output>"                    
-                ~/iBRAIN/platenormalization.sh $BATCHDIR
+                $IBRAIN_BIN_PATH/platenormalization.sh $BATCHDIR
                 touch $PROJECTDIR/MeasurementsMeanStd.submitted
                 echo "      </output>"                    
                 echo "     </status>"                        	
@@ -79,7 +79,7 @@ function main {
             echo "      </warning>"
             echo "      <output>"                    
             ### check resultfiles for known errors, reset/resubmit jobs if appropriate 
-            ~/iBRAIN/check_resultfiles_for_known_errors.sh $BATCHDIR "MeasurementsMeanStd" $PROJECTDIR/MeasurementsMeanStd.submitted
+            $IBRAIN_BIN_PATH/check_resultfiles_for_known_errors.sh $BATCHDIR "MeasurementsMeanStd" $PROJECTDIR/MeasurementsMeanStd.submitted
             echo "      </output>"
             
             ########################################## BS HACK TEMP 10-02-21 #########

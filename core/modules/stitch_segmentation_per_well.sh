@@ -23,7 +23,7 @@ function main {
 
         if [ ! -e $PROJECTDIR/StitchSegmentationPerWell.submitted ]; then
 
-            currentjobcount=$(~/iBRAIN/countjobs.sh "stitchSegmentationPerWell")
+            currentjobcount=$($IBRAIN_BIN_PATH/countjobs.sh "stitchSegmentationPerWell")
 
             if [ $currentjobcount -lt 30 ]; then
 
@@ -77,7 +77,7 @@ function main {
             echo "      </warning>"
             echo "      <output>"
             ### check resultfiles for known errors, reset/resubmit jobs if appropriate
-            ~/iBRAIN/check_resultfiles_for_known_errors.sh $BATCHDIR "StitchSegmentationPerWell" $PROJECTDIR/StitchSegmentationPerWell.submitted
+            $IBRAIN_BIN_PATH/check_resultfiles_for_known_errors.sh $BATCHDIR "StitchSegmentationPerWell" $PROJECTDIR/StitchSegmentationPerWell.submitted
             echo "      </output>"
             echo "     </status>"
 

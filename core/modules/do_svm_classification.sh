@@ -57,7 +57,7 @@ function main {
             SVMSUBMITTEDFILE="${PROJECTDIR}/SVMClassification_$(basename $SVMSETTINGSFILE .mat).submitted"
             SVMRUNLIMITFILE="${PROJECTDIR}/SVMClassification_$(basename $SVMSETTINGSFILE .mat).runlimit"
             SVMRESULTFILECOUNT=$(find $BATCHDIR -maxdepth 1 -type f -name "$SVMRESULTFILEBASE*.results" | wc -l)
-            #SVMJOBCOUNT=$(~/iBRAIN/countjobs.sh $(basename $SVMSETTINGSFILE))
+            #SVMJOBCOUNT=$($IBRAIN_BIN_PATH/countjobs.sh $(basename $SVMSETTINGSFILE))
             SVMJOBCOUNT=$(grep $(basename $SVMSETTINGSFILE) $JOBSFILE -c)
             if [ ! -d $POSTANALYSISDIR ]; then
                 mkdir -p $POSTANALYSISDIR
@@ -120,7 +120,7 @@ M_PROG"
                 echo "      </warning>"
                 echo "      <output>"
                 ### check resultfiles for known errors, reset/resubmit jobs if appropriate
-                ~/iBRAIN/check_resultfiles_for_known_errors.sh $BATCHDIR "$SVMRESULTFILEBASE" $SVMSUBMITTEDFILE
+                $IBRAIN_BIN_PATH/check_resultfiles_for_known_errors.sh $BATCHDIR "$SVMRESULTFILEBASE" $SVMSUBMITTEDFILE
                 rm -fv $SVMSUBMITTEDFILE
                 echo "      </output>"
                 echo "     </status>"
@@ -134,7 +134,7 @@ M_PROG"
                 echo "      </warning>"
                 echo "      <output>"
                 ### check resultfiles for known errors, reset/resubmit jobs if appropriate
-                ~/iBRAIN/check_resultfiles_for_known_errors.sh $BATCHDIR "$SVMRESULTFILEBASE" $SVMSUBMITTEDFILE
+                $IBRAIN_BIN_PATH/check_resultfiles_for_known_errors.sh $BATCHDIR "$SVMRESULTFILEBASE" $SVMSUBMITTEDFILE
                 echo "      </output>"
                 echo "     </status>"
 
@@ -182,7 +182,7 @@ M_PROG"
                 echo "      </warning>"
                 echo "      <output>"
                 ### check resultfiles for known errors, reset/resubmit jobs if appropriate
-                ~/iBRAIN/check_resultfiles_for_known_errors.sh $BATCHDIR "$SVMRESULTFILEBASE" $SVMSUBMITTEDFILE
+                $IBRAIN_BIN_PATH/check_resultfiles_for_known_errors.sh $BATCHDIR "$SVMRESULTFILEBASE" $SVMSUBMITTEDFILE
                 echo "      </output>"
 
                 echo "     </status>"

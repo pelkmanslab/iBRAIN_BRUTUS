@@ -32,7 +32,7 @@ function main {
         #TIFF2PNGCONVERSIONJOBS=$(grep "convert_all_tiff2png" $JOBSFILE -c)
         SEARCHSTRING="convert_all_tiff2png(${TIFFDIR})"
         TIFF2PNGCONVERSIONJOBSPERPLATE=$(($(grep $SEARCHSTRING $JOBSFILE -c) + 0))
-        TIFF2PNGCONVERSIONJOBS=$(~/iBRAIN/countjobs.sh "convert_all_tiff2png")
+        TIFF2PNGCONVERSIONJOBS=$($IBRAIN_BIN_PATH/countjobs.sh "convert_all_tiff2png")
 
         ### IF ALL EXPECTED MEASUREMENTS ARE PRESENT SUBMIT MEASUREMENTS_MEAN_STD
 
@@ -53,7 +53,7 @@ function main {
                 for BATCHPNGCONVERTFILE in $( find $BATCHDIR -maxdepth 1 -type f -name batch_png_convert_*  ); do
                     PNGRESULTFILE="ConvertAllTiff2Png_$(basename ${BATCHPNGCONVERTFILE})_$(date +"%y%m%d%H%M%S").results"
 bsub -W 8:00 -o "${BATCHDIR}$PNGRESULTFILE" << M_PROG
-~/iBRAIN/batchpngconversion.sh ${BATCHPNGCONVERTFILE}
+$IBRAIN_BIN_PATH/batchpngconversion.sh ${BATCHPNGCONVERTFILE}
 #mogrify -depth 16 -type Grayscale -format png *.tif && rm *.tif
 echo "${SEARCHSTRING}"
 M_PROG
@@ -185,7 +185,7 @@ M_PROG
             echo "    CONVERTALLTIFF2PNGRESULTCOUNT=$CONVERTALLTIFF2PNGRESULTCOUNT"
             echo "    TIFF2PNGCONVERSIONJOBSPERPLATE = $TIFF2PNGCONVERSIONJOBSPERPLATE"
             ### check resultfiles for known errors, reset/resubmit jobs if appropriate
-            ERRORCHECKOUTPUT=$(~/iBRAIN/check_resultfiles_for_known_errors.sh $BATCHDIR "ConvertAllTiff2Png_" $PROJECTDIR/ConvertAllTiff2Png.submitted)
+            ERRORCHECKOUTPUT=$($IBRAIN_BIN_PATH/check_resultfiles_for_known_errors.sh $BATCHDIR "ConvertAllTiff2Png_" $PROJECTDIR/ConvertAllTiff2Png.submitted)
             echo " ${ERRORCHECKOUTPUT}"
             #ERRORCHECKOUTPUTTIMEOUTCOUNT=$(grep "${ERRORCHECKOUTPUT}" "Job exceeded runlimit" -c)
             if [ $(echo "$ERRORCHECKOUTPUT" | grep "no known or unknown errors were found" -c) -gt 0 ]; then

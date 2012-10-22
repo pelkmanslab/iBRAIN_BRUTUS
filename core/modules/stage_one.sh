@@ -82,7 +82,7 @@ function main {
     if [ ! -e $PROJECTDIR/iBRAIN_Stage_1.completed ] && ( [ ! -d $BATCHDIR ] || [ $BATCHJOBCOUNT -eq 0 ] ) && [ ! -e $PROJECTDIR/PreCluster.submitted ]; then
 
         # LOOK FOR SETTINGS FILE IN PROJECTDIR
-        # PLATEPRECLUSTERSETTINGS=$(~/iBRAIN/searchforpreclusterfile.sh ${PROJECTDIR} ${PLATEPRECLUSTERSETTINGS} ${PRECLUSTERBACKUPPATH})
+        # PLATEPRECLUSTERSETTINGS=$($IBRAIN_BIN_PATH/searchforpreclusterfile.sh ${PROJECTDIR} ${PLATEPRECLUSTERSETTINGS} ${PRECLUSTERBACKUPPATH})
 
         if [ "$PLATEPRECLUSTERSETTINGS" ] && [ "$PLATEPRECLUSTERSETTINGS" != " " ] && [ -f $PLATEPRECLUSTERSETTINGS ]; then
             #echo "  PROCESSING $(basename $PROJECTDIR) ($PLATEJOBCOUNT JOBS): submitting precluster with $(basename $PLATEPRECLUSTERSETTINGS)"
@@ -94,7 +94,7 @@ function main {
             if [ ! -d $POSTANALYSISDIR ]; then
                 mkdir -p $POSTANALYSISDIR
             fi
-            ~/iBRAIN/precluster.sh $PROJECTDIR $PLATEPRECLUSTERSETTINGS
+            $IBRAIN_BIN_PATH/precluster.sh $PROJECTDIR $PLATEPRECLUSTERSETTINGS
             echo "      </output>"
             echo "     </status>"
         else
@@ -138,7 +138,7 @@ function main {
 
         echo "      <output>"
         touch $PROJECTDIR/PreCluster.resubmitted
-        ~/iBRAIN/precluster.sh $PROJECTDIR $PLATEPRECLUSTERSETTINGS
+        $IBRAIN_BIN_PATH/precluster.sh $PROJECTDIR $PLATEPRECLUSTERSETTINGS
         echo "      </output>"
         echo "     </status>"
 
@@ -154,7 +154,7 @@ function main {
         if [ $PLATEJOBCOUNT -eq 0 ]; then
             echo "  ALERT: iBRAIN IS WAITING, BUT THERE ARE NO JOBS (PENDING OR RUNNING) FOR THIS PROJECT. CHECKING RESULT FILES FOR KNOWN ERRORS"
             # check resultfiles for known errors, reset/resubmit jobs if appropriate
-            ~/iBRAIN/check_resultfiles_for_known_errors.sh $BATCHDIR "PreCluster_" $PROJECTDIR/PreCluster.resubmitted
+            $IBRAIN_BIN_PATH/check_resultfiles_for_known_errors.sh $BATCHDIR "PreCluster_" $PROJECTDIR/PreCluster.resubmitted
         fi
         echo "      </output>"
         echo "     </status>"
@@ -170,7 +170,7 @@ function main {
         if [ $PLATEJOBCOUNT -eq 0 ]; then
             #echo "  ALERT: iBRAIN IS WAITING, BUT THERE ARE NO JOBS (PENDING OR RUNNING) FOR THIS PROJECT. CHECKING RESULT FILES FOR KNOWN ERRORS"
             # check resultfiles for known errors, reset/resubmit jobs if appropriate
-            ~/iBRAIN/check_resultfiles_for_known_errors.sh $BATCHDIR "PreCluster_" $PROJECTDIR/PreCluster.resubmitted
+            $IBRAIN_BIN_PATH/check_resultfiles_for_known_errors.sh $BATCHDIR "PreCluster_" $PROJECTDIR/PreCluster.resubmitted
         fi
         echo "      </output>"
         echo "     </status>"
@@ -184,7 +184,7 @@ function main {
         #echo "  PROCESSING $(basename $PROJECTDIR) ($PLATEJOBCOUNT JOBS): submitting CPCluster batch jobs"
         echo "     <status action=\"cpcluster\">submitting"
         echo "      <output>"
-        ~/iBRAIN/submitbatchjobs.sh $BATCHDIR
+        $IBRAIN_BIN_PATH/submitbatchjobs.sh $BATCHDIR
         echo "      </output>"
         echo "     </status>"
 
@@ -194,7 +194,7 @@ function main {
         #echo "  PROCESSING $(basename $PROJECTDIR) ($PLATEJOBCOUNT JOBS): submitting batch jobs"
         echo "     <status action=\"cpcluster\">submitting"
         echo "      <output>"
-        ~/iBRAIN/submitbatchjobs.sh $BATCHDIR
+        $IBRAIN_BIN_PATH/submitbatchjobs.sh $BATCHDIR
         echo "      </output>"
         echo "     </status>"
 
@@ -270,7 +270,7 @@ M_PROG"
           fi
         done
 
-        #~/iBRAIN/submitbatchjobs.sh $BATCHDIR
+        #$IBRAIN_BIN_PATH/submitbatchjobs.sh $BATCHDIR
         echo "      </output>"
         echo "     </status>"
 
@@ -317,7 +317,7 @@ M_PROG"
                EXPECTEDOUTPUT=$(dirname $batchJob)/"${JOBBASENAME}_OUT.mat"
                if [ ! -e $EXPECTEDOUTPUT ]; then
                  echo "no output found for $JOBBASENAME"
-                  ~/iBRAIN/check_resultfiles_for_known_errors.sh $BATCHDIR $JOBBASENAME $PROJECTDIR/SubmitBatchJobs.resubmitted
+                  $IBRAIN_BIN_PATH/check_resultfiles_for_known_errors.sh $BATCHDIR $JOBBASENAME $PROJECTDIR/SubmitBatchJobs.resubmitted
                fi
             done
         fi
@@ -345,7 +345,7 @@ M_PROG"
                EXPECTEDOUTPUT="${JOBBASENAME}_OUT.mat"
                if [ ! -e $EXPECTEDOUTPUT ]; then
                   #echo "no output found for $JOBBASENAME"
-                  ~/iBRAIN/check_resultfiles_for_known_errors.sh $BATCHDIR $JOBBASENAME $PROJECTDIR/SubmitBatchJobs.resubmitted
+                  $IBRAIN_BIN_PATH/check_resultfiles_for_known_errors.sh $BATCHDIR $JOBBASENAME $PROJECTDIR/SubmitBatchJobs.resubmitted
                fi
             done
         fi
@@ -368,7 +368,7 @@ M_PROG"
         echo DATAFUSIONRESULTCOUNT=$DATAFUSIONRESULTCOUNT
         echo EXPECTEDMEASUREMENTS=$EXPECTEDMEASUREMENTS
         touch $PROJECTDIR/DataFusion.submitted
-        ~/iBRAIN/datafusion.sh $BATCHDIR
+        $IBRAIN_BIN_PATH/datafusion.sh $BATCHDIR
 
         echo "      </output>"
         echo "     </status>"
@@ -409,7 +409,7 @@ M_PROG"
     elif [ ! -e $PROJECTDIR/iBRAIN_Stage_1.completed ] && [ -e $PROJECTDIR/DataFusion.submitted ] && [ ! -e $PROJECTDIR/DataFusionCheckAndCleanup.submitted ]; then
 
         ### ONLY SUBMIT datafusioncheckandcleanup IF THERE ARE LESS THAN 60 DATAFUSION-CHECK JOBS PRESENT, OTHERWISE THE NAS WILL FREAK OUT BECAUSE OF HIGH I/O
-        DATAFUSIONCHECKJOBCOUNT=$(~/iBRAIN/countjobs.sh datafusioncheckandcleanup)
+        DATAFUSIONCHECKJOBCOUNT=$($IBRAIN_BIN_PATH/countjobs.sh datafusioncheckandcleanup)
         #DATAFUSIONCHECKJOBCOUNT=$(grep "datafusioncheckandcleanup" $JOBSFILE -c)
         if [ $DATAFUSIONCHECKJOBCOUNT -lt 60 ]; then
 
@@ -419,7 +419,7 @@ M_PROG"
         #echo "      </message>"
         echo "      <output>"
 
-           ~/iBRAIN/submitdatafusioncheckandcleanup.sh $BATCHDIR
+           $IBRAIN_BIN_PATH/submitdatafusioncheckandcleanup.sh $BATCHDIR
 
         echo "      </output>"
         echo "     </status>"
@@ -466,7 +466,7 @@ M_PROG"
         echo "  RESETTING DATAFUSIONCHECKANDCLEANUP (UNORTHODOX :-)"
         # rm -f $PROJECTDIR/DataFusionCheckAndCleanup.submitted
         rm -f $BATCHDIR/DataFusionCheckAndCleanup_*.results
-        ~/iBRAIN/submitdatafusioncheckandcleanup.sh $BATCHDIR
+        $IBRAIN_BIN_PATH/submitdatafusioncheckandcleanup.sh $BATCHDIR
         echo "      </output>"
         echo "     </status>"
 
@@ -480,7 +480,7 @@ M_PROG"
         echo "      </message>"
         echo "      <output>"
         touch $PROJECTDIR/DataFusion.resubmitted
-        ~/iBRAIN/datafusion.sh $BATCHDIR
+        $IBRAIN_BIN_PATH/datafusion.sh $BATCHDIR
         echo "      </output>"
         echo "     </status>"
 
@@ -493,7 +493,7 @@ M_PROG"
         echo "      </message>"
         echo "      <output>"
         touch $PROJECTDIR/DataFusion.resubmitted
-        ~/iBRAIN/datafusion.sh $BATCHDIR
+        $IBRAIN_BIN_PATH/datafusion.sh $BATCHDIR
         echo "      </output>"
         echo "     </status>"
 
@@ -506,7 +506,7 @@ M_PROG"
         #echo "      </message>"
         echo "      <output>"
         touch $PROJECTDIR/DataFusionCheckAndCleanup.resubmitted
-        ~/iBRAIN/submitdatafusioncheckandcleanup.sh $BATCHDIR
+        $IBRAIN_BIN_PATH/submitdatafusioncheckandcleanup.sh $BATCHDIR
         echo "      </output>"
         echo "     </status>"
 

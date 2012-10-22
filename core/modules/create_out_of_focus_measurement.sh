@@ -30,7 +30,7 @@ function main {
             #echo "    PROCESSING: submitting outoffocus checking"
             #echo "      </message>"
             echo "      <output>"                    
-            ~/iBRAIN/checkoutoffocus.sh $BATCHDIR
+            $IBRAIN_BIN_PATH/checkoutoffocus.sh $BATCHDIR
             echo "      </output>"                    
             echo "     </status>"                     
             
@@ -46,7 +46,7 @@ function main {
             if [ $PLATEJOBCOUNT -eq 0 ]; then
                 echo "  ALERT: iBRAIN IS WAITING, BUT THERE ARE NO JOBS (PENDING OR RUNNING) FOR THIS PROJECT. CHECKING RESULT FILES FOR KNOWN ERRORS"
                 # check resultfiles for known errors, reset/resubmit jobs if appropriate 
-                # ~/iBRAIN/check_resultfiles_for_known_errors.sh $BATCHDIR "CheckOutOfFocus" $PROJECTDIR/CheckOutOfFocus.submitted
+                # $IBRAIN_BIN_PATH/check_resultfiles_for_known_errors.sh $BATCHDIR "CheckOutOfFocus" $PROJECTDIR/CheckOutOfFocus.submitted
                 rm -f $PROJECTDIR/CheckOutOfFocus.submitted
             fi
             echo "      </output>"                    
@@ -62,7 +62,7 @@ function main {
             echo "      </warning>"
             echo "      <output>"                    
             ### check resultfiles for known errors, reset/resubmit jobs if appropriate 
-            ~/iBRAIN/check_resultfiles_for_known_errors.sh $BATCHDIR "CheckOutOfFocus" $PROJECTDIR/CheckOutOfFocus.submitted
+            $IBRAIN_BIN_PATH/check_resultfiles_for_known_errors.sh $BATCHDIR "CheckOutOfFocus" $PROJECTDIR/CheckOutOfFocus.submitted
             echo "      </output>"                    
             echo "     </status>"  
           
@@ -96,7 +96,7 @@ function main {
             echo "      </warning>"
             echo "      <output>"                    
             ### check resultfiles for known errors, reset/resubmit jobs if appropriate 
-            ~/iBRAIN/check_resultfiles_for_known_errors.sh $BATCHDIR "CheckOutOfFocus" $PROJECTDIR/CheckOutOfFocus.submitted
+            $IBRAIN_BIN_PATH/check_resultfiles_for_known_errors.sh $BATCHDIR "CheckOutOfFocus" $PROJECTDIR/CheckOutOfFocus.submitted
             echo "      </output>"                    
             echo "     </status>" 
             

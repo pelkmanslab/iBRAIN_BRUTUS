@@ -68,7 +68,7 @@ function main {
             if [ ! -d $POSTANALYSISDIR ]; then
                 mkdir -p $POSTANALYSISDIR
             fi
-            ~/iBRAIN/createplateoverview.sh $BATCHDIR 2> /dev/null
+            $IBRAIN_BIN_PATH/createplateoverview.sh $BATCHDIR 2> /dev/null
             echo "      </output>"
             echo "     </status>"
 
@@ -97,7 +97,7 @@ function main {
             echo "      </warning>"
             echo "      <output>"                    
             ### check resultfiles for known errors, reset/resubmit jobs if appropriate 
-            ~/iBRAIN/check_resultfiles_for_known_errors.sh $BATCHDIR "CreatePlateOverview" $PROJECTDIR/CreatePlateOverview.submitted 
+            $IBRAIN_BIN_PATH/check_resultfiles_for_known_errors.sh $BATCHDIR "CreatePlateOverview" $PROJECTDIR/CreatePlateOverview.submitted 
             echo "      </output>"                    
             echo "     </status>"                      
             
