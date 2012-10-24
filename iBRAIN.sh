@@ -443,7 +443,7 @@ for INCLUDEDPATH in $(sed -e 's/[[:cntrl:]]//g' $INCLUDEDPATHSFILE); do
 	            	echo "<!-- submitting 8h (long) ibrain_project.sh on $INCLUDEDPATH"
 		        	# submit job: run ibrain_project. sed-transform the xml to be web-friendly. store output in new XML output file
 bsub -W 08:00 -oo $PROJECTXMLDIR/ibrain_project_sh_output.results "
-./iBRAIN_project.sh "$INCLUDEDPATH" "$PRECLUSTERBACKUPPATH" "$PROJECTXMLDIR" "$NEWPROJECTXMLOUTPUT" 2>&1 | $IBRAIN_BIN_PATH/sedTransformLogWeb.sed > $NEWPROJECTXMLOUTPUT 2>&1;
+$IBRAIN_ROOT/iBRAIN_project.sh "$INCLUDEDPATH" "$PRECLUSTERBACKUPPATH" "$PROJECTXMLDIR" "$NEWPROJECTXMLOUTPUT" 2>&1 | $IBRAIN_BIN_PATH/sedTransformLogWeb.sed > $NEWPROJECTXMLOUTPUT 2>&1;
 xsltproc -o $NEWPROJECTHTMLOUTPUT $NEWPROJECTXMLOUTPUT;
 "
                 	echo "-->"
@@ -451,7 +451,7 @@ xsltproc -o $NEWPROJECTHTMLOUTPUT $NEWPROJECTXMLOUTPUT;
 	            	echo "<!-- submitting 1h (short) ibrain_project.sh on $INCLUDEDPATH"
         			# submit job: run ibrain_project. sed-transform the xml to be web-friendly. store output in new XML output file
 bsub -W 01:00 -oo $PROJECTXMLDIR/ibrain_project_sh_output.results "
-$IBRAIN_BIN_PATH/iBRAIN_project.sh "$INCLUDEDPATH" "$PRECLUSTERBACKUPPATH" "$PROJECTXMLDIR" "$NEWPROJECTXMLOUTPUT" 2>&1 | $IBRAIN_BIN_PATH/sedTransformLogWeb.sed > $NEWPROJECTXMLOUTPUT 2>&1;
+$IBRAIN_ROOT/iBRAIN_project.sh "$INCLUDEDPATH" "$PRECLUSTERBACKUPPATH" "$PROJECTXMLDIR" "$NEWPROJECTXMLOUTPUT" 2>&1 | $IBRAIN_BIN_PATH/sedTransformLogWeb.sed > $NEWPROJECTXMLOUTPUT 2>&1;
 xsltproc -o $NEWPROJECTHTMLOUTPUT $NEWPROJECTXMLOUTPUT;
 "
                 	echo "-->"
