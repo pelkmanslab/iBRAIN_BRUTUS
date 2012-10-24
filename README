@@ -44,9 +44,13 @@ MAIL=/var/spool/mail/bsnijder
 $ cat scripts/crontab-wrapper 
 #!/bin/bash
 [ $(id -gn) = nas_bio3 ] || exec sg nas_bio3 "$0 $@"
-[ -r $HOME/.bashrc ] && . $HOME/.bashrc
+#[ -r $HOME/.bashrc ] && . $HOME/.bashrc 
+# .bash_profile can contian statements like 'load module matlab'
+[ -r $HOME/.bash_profile ] && . $HOME/.bash_profile
 [ -r $HOME/.profile ] && . $HOME/.profile
+#export IBRAIN_ROOT=$HOME/iBRAIN
 exec "$@"
+
 
 Example of .bashrc
 
