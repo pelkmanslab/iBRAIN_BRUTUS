@@ -20,7 +20,7 @@ echo "<!-- current module including parameter_test.sh = ${MODULENAME} -->"
 
 # Here we could have a global test or debug variable, that bypasses these requirement-checks if we are in some sort of DEBUG or TEST mode.
 ${INCLUDEDPATH:?"Need to set INCLUDEDPATH non-empty; INCLUDEDPATH is the path to the current project directory"} &> /dev/null 
-${TIFFDIRECTORYLISTING:?"Need to set TIFFDIRECTORYLISTING non-empty. TIFFDIRECTORYLISTING is the list of all TIFF directories found at any depth in the INCLUDEDPATH"} &> /dev/null 
+${PLATEDIRECTORYLISTING:?"Need to set PLATEDIRECTORYLISTING non-empty. PLATEDIRECTORYLISTING is the list of all PLATE directories found at any depth in the INCLUDEDPATH"} &> /dev/null 
 ${TIFFDIR:?"Need to set TIFFDIR non-empty. TIFFDIR is the current entry of the list of TIFF directories present in TIFFDIRECTORYLISTING"} &> /dev/null
 ${PROJECTDIR:?"Need to set PROJECTDIR non-empty. PROJECTDIR is the parent directory of TIFFDIR"} &> /dev/null
 ${BATCHDIR:?"Need to set BATCHDIR non-empty. BATCHDIR is a BATCH directory next to TIFFDIR"} &> /dev/null

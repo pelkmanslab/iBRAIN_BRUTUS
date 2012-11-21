@@ -37,7 +37,7 @@ function main {
         if [ -d $JPGDIR ]; then
             # CHECK HOW MANY JPGs HAVE BEEN CREATED
             JPGCOUNT=$(find $JPGDIR -maxdepth 1 -type f -name "*.jpg" | wc -l)
-            JPGPLATEOVERVIEWCOUNT=$(find $JPGDIR -maxdepth 1 -type f -name "*PlateOverview.jpg" | wc -l)                    
+            JPGPLATEOVERVIEWCOUNT=$(find $JPGDIR -maxdepth 1 -type f -name "*PlateOverview.jpg" | wc -l)
             CREATEJPGRESULTCOUNT=$(find $BATCHDIR -maxdepth 1 -type f -name "CreateJPGs*.results" | wc -l)
         else
             JPGPLATEOVERVIEWCOUNT=0

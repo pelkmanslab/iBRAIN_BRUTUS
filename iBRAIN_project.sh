@@ -33,7 +33,7 @@ fi
 echo "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>"
 echo "<?xml-stylesheet type=\"text/xsl\" href=\"../../project.xsl\"?>"
 
-INCLUDEDPATH="$1"
+INCLUDEDPATH="$1" # a path of the project to analyze
 PRECLUSTERBACKUPPATH="$2"
 PROJECTXMLDIR="$3"
 NEWPROJECTXMLOUTPUT="$4"    
@@ -91,24 +91,18 @@ if [ "$INCLUDEDPATH" ] && [ -d $INCLUDEDPATH ]; then
     ### INIT PLATES XML ELEMENT
     echo "   <plates>"
     
-    ### GET LIST OF ALL UNDERLYING TIFF FOLDERS
-    echo "    <!-- Start searching for TIFF directories"
-    if [ "$(echo $INCLUDEDPATH | grep '_DG$')" ]; then
-        ### IF THIS IS A _DG PROJECT, ONLY LOOK FOR TIFF DIRECTORIES IN DEFINED DEPTH
-    	echo "    DG DIRECTORY DETECTED, ONLY LOOKING FOR TIFF DIRS IN PREDEFINED DEPTHS "	
-        TIFFDIRECTORYLISTING=$(find $INCLUDEDPATH -mindepth 2 -maxdepth 2 -type d -name "TIFF")
-    else
-        ### OTHERWISE WE CAN NOT KNOW THE DEPTH OF THE TIFF DIRECTORIES
-        TIFFDIRECTORYLISTING=$(find $INCLUDEDPATH -type d -name "TIFF")
-    fi
-    echo "    -->"
-    
+    ### GET LIST OF ALL UNDERLYING PLATE FOLDERS (e.g. containing TIFF, also see wiki/docs for full definition of a plate folder) 
+    echo "    <!-- "
+    . ./core/functions/list_plate_folders.sh    
+    echo "        Looking for plates inside the project path: $INCLUDEDPATH"
+    PLATEDIRECTORYLISTING=$( list_plate_folders "$INCLUDEDPATH" )
+
     ### START MAIN LOOP OVER ALL UNDERLYING TIFF FOLDERS
-    for tiff in $TIFFDIRECTORYLISTING; do
+    for PLATEFOLDER in $PLATEDIRECTORYLISTING; do
         echo "    <plate>"
         ### SET MAIN DIRECTORY PARAMETERS
-        TIFFDIR=$tiff                
-        PROJECTDIR=$(dirname $tiff)
+        PROJECTDIR="${PLATEFOLDER}"
+        TIFFDIR=${PLATEFOLDER}/TIFF/
         BATCHDIR=${PROJECTDIR}/BATCH/
         POSTANALYSISDIR=${PROJECTDIR}/POSTANALYSIS/
         JPGDIR=${PROJECTDIR}/JPG/
@@ -159,6 +153,9 @@ if [ "$INCLUDEDPATH" ] && [ -d $INCLUDEDPATH ]; then
     	    echo "-->"
         fi
 
+        #####################################################################
+        ### DATA HANDLING INTEGRATION: includes copying/renaming of files ###
+
 
 
         ##############################
@@ -171,10 +168,10 @@ if [ "$INCLUDEDPATH" ] && [ -d $INCLUDEDPATH ]; then
         ### START STAGE 0: png conversion and illumination correction ###
         if [ -e ${BATCHDIR}/checkimageset.complete ]; then
 
-            # - PNG conversion
+            # - illumination correction
             . ./core/modules/do_illumination_correction.sh
  
-            # - illumination correction
+            # - PNG conversion
             . ./core/modules/convert_tiff_to_png.sh
 
             # add backwards compatibility...
