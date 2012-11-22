@@ -11,7 +11,10 @@ function list_plate_folders {
         LISTING=$(find $INCLUDEDPATH -mindepth 2 -maxdepth 2 -type d -name "TIFF")
     else
         ### OTHERWISE WE CAN NOT KNOW THE DEPTH OF THE TIFF DIRECTORIES
-        LISTING=$(find $INCLUDEDPATH -type d -name "TIFF")
+        LISTINGTIFF=$(find $INCLUDEDPATH -type d -name "TIFF")
+        LISTINGNIKON=$(find $INCLUDEDPATH -type d -name "NIKON")
+        # Concat both lists.
+        LISTING="${LISTINGTIFF[*]} ${LISTINGNIKON[*]}"
     fi
 
     for FOLDER in $LISTING; do
