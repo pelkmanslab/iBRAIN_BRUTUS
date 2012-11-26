@@ -450,7 +450,9 @@ xsltproc -o $NEWPROJECTHTMLOUTPUT $NEWPROJECTXMLOUTPUT;
 	            else
 	            	echo "<!-- submitting 1h (short) ibrain_project.sh on $INCLUDEDPATH"
         			# submit job: run ibrain_project. sed-transform the xml to be web-friendly. store output in new XML output file
+                    # FIXME first line in the submission below is an ugly fixs for BRUTUS infrastructural problems - an IO timeout
 bsub -W 01:00 -oo $PROJECTXMLDIR/ibrain_project_sh_output.results "
+ls -l /BIOL/imsb/fs2/bio3/bio3/; 
 $IBRAIN_ROOT/iBRAIN_project.sh "$INCLUDEDPATH" "$PRECLUSTERBACKUPPATH" "$PROJECTXMLDIR" "$NEWPROJECTXMLOUTPUT" 2>&1 | $IBRAIN_BIN_PATH/sedTransformLogWeb.sed > $NEWPROJECTXMLOUTPUT 2>&1;
 xsltproc -o $NEWPROJECTHTMLOUTPUT $NEWPROJECTXMLOUTPUT;
 "

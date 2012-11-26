@@ -100,7 +100,8 @@ for resultFile in $(ls $BATCHDIR/${RESULTFILESUFFIX}*.results -tr 2>/dev/null | 
   fi
 
   # Append result file link and description to some log file
-  echo "<RESULTFILE>$resultFile</RESULTFILE><ERRORDESCRIPTION>$ERRORCAUSE</ERRORDESCRIPTION><ERRORTIME>$(date +'%Y%m%d%H%M')</ERRORTIME><ERRORGREP>$ERRORGREP</ERRORGREP>" >> ~/2NAS/Data/Code/iBRAIN/database/errorlog.xml
+  ERRORLOG=~/iBRAIN_errorlog.xml # FIXME
+  echo "<RESULTFILE>$resultFile</RESULTFILE><ERRORDESCRIPTION>$ERRORCAUSE</ERRORDESCRIPTION><ERRORTIME>$(date +'%Y%m%d%H%M')</ERRORTIME><ERRORGREP>$ERRORGREP</ERRORGREP>" >> $ERRORLOG
 done
 ###
 
