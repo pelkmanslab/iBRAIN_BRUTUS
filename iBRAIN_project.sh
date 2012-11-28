@@ -97,6 +97,7 @@ if [ "$INCLUDEDPATH" ] && [ -d $INCLUDEDPATH ]; then
     echo "        Looking for plates inside the project path: $INCLUDEDPATH"
     PLATEDIRECTORYLISTING=$( list_plate_folders "$INCLUDEDPATH" )
     echo "    --> "
+    unset -f list_plate_folders
 
     ### START MAIN LOOP OVER ALL UNDERLYING TIFF FOLDERS
     for PLATEFOLDER in $PLATEDIRECTORYLISTING; do
