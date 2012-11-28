@@ -13,6 +13,13 @@ function main {
 #### VARIABLES ####
 ###################
 
+        # Some NIKON depended logic.
+        NIKONDIR="${PROJECTDIR}/NIKON"
+        if [ -d $NIKONDIR ] && [ ! -d $TIFFDIR ] ; then
+            # Wait for nikon images to be renamed.
+            return
+        fi
+
         # CHECK IF IMAGE SET IS COMPLETE
         COMPLETEFILECHECK=$(find $TIFFDIR -maxdepth 1 -type f -name "CheckImageSet_*.complete" | wc -l)
         TIFFDIRLASTMODIFIED=$(find $PROJECTDIR -maxdepth 1 -type d -mmin +30 -name "TIFF" | wc -l)
