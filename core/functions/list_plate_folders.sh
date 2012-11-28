@@ -11,7 +11,7 @@ function list_plate_folders {
         LISTING=$(find $INCLUDEDPATH -mindepth 2 -maxdepth 2 -type d -name 'TIFF' | parallel 'dirname {}' |  uniq)
     else
         ### OTHERWISE WE CAN NOT KNOW THE DEPTH OF THE TIFF DIRECTORIES
-        LISTINGTIFF=$(find $INCLUDEDPATH -type d -regex '.*\/\(TIFF\|NIKON\)$' | parallel 'dirname {}' |  uniq)
+        LISTING=$(find $INCLUDEDPATH -type d -regex '.*\/\(TIFF\|NIKON\)$' | parallel 'dirname {}' |  uniq)
     fi
 
     for FOLDER in $LISTING; do
