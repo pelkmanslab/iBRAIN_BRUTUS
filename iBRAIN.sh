@@ -67,9 +67,11 @@ echo "<ibrain_log>"
 
 ### GET OVERVIEW OF JOBS ONLY ONCE, AND RE-PARSE PER PROJECT, 
 ### IN STEAD OF QUERYING ALL JOBS FOR EACH PROJECT.
+echo " <!-- Getting an overview over scheduled jobs"
 PRESENTJOBS=$(bjobs -w 1> $IBRAIN_LOG_PATH/bjobsw.txt)
 RUNNINGJOBS=$(bjobs -rw 1> $IBRAIN_LOG_PATH/bjobsrw.txt)
 ALLJOBS=$(bjobs -aw 1> $IBRAIN_LOG_PATH/bjobsaw.txt)
+echo " -->"
 
 echo " <ibrain_meta>"
 echo "  <author>Berend Snijder</author>"
