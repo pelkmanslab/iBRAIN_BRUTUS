@@ -157,6 +157,7 @@ if [ "$INCLUDEDPATH" ] && [ -d $INCLUDEDPATH ]; then
 
         #####################################################################
         ### DATA HANDLING INTEGRATION: includes copying/renaming of files ###
+        . ./core/modules/check_image_set_nikon.sh #  Timouting on nikon
         . ./core/modules/rename_nikon.sh
         #####################################################################
 

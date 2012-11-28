@@ -8,11 +8,16 @@
 ############################
 
 function main {
+
+###################
+#### VARIABLES ####
+###################
+
         NIKONDIR="${PROJECTDIR}/NIKON"
         NIKONTMPDIR="${PROJECTDIR}/TMPNKDIR"
-     
+  
  
-        if [ ! -d $NIKONDIR ]; then
+        if [ ! -d $NIKONDIR ] || [ ! -e ${NIKONDIR}/CheckNikonImageSet.complete ] ; then
             # Nothing to do. Just jump to the next iBRAIN module.
             return
         fi
@@ -135,6 +140,10 @@ M_PROG"
             if [ -d $NIKONTMPDIR ] && [ ! -d $TIFFDIR ]; then
                 # Rename TMP dir into TIFF
                 mv $NIKONTMPDIR $TIFFDIR
+            fi
+            if [ -d $TIFFDIR ] && [ $TIFFCOUNT -gt 0 ] && [ ! -e $TIFFDIR/CheckImageSet_${TIFFCOUNT}.complete ]; then
+                touch $TIFFDIR/CheckImageSet_${TIFFCOUNT}.complete
+                touch ${BATCHDIR}/checkimageset.complete
             fi
             echo "     <status action=\"${MODULENAME}\">completed"
             echo "     </status>"
