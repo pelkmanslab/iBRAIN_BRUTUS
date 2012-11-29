@@ -18,6 +18,11 @@ function main {
         FLAGPREFIX='CheckNikonImageSet'
         COMPLETEFLAG="${IMGDIR}/${FLAGPREFIX}.complete"
 
+        if [ ! -d $IMGDIR ]; then
+            # Nothing to do. Just jump to the next iBRAIN module.
+            return
+        fi
+
         # CHECK IF IMAGE SET IS COMPLETE
         IMGDIRLASTMODIFIED=$(find $PROJECTDIR -maxdepth 1 -type d -mmin +30 -name "$FOLDER" | wc -l)
 
