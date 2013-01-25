@@ -14,5 +14,5 @@ export IBRAIN_USER=$(whoami)
 export IBRAIN_ADMIN_EMAIL=yauhen.yakimovich@uzh.ch
 
 
-export PATH=$PATH:$IBRAIN_BIN_PATH
+export PATH=$IBRAIN_BIN_PATH:$PATH
 
