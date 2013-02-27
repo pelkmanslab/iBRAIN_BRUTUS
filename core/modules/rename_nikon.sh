@@ -87,7 +87,7 @@ M_PROG"
             echo "      <output>"
             ### EXPERIMENTAL: IF NO JOBS ARE FOUND FOR THIS PROJECT, WAITING IS SENSELESS. REMOVE .submitted FILE AND TRY AGAIN
             if [ $RENAMEDNIKONRESULTCOUNT -eq 0 ]; then
-                echo "    ALERT: iBRAIN IS WAITING FOR NIKON RENAMING, BUT THERE ARE NO JOBS (PENDING OR RUNNING) FOR THIS PROJECT. RETRYING THIS FOLDER"
+                echo "    ALERT: iBRAIN IS WAITING FOR NIKON RENAMING AND THERE ARE NO FINISHED JOBS YET. RETRYING THIS FOLDER IF NECESSARY"
                 rm -f $PROJECTDIR/RenameNikonImages.submitted
             fi
             echo "      </output>"

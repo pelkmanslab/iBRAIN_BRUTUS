@@ -24,8 +24,8 @@ function main {
         fi
 
         # CHECK IF IMAGE SET IS COMPLETE
-        IMGCOUNT=$(find $NIKONDIR -maxdepth 1 -type f -iregex '.*\.\(tiff?\|stk\)$' | wc -l)
-        IMGDIRLASTMODIFIED=$(find $PROJECTDIR -maxdepth 1 -type d -mmin +30 -name "$FOLDER" | wc -l)
+        IMGCOUNT=$(find $IMGDIR -maxdepth 1 -type f -iregex '.*\.\(tiff?\|stk\)$' | wc -l)
+        IMGDIRLASTMODIFIED=$(find $IMGDIR -maxdepth 1 -type d -mmin +30 -name "$FOLDER" | wc -l)
 
         echo "<!-- COMPLETEFILECHECK=$COMPLETEFILECHECK -->"
         echo "<!-- IMGDIRLASTMODIFIED=$IMGDIRLASTMODIFIED -->"
@@ -67,7 +67,7 @@ function main {
 
         elif [ ! -e $COMPLETEFLAG ] && [ $IMGDIRLASTMODIFIED -eq 1 ]; then
                            
-            if [ ! -e $COMPLETEFLAG ]; then
+            if [ ! -e $COMPLETEFLAG ] && [ ! -w $IMGDIR ] ; then
 
                 echo "     <status action=\"${MODULENAME}\">failed"
                 echo "      <warning>"
