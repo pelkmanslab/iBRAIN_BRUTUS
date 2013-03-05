@@ -168,9 +168,10 @@ if [ "$INCLUDEDPATH" ] && [ -d $INCLUDEDPATH ]; then
         ############################################
         
 
-        #################################################################
-        ### START STAGE 0: png conversion and illumination correction ###
-        if [ -e ${BATCHDIR}/checkimageset.complete ]; then
+        ###############################################################
+        ### START STAGE 0: png conversion, illumination correction, ###
+        ###                creation of MIPs and JPGS                ###
+        if [ -e ${BATCHDIR}/checkimageset.complete ] && [ ! -e ${BATCHDIR}/ConvertAllTiff2Png.complete ]; then
 
             # - illumination correction
             . ./core/modules/do_illumination_correction.sh
@@ -183,17 +184,30 @@ if [ "$INCLUDEDPATH" ] && [ -d $INCLUDEDPATH ]; then
                 touch ${BATCHDIR}/illuminationcorrection.complete
             fi
 
-        fi
-        #################################################################
+         ###                after PNG conversion is finished        ###
+         elif [ -e ${BATCHDIR}/checkimageset.complete ]; then
 
-        # - JPG creation (is of course dependent on the dataset being complete, and is better run after pngconversion)
-        if [ -e ${BATCHDIR}/ConvertAllTiff2Png.complete ]; then
-            . ./core/modules/create_jpgs.sh
+            # - MIP creation (only if we have z-stacks in images)
+            if [ ! -e ${BATCHDIR}/has_zstacks ] && [ ! -e ${BATCHDIR}/CreateMIPs.complete ]; then
+                . ./core/modules/create_mips.sh check_zstacks
+            if [ -e ${BATCHDIR}/has_zstacks ]; then
+                . ./core/modules/create_mips.sh
+            fi
+
+            # - JPG creation (is of course dependent on the dataset being complete, 
+            #   and is better run after pngconversion or MIPs creation)
+            if [ ! -e ${BATCHDIR}/has_zstacks ] || [ -e ${BATCHDIR}/CreateMIPs.complete ]; then
+                # there would be no MIPS creation, start with creating JPGs
+                . ./core/modules/create_jpgs.sh
+            fi
+
         fi
+        ###############################################################
 
         ##################################
         ### START MAIN LOGICS: STAGE 1 ###
-        if [ -e ${BATCHDIR}/ConvertAllTiff2Png.complete ] && [ -e ${BATCHDIR}/illuminationcorrection.complete ]; then
+        if [ -e ${BATCHDIR}/ConvertAllTiff2Png.complete ] && [ -e ${BATCHDIR}/illuminationcorrection.complete ] \
+            && ; then
             . ./core/modules/stage_one.sh
         fi
         # includes the following steps: 
@@ -201,7 +215,6 @@ if [ "$INCLUDEDPATH" ] && [ -d $INCLUDEDPATH ]; then
         # - cpcluster
         # - datafusion & check & cleanup
         ##################################
-        
 
         #####################################################################################
         ### START MAIN LOGICS: STAGE 2, i.e. depends on successfull CellProfiler analysis ###

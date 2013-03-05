@@ -122,7 +122,6 @@ M_PROG"
             fi
             echo "      </output>"
             echo "     </status>"
-                                    
             
         elif [ -e $PROJECTDIR/RenameNikonImages.submitted ] && [ -e $PROJECTDIR/RenameNikonImages.resubmitted ] && [ $RENAMEDIMGCOUNT -eq 0 ] && [ $RENAMEDNIKONRESULTCOUNT -gt 1 ]; then
             
