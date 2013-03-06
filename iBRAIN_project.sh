@@ -190,7 +190,7 @@ if [ "$INCLUDEDPATH" ] && [ -d $INCLUDEDPATH ]; then
             # - MIP creation (only if we have z-stacks in images)
             if [ ! -e ${BATCHDIR}/has_zstacks ] && [ ! -e ${BATCHDIR}/CreateMIPs.complete ]; then
                 . ./core/modules/create_mips.sh check_zstacks
-            if [ -e ${BATCHDIR}/has_zstacks ]; then
+            elif [ -e ${BATCHDIR}/has_zstacks ]; then
                 . ./core/modules/create_mips.sh
             fi
 
@@ -207,7 +207,7 @@ if [ "$INCLUDEDPATH" ] && [ -d $INCLUDEDPATH ]; then
         ##################################
         ### START MAIN LOGICS: STAGE 1 ###
         if [ -e ${BATCHDIR}/ConvertAllTiff2Png.complete ] && [ -e ${BATCHDIR}/illuminationcorrection.complete ] \
-            && ; then
+            && ( [ ! -e ${BATCHDIR}/has_zstacks ] || [ -e ${BATCHDIR}/CreateMIPs.complete ]); then
             . ./core/modules/stage_one.sh
         fi
         # includes the following steps: 

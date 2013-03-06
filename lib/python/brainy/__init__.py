@@ -20,7 +20,7 @@ sys.path = [_lib_path] + sys.path
 
 import re
 from datetime import datetime
-from sh import bsub
+from sh import ErrorReturnCode, bsub, bjobs, grep, wc, touch
 
 
 SHORT_QUEUE = '1:00'
@@ -71,6 +71,10 @@ class BrainyModule(object):
             return
         os.remove(submitted_flag)
 
+    def set_flag(self, flag='submitted'):
+        flag = '.'.join((self._get_flag_prefix(),flag))
+        touch(flag)
+
     def submit_job(self, script, queue=SHORT_QUEUE):
         results_file = os.path.join(self.env['batch_dir'], '%s_%s.results') % \
                 (self.name, datetime.now().strftime('%y%m%d%H%M%S'))
@@ -82,4 +86,12 @@ class BrainyModule(object):
     @property
     def results_count(self):
         return len(self.get_results())
+
+    def job_count(self, needle=None):
+        if needle is None:
+            needle = os.path.basename(self.env['project_dir'])
+        try:
+            return int(wc(grep(bjobs('-w'), needle), '-l'))
+        except ErrorReturnCode:
+            return 0
 

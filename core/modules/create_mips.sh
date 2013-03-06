@@ -5,7 +5,7 @@
 
 ############################
 #  INCLUDE PARAMETER CHECK #
-. ./core/modules/parameter_check.sh 
+##. ./core/modules/parameter_check.sh 
 ############################
 
 function main {
@@ -17,13 +17,26 @@ function main {
             # we consider only PNGs..
             ZSTACKCOUNT=$( find $TIFFDIR -maxdepth 1 -type f -regex ".*_z[0-9]+.*\.png$" | wc -l )
             if [ $ZSTACKCOUNT -eq 0 ]; then
+                echo "     <status action=\"${MODULENAME}\">skipped"
+                echo "      <message>"
+                echo "       No z-stack images found."
+                echo "      </message>"
+                echo "      <output>"
                 touch $BATCHDIR/CreateMIPs.complete
+                echo "      </output>"           
+                echo "     </status>"
             else   
+                echo "     <status action=\"${MODULENAME}\">preparing"
+                echo "      <message>"
+                echo "       Preparing to create MIPs for z-stack images."
+                echo "      </message>"
+                echo "      <output>"
                 touch ${BATCHDIR}/has_zstacks
-                return
+                echo "      </output>"
+                echo "     </status>"
             fi
         fi
-
+        
         # Exit if no z-stack flag found.
         if [ ! -e ${BATCHDIR}/has_zstacks ]; then
             return
@@ -31,16 +44,18 @@ function main {
 
 
 BRAINYDIR="$(dirname "$(dirname "$(dirname "${BASH_SOURCE[0]}")")")/lib/python"
-TIFFDIR="./"
 BATCHSIZE=10 # Number of MIPs per BATCH
 python - <<PYTHON
 # Import iBRAIN environment.
 import sys
-sys.path = ['$BRAINYDIR'] + sys.path
+import os
+sys.path = [os.path.abspath('$BRAINYDIR')] + sys.path
+
 from brainy import BrainyModule, NORM_QUEUE, LONG_QUEUE
 import os
 import re
 
+from sh import bash
 
 class CreateMIPs(BrainyModule):
     
@@ -54,7 +69,7 @@ class CreateMIPs(BrainyModule):
 
     def get_zstacks(self):
         if self.__zstacks is None:
-            self.__zstacks = list()
+            self.__zstacks = dict()
             for filename in self.files:
                 match = self.zstack_regex.search(filename)
                 if match:
@@ -74,6 +89,7 @@ class CreateMIPs(BrainyModule):
     @property
     def found_mips(self):
         if self.__found_mips is None:
+            self.__found_mips = list()
             for filename in self.files:
                 match = self.zstack_regex.search(filename)
                 if not match and filename in self.wanted_mips:
@@ -83,8 +99,7 @@ class CreateMIPs(BrainyModule):
 
     @property
     def is_missing_projections(self):
-        return len(self.wanted_mips) < len(self.found_mips)
-
+        return len(self.wanted_mips) > len(self.found_mips)
 
     def submit_batch(self, batch):
         # Prepare script.
@@ -106,9 +121,13 @@ class CreateMIPs(BrainyModule):
         batch = list()
         for mip in mips:
             # TODO: use parallel!
-            input_images = ' '.join(zstasks[mip])
-            batch.append('$IBRAIN_BIN_PATH/mip.py %s --output %s' % \
+            input_images = ' '.join(zstacks[mip])
+            # TODO fix!
+            #batch.append('$IBRAIN_BIN_PATH/mip.py %s --outfile %s' % \
+            #            (input_images, mip))
+            batch.append('convert  %s -background black -compose lighten -mosaic %s' % \
                         (input_images, mip))
+            # TODO: run png check
             if len(batch) >= $BATCHSIZE:
                 self.submit_batch(batch)
                 batch = list()
@@ -118,18 +137,21 @@ class CreateMIPs(BrainyModule):
     def submit_jobs(self):
         # Submit jobs blindly (even for existing MIPs).
         self.submit_mips(self.wanted_mips)
+        self.set_flag('submitted')
 
     def resubmit_jobs(self):
         # Do not resubmit jobs for existing MIPs.
         mips = [mip for mip in self.wanted_mips if mip not in self.found_mips]
         self.submit_mips(mips)
+        self.set_flag('resubmitted')
+
 
 create_mips = CreateMIPs(dict(
-    'tiff_dir' : '$TIFFDIR',
-    'project_dir': '$PROJECTDIR',
-    'batch_dir': '$BATCHDIR',
-    'postanalysis_dir': '$POSTANALYSISDIR',
-    'jpg_dir': '$JPGDIR',
+    tiff_dir='$TIFFDIR',
+    project_dir='$PROJECTDIR',
+    batch_dir='$BATCHDIR',
+    postanalysis_dir='$POSTANALYSISDIR',
+    jpg_dir='$JPGDIR',
 ))
 
 
@@ -147,8 +169,7 @@ if create_mips.is_submitted is False and create_mips.is_resubmitted is False \
 elif (create_mips.is_submitted or create_mips.is_resubmitted) \
     and len(create_mips.found_mips) == 0 and create_mips.results_count in (0,1):
 
-    if create_mips.has_runlimit:
-        # TODO: Job count?
+    if create_mips.has_runlimit or create_mips.job_count() == 0:
         print('''
          <status action="${MODULENAME}">resetting
          <output>%s</output>
@@ -175,17 +196,26 @@ elif create_mips.is_submitted and create_mips.is_resubmitted \
 
     # Check resultfiles for known errors, reset/resubmit jobs if appropriate .
     print('''
-     <status action=\"${MODULENAME}\">failed
+     <status action="${MODULENAME}">failed
       <warning>ALERT: MIPS CREATION FAILED TWICE</warning>
       <output>
-          $($IBRAIN_BIN_PATH/check_resultfiles_for_known_errors.sh $BATCHDIR "CreateMIPs" $PROJECTDIR/CreateMIPs.resubmitted)
+          bash('$IBRAIN_BIN_PATH/check_resultfiles_for_known_errors.sh $BATCHDIR "CreateMIPs" $PROJECTDIR/CreateMIPs.resubmitted')
       </output>
      </status>
     ''')
 
 elif create_mips.is_submitted and not create_mips.is_missing_projections:
 
-    print('     <status action=\"${MODULENAME}\">completed</status>')
+    print('     <status action="${MODULENAME}">completed</status>')
+    bash('touch $BATCHDIR/CreateMIPs.complete')
+
+else:
+
+    print('''
+     <status  action="${MODULENAME}">error
+        <message>Unknown error</message>
+     </status>
+    ''')
 
 PYTHON
 
@@ -193,7 +223,9 @@ PYTHON
      
 
 # run standardized bash-error handling of iBRAIN
-execute_ibrain_module "$@"
+#execute_ibrain_module "$@"
+main "$@"
+
 
 # clear main module function
 unset -f main
