@@ -171,7 +171,8 @@ if [ "$INCLUDEDPATH" ] && [ -d $INCLUDEDPATH ]; then
         ###############################################################
         ### START STAGE 0: png conversion, illumination correction, ###
         ###                creation of MIPs and JPGS                ###
-        if [ -e ${BATCHDIR}/checkimageset.complete ] && [ ! -e ${BATCHDIR}/ConvertAllTiff2Png.complete ]; then
+
+        if [ -e ${BATCHDIR}/checkimageset.complete ]; then
 
             # - illumination correction
             . ./core/modules/do_illumination_correction.sh
@@ -184,8 +185,10 @@ if [ "$INCLUDEDPATH" ] && [ -d $INCLUDEDPATH ]; then
                 touch ${BATCHDIR}/illuminationcorrection.complete
             fi
 
-         ###                after PNG conversion is finished        ###
-         elif [ -e ${BATCHDIR}/checkimageset.complete ]; then
+        fi
+
+        ###                after PNG conversion is finished        ###
+        if [ -e ${BATCHDIR}/checkimageset.complete ] && [ -e ${BATCHDIR}/ConvertAllTiff2Png.complete ]; then
 
             # - MIP creation (only if we have z-stacks in images)
             if [ ! -e ${BATCHDIR}/has_zstacks ] && [ ! -e ${BATCHDIR}/CreateMIPs.complete ]; then

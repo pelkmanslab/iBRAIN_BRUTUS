@@ -1,16 +1,16 @@
 #! /bin/bash
 
 #
-# create_jpgs.sh
+# create_mips.sh
 
 ############################
 #  INCLUDE PARAMETER CHECK #
-##. ./core/modules/parameter_check.sh 
+. ./core/modules/parameter_check.sh 
 ############################
 
-function main {
+export DO_ZSTACK_CHECK="$1"
 
-        DO_ZSTACK_CHECK="$1"
+function main {
 
         # Check if image filenames contain "z000", i.e. are z-stacks
         if [ "$DO_ZSTACK_CHECK" == "check_zstacks" ]; then
@@ -22,7 +22,7 @@ function main {
                 echo "       No z-stack images found."
                 echo "      </message>"
                 echo "      <output>"
-                touch $BATCHDIR/CreateMIPs.complete
+                touch ${BATCHDIR}/CreateMIPs.complete
                 echo "      </output>"           
                 echo "     </status>"
             else   
@@ -34,6 +34,7 @@ function main {
                 touch ${BATCHDIR}/has_zstacks
                 echo "      </output>"
                 echo "     </status>"
+                return
             fi
         fi
         
@@ -55,7 +56,7 @@ from brainy import BrainyModule, NORM_QUEUE, LONG_QUEUE
 import os
 import re
 
-from sh import bash
+from sh import bash, touch
 
 class CreateMIPs(BrainyModule):
     
@@ -207,7 +208,7 @@ elif create_mips.is_submitted and create_mips.is_resubmitted \
 elif create_mips.is_submitted and not create_mips.is_missing_projections:
 
     print('     <status action="${MODULENAME}">completed</status>')
-    bash('touch $BATCHDIR/CreateMIPs.complete')
+    touch('$BATCHDIR/CreateMIPs.complete')
 
 else:
 
@@ -223,9 +224,8 @@ PYTHON
      
 
 # run standardized bash-error handling of iBRAIN
-#execute_ibrain_module "$@"
-main "$@"
-
+execute_ibrain_module "$@"
 
 # clear main module function
 unset -f main
+unset -v DO_ZSTACK_CHECK
