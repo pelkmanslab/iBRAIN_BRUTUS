@@ -200,10 +200,12 @@ elif create_mips.is_submitted and create_mips.is_resubmitted \
      <status action="${MODULENAME}">failed
       <warning>ALERT: MIPS CREATION FAILED TWICE</warning>
       <output>
-          bash('$IBRAIN_BIN_PATH/check_resultfiles_for_known_errors.sh $BATCHDIR "CreateMIPs" $PROJECTDIR/CreateMIPs.resubmitted')
+          %{check_errors}s
       </output>
      </status>
-    ''')
+     ''' % {'check_errors': bash(
+        '$IBRAIN_BIN_PATH/check_resultfiles_for_known_errors.sh $BATCHDIR '
+        '"CreateMIPs" $PROJECTDIR/CreateMIPs.resubmitted')})
 
 elif create_mips.is_submitted and not create_mips.is_missing_projections:
 
