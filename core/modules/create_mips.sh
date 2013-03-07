@@ -38,8 +38,9 @@ function main {
             fi
         fi
         
-        # Exit if no z-stack flag found.
-        if [ ! -e ${BATCHDIR}/has_zstacks ]; then
+        # Exit if no z-stack flag found or BATCH contains a "complete" flag.
+        if [ ! -e ${BATCHDIR}/has_zstacks ] || [ -e $BATCHDIR/CreateMIPs.complete ]; then
+            echo "     <status action="${MODULENAME}">completed</status>"
             return
         fi
 
