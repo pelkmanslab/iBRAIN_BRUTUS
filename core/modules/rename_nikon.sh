@@ -131,7 +131,7 @@ M_PROG"
             echo "      </warning>"
             echo "      <output>"
             ### check resultfiles for known errors, reset/resubmit jobs if appropriate 
-            $IBRAIN_BIN_PATH/check_resultfiles_for_known_errors.sh $BATCHDIR "RenameNikonImages" $PROJECTDIR/RenameNikonImages.resubmitted
+            $IBRAIN_BIN_PATH/check_resultfiles_for_known_errors.sh $BATCHDIR "RenameNikon" $PROJECTDIR/RenameNikonImages.resubmitted
             echo "      </output>"
             echo "     </status>"
             
