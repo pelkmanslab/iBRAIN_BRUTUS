@@ -86,10 +86,10 @@ M_PROG"
             echo "     <status action=\"${MODULENAME}\">waiting"
             echo "      <output>"
             ### EXPERIMENTAL: IF NO JOBS ARE FOUND FOR THIS PROJECT, WAITING IS SENSELESS. REMOVE .submitted FILE AND TRY AGAIN
-            if [ $RENAMEDNIKONRESULTCOUNT -eq 0 ]; then
-                echo "    ALERT: iBRAIN IS WAITING FOR NIKON RENAMING AND THERE ARE NO FINISHED JOBS YET. RETRYING THIS FOLDER IF NECESSARY"
-                rm -f $PROJECTDIR/RenameNikonImages.submitted
-            fi
+            #if [ $RENAMEDNIKONRESULTCOUNT -eq 0 ]; then
+            #    echo "    ALERT: iBRAIN IS WAITING FOR NIKON RENAMING AND THERE ARE NO FINISHED JOBS YET. RETRYING THIS FOLDER IF NECESSARY"
+            #    rm -f $PROJECTDIR/RenameNikonImages.submitted
+            #fi
             echo "      </output>"
             echo "     </status>"
 
@@ -116,10 +116,10 @@ M_PROG"
             echo "     <status action=\"${MODULENAME}\">waiting"
             echo "      <output>"
             ### EXPERIMENTAL: IF NO JOBS ARE FOUND FOR THIS PROJECT, WAITING IS SENSELESS. REMOVE .submitted FILE AND TRY AGAIN
-            if [ $PLATEJOBCOUNT -eq 0 ]; then
-                echo "    ALERT: iBRAIN IS WAITING FOR RENAMING NIKON IMAGES, BUT THERE ARE NO JOBS (PENDING OR RUNNING) FOR THIS PROJECT. RETRYING THIS FOLDER"
-                rm -f $PROJECTDIR/RenameNikonImages.resubmitted
-            fi
+            #if [ $PLATEJOBCOUNT -eq 0 ]; then
+            #    echo "    ALERT: iBRAIN IS WAITING FOR RENAMING NIKON IMAGES, BUT THERE ARE NO JOBS (PENDING OR RUNNING) FOR THIS PROJECT. RETRYING THIS FOLDER"
+            #    rm -f $PROJECTDIR/RenameNikonImages.resubmitted
+            #fi
             echo "      </output>"
             echo "     </status>"
             
@@ -141,7 +141,7 @@ M_PROG"
                 mv $NIKONTMPDIR $TIFFDIR
             fi
             if [ -d $TIFFDIR ] && [ $TIFFCOUNT -gt 0 ] && [ ! -e $TIFFDIR/CheckImageSet_${TIFFCOUNT}.complete ]; then
-                touch $TIFFDIR/CheckImageSet_${TIFFCOUNT}.complete
+                touch ${TIFFDIR}/CheckImageSet_${TIFFCOUNT}.complete
                 touch ${BATCHDIR}/checkimageset.complete
             fi
             echo "     <status action=\"${MODULENAME}\">completed"
