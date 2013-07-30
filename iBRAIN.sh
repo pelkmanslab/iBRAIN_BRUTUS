@@ -443,25 +443,22 @@ for INCLUDEDPATH in $(sed -e 's/[[:cntrl:]]//g' $INCLUDEDPATHSFILE); do
 	        	PROJECTPLATECOUNT=${#PROJECTPLATEDIRS[@]}
 	            if [ $PROJECTPLATECOUNT -eq 0 ] || [ $PROJECTPLATECOUNT -gt 50 ] || [ $(cat $PROJECTXMLDIR/ibrain_project_sh_output.results | grep "TERM_RUNLIMIT" | wc -l ) -gt 0 ]; then
 	            	echo "<!-- submitting 8h (long) ibrain_project.sh on $INCLUDEDPATH"
-		        	# submit job: run ibrain_project. sed-transform the xml to be web-friendly. store output in new XML output file
-bsub -W 08:00 -oo $PROJECTXMLDIR/ibrain_project_sh_output.results <<EOS
-ls -l /BIOL/imsb/fs2/bio3/bio3/ 2>&1 > /dev/null
-$IBRAIN_ROOT/iBRAIN_project.sh $INCLUDEDPATH $PRECLUSTERBACKUPPATH $PROJECTXMLDIR $NEWPROJECTXMLOUTPUT 2>&1 | $IBRAIN_BIN_PATH/sedTransformLogWeb.sed > $NEWPROJECTXMLOUTPUT 2>&1
-if [ -e $NEWPROJECTXMLOUTPUT ]; then
-    xsltproc -o $NEWPROJECTHTMLOUTPUT $NEWPROJECTXMLOUTPUT
-else
-    echo "PROJECTJOB failed to produce an XML report. Missing: $NEWPROJECTXMLOUTPUT"
-fi
-EOS
-                	echo "-->"
+                    QUEUE=8:00
 	            else
 	            	echo "<!-- submitting 1h (short) ibrain_project.sh on $INCLUDEDPATH"
-        			# submit job: run ibrain_project. sed-transform the xml to be web-friendly. store output in new XML output file
-                    # FIXME first line in the submission below is an ugly fixs for BRUTUS infrastructural problems - an IO timeout
-bsub -W 01:00 -oo $PROJECTXMLDIR/ibrain_project_sh_output.results <<EOS
+                    QUEUE=1:00
+                fi
+                # submit job: run ibrain_project. sed-transform the xml to be web-friendly. store output in new XML output file
+                # FIXME first line in the submission below is an ugly fixs for BRUTUS infrastructural problems - an IO timeout
+bsub -W $QUEUE -oo $PROJECTXMLDIR/ibrain_project_sh_output.results <<EOS
 ls -l /BIOL/imsb/fs2/bio3/bio3/ 2>&1 > /dev/null
 $IBRAIN_ROOT/iBRAIN_project.sh $INCLUDEDPATH $PRECLUSTERBACKUPPATH $PROJECTXMLDIR $NEWPROJECTXMLOUTPUT 2>&1 | $IBRAIN_BIN_PATH/sedTransformLogWeb.sed > $NEWPROJECTXMLOUTPUT 2>&1
 if [ -e $NEWPROJECTXMLOUTPUT ]; then
+
+    if [ -f $IBRAIN_ETC_PATH/sedTransformLogWebUser.sed ]; then
+        $IBRAIN_ETC_PATH/sedTransformLogWebUser.sed ${NEWPROJECTXMLOUTPUT} > ${NEWPROJECTXMLOUTPUT}_usersed && mv ${NEWPROJECTXMLOUTPUT}_usersed ${NEWPROJECTXMLOUTPUT}
+    fi
+
     xsltproc -o $NEWPROJECTHTMLOUTPUT $NEWPROJECTXMLOUTPUT
 else
     echo "PROJECTJOB failed to produce an XML report. Missing: $NEWPROJECTXMLOUTPUT"
