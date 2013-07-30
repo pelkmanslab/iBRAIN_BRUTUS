@@ -431,7 +431,7 @@ for INCLUDEDPATH in $(sed -e 's/[[:cntrl:]]//g' $INCLUDEDPATHSFILE); do
 		echo "-->"         
         
         # Submit ibrain_project.sh if BOOLRUN is bigger than 0
-        /if [ ! $BOOLRUN -eq 0 ]; then
+        if [ ! $BOOLRUN -eq 0 ]; then
         	
 	        # the new ibrain_project output should be stored here
 	        OUTPUTBASENAME=$(date +"%y%m%d_%H%M%S_%N")
