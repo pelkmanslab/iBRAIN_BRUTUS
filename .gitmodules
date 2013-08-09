@@ -1,3 +1,3 @@
 [submodule "General/Upsilon"]
 	path = General/Upsilon
-	url = https://github.com/ewiger/Upsilon.git
+	url = git://github.com/ewiger/Upsilon.git
