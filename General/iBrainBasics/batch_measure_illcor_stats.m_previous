@@ -1,0 +1,179 @@
+function batch_measure_illcor_stats(strPathName, strBatchFile)
+%BATCH_MEASURE_ILLCOR_STATS learn statistics used for the illumination correction
+% method.
+%
+%   BATCH_MEASURE_ILLCOR_STATS STRPATHNAME STRBATCHFILE
+%
+%   Requires: 
+%       @check_image_channel
+%       +illunimator
+%       @RunningStatVec
+%
+%   Authors: 
+%       Yauhen Yakimovich <yauhen.yakimovich@uzh.ch>
+%       Berend Snijder <berend.snijder@imls.uzh.ch>
+%
+%   See also check_image_channel, illunimator, RunningStatVec.
+
+%   Copyright 2012 Pelkmans group.
+
+    if nargin==0
+        % Default input directory for debugging purposes. Change at will.
+        strPathName  = npc('\\nas-unizh-imsb1.ethz.ch\share-2-$\Data\Users\mRNAmes\iBrain\111205Spot3DTest\TIFF');
+        strBatchFile = npc('\\nas-unizh-imsb1.ethz.ch\share-2-$\Data\Users\mRNAmes\iBrain\111205Spot3DTest\BATCH\batch_illcor_channel002_zstack016.mat');
+    end
+
+    % If output directory is not passed, and data is iBRAIN format, store
+    % output in BATCH directory, otherwise store output in intput
+    % directory.    
+    if strcmp(getlastdir(strPathName),'TIFF')
+        strBatchDir = fullfile(getbasedir(strPathName),'BATCH');
+        strFigureDir = fullfile(getbasedir(strPathName),'POSTANALYSIS');
+    else
+        strBatchDir = strPathName;
+        strFigureDir = strPathName;
+    end
+
+    % Maximum number of images per channel that will be processed.
+    numMaxImagesPerChannelProcessed = 10000;
+    
+    % Log input and output directories.
+    fprintf('%s: learning stats of images for:\n         input = ''%s''\n         batch = ''%s''\n figure output = ''%s''\n    batch file = ''%s''\n',mfilename,strPathName,strBatchDir,strFigureDir,strBatchFile)
+    
+    % parse channel number and z-stack value to parse from batch file
+    cellRegexpMatch = regexpi(strBatchFile,'batch_illcor_channel(\d{3})_zstack(\d{3})','tokens');
+    intTargetChannelNumber = str2double(cellRegexpMatch{1}{1});
+    intTargetZStackNumber = str2double(cellRegexpMatch{1}{2});
+    foo = load(strBatchFile);
+    cellImageFileNames = foo.cellBatchFileNames;
+
+    % store total number of images
+    numOfImages = length(cellImageFileNames);
+    
+    log_msg('%s: parsing %d images of channel %d with zstack %d.\n',mfilename, numOfImages, intTargetChannelNumber,intTargetZStackNumber)
+
+    % init statistics
+    stats = RunningStatVec.new();
+    
+    timePoint = tic;
+
+    % Loop over each image per channel, up to the maximum defined by
+    % numMaxImagesPerChannelProcessed
+    iCounter = 0;
+    for i = 1:min(numOfImages,numMaxImagesPerChannelProcessed)
+        iCounter = iCounter + 1;
+        
+        log_msg('%s: parsing image set %d of %d (average %.2f sec)\n',...
+            mfilename, i, numOfImages,toc(timePoint)/i);
+
+        if length(cellImageFileNames) < i
+            continue
+        end
+
+        % Learn statistics
+        if ~isunix
+            % for using iBRAIN setting files on your local machine, apply
+            % NPC, otherwise its overkill..
+            strImageFilename = npc(cellImageFileNames{i});
+        else
+            strImageFilename = cellImageFileNames{i};
+        end
+        boolReadSuccesfull = illunimator.learn_image(stats,strImageFilename);
+
+        % If reading failed, try again while checking if the image was
+        % png or tif.
+        if ~boolReadSuccesfull
+            strImageFilename = lookForFile(strImageFilename);
+            illunimator.learn_image(stats, strImageFilename);
+        end
+        
+        % Check if we should intermittently save the output (PDF and MAT
+        % file) per channel: either every 500 steps or at last step
+        if iCounter > 500 | i == min(numOfImages,numMaxImagesPerChannelProcessed) %#ok<OR2>
+            saveStats(strBatchDir, stats, intTargetChannelNumber, intTargetZStackNumber);
+            saveFigure(strPathName, strFigureDir, stats, intTargetChannelNumber, intTargetZStackNumber);
+            iCounter = 0;
+        end
+        
+%         % bs debug weird nans in stat
+%         if any(isnan(lin(stats.mean)))
+%            keyboard 
+%         end
+        
+    end
+    elapsedTime = toc(timePoint);
+    log_msg('%s: learning %d images took %g seconds.\n',mfilename, numOfImages, elapsedTime);
+
+end
+
+
+%--------------------------------------------------------------------------
+% Save learned results into files.  
+function saveStats(strBatchDir, stats, channelNum, zNum)      
+    filename = fullfile(strBatchDir,sprintf('Measurements_batch_illcor_channel%03d_zstack%03d.mat', channelNum,zNum));
+    log_msg('%s: stored stats of channel %d zstack %d: %s.\n',...
+        mfilename, channelNum, zNum, filename);
+    illunimator.save_stat(filename, stats);
+end
+
+%--------------------------------------------------------------------------
+function saveFigure(strPathName, strFigureDir, stats, channelNum, zNum)
+    h = figure;
+    subplot(2,2,1)
+    imagesc(stats.mean)
+    title('running mean estimate')
+    subplot(2,2,2)
+    imagesc(stats.std)
+    title('running std estimate')
+    if any(lin(stats.std==0))
+        subplot(2,2,3)
+        imagesc(stats.std==0)
+        title('running std estimate equals 0')
+    else
+        subplot(2,2,3)
+        imagesc(stats.var)
+        title('running var estimate')            
+    end
+    subplot(2,2,4)
+    if numel(lin(stats.mean)) > 1
+        plotquant(lin(stats.mean),lin(stats.std));
+    end
+    axis tight
+    xlabel('running mean estimate')
+    ylabel('running std estimate')
+    suptitle(sprintf('illumination correction for plate ''%s''\nchannel %d zstack %d (%d images processed) (%d dead pixels)',getlastdir(getbasedir(strPathName)),channelNum,zNum, stats.count,sum(lin(stats.std==0))),13);
+
+    % store figure
+    try
+        gcf2pdf(strFigureDir,sprintf('Measurements_batch_illcor_channel%03d_zstack%03d.pdf', channelNum, zNum),'overwrite');
+    catch objError
+        log_msg('%s: failed to store PDF file: ''%s''.\n',...
+        mfilename,objError.message);
+    end
+    close(h)
+end
+%--------------------------------------------------------------------------
+% Look for file image .PNG or .TIFF.
+function strFoundFilename = lookForFile(strImageFilename)
+    if fileattrib(strImageFilename)
+        strFoundFilename = strImageFilename;
+        return
+    end
+    [pathstr, name, ext] = fileparts(strImageFilename);
+    if strcmpi(ext, '.png')
+        strFoundFilename = fullfile(pathstr, sprintf('%s.tif',name));
+    else
+        strFoundFilename = fullfile(pathstr, sprintf('%s.png',name));
+    end
+    if fileattrib(strFoundFilename)
+        return
+    end
+    log_msg(['%s: skipping apparently not existing and/or ',...
+        'disappeared file: %s.'], mfilename, strImageFilename);
+    strFoundFilename = [];
+end
+
+%--------------------------------------------------------------------------
+function log_msg(varargin)
+    fprintf(varargin{:});
+end

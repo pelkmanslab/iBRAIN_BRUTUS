@@ -1,0 +1,439 @@
+function Gather_CellTypeData_iBRAIN(strPath)
+% Performs the SVM classification for objects
+
+% default input options (works nice for testing)
+if nargin==0
+    if ispc
+        %strPath = '\\nas-biol-imsb-1\share-2-$\Data\Users\Lilli\adhesome_screen_data\080217_Lilli_A431cavgfp_ChT_phal_screen_CP077-1aa\BATCH\';
+        strPath = 'Y:\Data\Users\Raphael\070611_Tfn_kinase_screen\070610_Tfn_MZ_kinasescreen_CP022-1cd\BATCH\';
+    else
+        strPath = '/hreidar/extern/bio3/Data/Users/Raphael/070611_Tfn_kinase_screen/070610_Tfn_MZ_kinasescreen_CP022-1cd/BATCH/';
+    end
+end
+
+% checks on input parameters
+boolInputPathExists = fileattrib(strPath);
+if not(boolInputPathExists)
+    error('%s: could not read input strPath %s',mfilename,strPath)    
+else
+    disp(sprintf('%s: starting on %s',mfilename,strPath))
+end
+
+
+%--------------------------------------------------------------------
+% Interphase, mitotic, apoptotic overviews for infection screens
+
+% finding and load/parse the latest classifications for the following svm
+% classes
+classes{1}='interphase'; %Interphase
+classes{2}='mitotic'; %Mitotic
+classes{3}='apoptotic'; %Apoptotic
+classes{4}='blob';
+
+% loop over all latest infection screen classes, and load data
+disp(sprintf('%s: parsing latest svm files ',mfilename))
+handles = struct();
+class_list = cell(1,length(classes));
+numPositiveClassNumbers = nan(1,length(classes));
+for i = 1:length(classes)
+    [handles, class_list{i}, numPositiveClassNumbers(i)] = load_latest_svm_file(handles, strPath, classes{i},'newest');
+end
+
+% gatherting the full list SVM
+full_class_list={};
+files=dir(sprintf('%s*SVM*.mat',strPath));
+index=0;
+for i=1:size(files,1)
+    name=files(i).name;
+    if not(isempty(strfind(lower(name),'measurements_svm_')))
+        index=index+1;
+        full_class_list{index}=name(18:end-4);
+    end
+end
+
+% load the full classification data
+handles = struct();
+for class=1:length(full_class_list)
+    disp(sprintf('%s: loading %s',mfilename,fullfile(strPath,['Measurements_SVM_',full_class_list{class},'.mat'])))
+    handles = LoadMeasurements(handles,fullfile(strPath,['Measurements_SVM_',full_class_list{class},'.mat']));
+end
+
+% loading the image filenames to determine the total image number
+
+handles = LoadMeasurements(handles,fullfile(strPath,'Measurements_Image_FileNames.mat'));
+handles2 = struct();
+handles3 = struct();
+for iImage = 1:length(handles.Measurements.Image.FileNames)
+    if not(isempty(class_list{1})) && not(isempty(class_list{2})) && not(isempty(class_list{3})) && not(isempty(class_list{4}))
+        % set celltype classification matrices such that 1 matches the
+        % phenotype, and 0 does not match the phenotype.
+        matInterphaseIndices = handles.Measurements.SVM.(class_list{1}){iImage} == numPositiveClassNumbers(1);
+        matMitoticIndices = handles.Measurements.SVM.(class_list{2}){iImage} == numPositiveClassNumbers(2);
+        matApoptoticIndices = handles.Measurements.SVM.(class_list{3}){iImage} == numPositiveClassNumbers(3);
+        matBlobIndices = handles.Measurements.SVM.(class_list{4}){iImage} == numPositiveClassNumbers(4);
+
+        %%% final classification scheme: anything blob is 'other'-class, for
+        %%% the non-blob nuclei, check the other classification values.
+        %%% (quite a lot of classes convert to interphase)
+        % 0 0 0 0 -> other
+        % 0 0 0 1 -> Apoptotic
+        % 0 0 1 0 -> Mitotic
+        % 0 0 1 1 -> Mitotic
+        % 0 1 0 0 -> Interphase
+        % 0 1 0 1 -> Interphase
+        % 0 1 1 0 -> Interphase
+        % 0 1 1 1 -> Interphase
+
+        %%% all blob instances, independent of other classification values:
+        % 1 0 0 0 -> other
+        % 1 0 0 1 -> other
+        % 1 0 1 0 -> other
+        % 1 0 1 1 -> other
+        % 1 1 0 0 -> other
+        % 1 1 0 1 -> other
+        % 1 1 1 0 -> other
+        % 1 1 1 1 -> other
+
+        data=[matBlobIndices,matInterphaseIndices,matMitoticIndices,matApoptoticIndices];
+        ind{1}=ismember(data,[0 0 0 0],'rows');% -> other
+        ind{2}=ismember(data,[0 0 0 1],'rows');% -> Apoptotic
+        ind{3}=ismember(data,[0 0 1 0],'rows');% -> Mitotic
+        ind{4}=ismember(data,[0 0 1 1],'rows');% -> Mitotic
+        ind{5}=ismember(data,[0 1 0 0],'rows');% -> Interphase
+        ind{6}=ismember(data,[0 1 0 1],'rows');% -> Interphase
+        ind{7}=ismember(data,[0 1 1 0],'rows');% -> Interphase
+        ind{8}=ismember(data,[0 1 1 1],'rows');% -> Interphase
+
+        ind{9}=ismember(data,[1 0 0 0],'rows');% -> blob/other
+        ind{10}=ismember(data,[1 0 0 1],'rows');% -> blob/other
+        ind{11}=ismember(data,[1 0 1 0],'rows');% -> blob/other
+        ind{12}=ismember(data,[1 0 1 1],'rows');% -> blob/other
+        ind{13}=ismember(data,[1 1 0 0],'rows');% -> blob/other
+        ind{14}=ismember(data,[1 1 0 1],'rows');% -> blob/other
+        ind{15}=ismember(data,[1 1 1 0],'rows');% -> blob/other
+        ind{16}=ismember(data,[1 1 1 1],'rows');% -> blob/other
+
+        matInterphaseIndices=ind{5}|ind{6}|ind{7}|ind{8};
+        matMitoticIndices=ind{3}|ind{4};
+        matApoptoticIndices=ind{2};
+        matOthers=ind{1}|ind{9}|ind{10}|ind{11}|ind{12}|ind{13}|ind{14}|ind{15}|ind{16};
+
+        handles2.Measurements.Nuclei.Apoptotic{iImage} = matApoptoticIndices;
+        handles2.Measurements.Nuclei.Interphase{iImage} = matInterphaseIndices;
+        handles2.Measurements.Nuclei.Mitotic{iImage} = matMitoticIndices;
+        handles2.Measurements.Nuclei.Others{iImage} = matOthers;
+
+        if (sum(matApoptoticIndices) + sum(matInterphaseIndices) + sum(matMitoticIndices) + sum(matOthers)) ~= length(matOthers)
+            error('OOHHH NOO, DOESN''T ADD UP!!!')
+        end
+
+        SVM_Set_Available=1;
+    else
+        SVM_Set_Available=0;
+    end
+
+    % Gathering the full SVM listing
+    index=0;
+    for class=1:length(full_class_list)
+        sub_class_names=handles.Measurements.SVM.([full_class_list{class},'_Features']);
+        for sub_class=1:length(sub_class_names)
+            field_name=['SVM_',full_class_list{class},'_',strrep(strrep(sub_class_names{sub_class},'-','_'),' ','_')];
+            handles3.(field_name)(iImage)=sum(handles.Measurements.SVM.(full_class_list{class}){iImage}==sub_class);
+            index=index+1;
+            class_index(index)=class; %this is needed later
+        end
+    end
+
+end
+
+% store handles2 as handles in Measurements_Nuclei_CellTypeClassificationPerColumn.mat
+clear handles
+handles = handles2;
+
+if SVM_Set_Available
+    disp('SVM set (interphase, mitotic, apoptotic, blob) is available');
+    disp(sprintf('SAVING %s',fullfile(strPath,'Measurements_Nuclei_CellTypeClassificationPerColumn.mat')))
+    save(fullfile(strPath,'Measurements_Nuclei_CellTypeClassificationPerColumn.mat'),'handles')
+else
+    disp('SVM set (interphase, mitotic, apoptotic, blob) is NOT available');
+end
+
+%--------------------------------------------------------------------
+% CellType Gathering
+
+full_SVM_names=fieldnames(handles3);
+
+% load plate BASICDATA
+load(char(SearchTargetFolders(strPath,'BASICDATA_*.mat')));
+
+BASICDATA_CellType.WellRow=BASICDATA.WellRow;
+BASICDATA_CellType.WellCol=BASICDATA.WellCol;
+for well=1:size(BASICDATA.WellRow,2)
+
+    if  SVM_Set_Available
+        Mitotic_number=0;
+        Apoptotic_number=0;
+        Interphase_number=0;
+        Others_number=0;
+
+        for image=1:BASICDATA.RawImages(well)
+            Mitotic_number=Mitotic_number+sum(handles.Measurements.Nuclei.Mitotic{BASICDATA.ImageIndices{1,well}(image)});
+            Apoptotic_number=Apoptotic_number+sum(handles.Measurements.Nuclei.Apoptotic{BASICDATA.ImageIndices{1,well}(image)});
+            Interphase_number=Interphase_number+sum(handles.Measurements.Nuclei.Interphase{BASICDATA.ImageIndices{1,well}(image)});
+            Others_number=Others_number+sum(handles.Measurements.Nuclei.Others{BASICDATA.ImageIndices{1,well}(image)});
+        end
+        Cell_number=Mitotic_number+Apoptotic_number+Interphase_number;
+        Total_number=Cell_number+Others_number;
+
+        % Raw number data
+        BASICDATA_CellType.Mitotic_number(1,well)=Mitotic_number;
+        BASICDATA_CellType.Apoptotic_number(1,well)=Apoptotic_number;
+        BASICDATA_CellType.Interphase_number(1,well)=Interphase_number;
+        BASICDATA_CellType.Others_number(1,well)=Others_number;
+        BASICDATA_CellType.Cell_number(1,well)=Cell_number;
+        BASICDATA_CellType.Total_number(1,well)=Total_number;
+
+        % Indices
+        BASICDATA_CellType.Interphase_index(1,well)=Interphase_number/Cell_number;
+        BASICDATA_CellType.Mitotic_index(1,well)=Mitotic_number/Cell_number;
+        BASICDATA_CellType.Apoptotic_index(1,well)=Apoptotic_number/Cell_number;
+        BASICDATA_CellType.Others_index(1,well)=Others_number/Total_number;
+    end
+    
+    % the full SVM set
+    Total_Cells=zeros(1,length(full_SVM_names));
+    for class=1:length(full_SVM_names);
+        data=0;
+        class_name=full_SVM_names{class};
+        for image=1:BASICDATA.RawImages(well)
+            data=data+handles3.(class_name)(BASICDATA.ImageIndices{1,well}(image));
+        end       
+        BASICDATA_CellType.([class_name,'_number'])(1,well)=data;
+        BASICDATA_CellType.([class_name,'_index'])(1,well)=data;
+        Cells(class)=data;
+    end
+    for class=1:length(full_SVM_names)
+        c=class_index(class);
+        class_name=full_SVM_names{class};
+        total_cells_in_subclasses=sum(Cells(class_index==c));
+        BASICDATA_CellType.([class_name,'_index'])(1,well)=BASICDATA_CellType.([class_name,'_index'])(1,well)/total_cells_in_subclasses;
+        BASICDATA_CellType.([class_name,'_index'])(1,well);
+    end
+   
+end
+%indi=BASICDATA.WellCol>2 & BASICDATA.WellCol<23;
+
+%ZScore_Mitotic_index=log2(BASICDATA_CellType.Mitotic_index);
+%ZScore_Mitotic_index(isinf(ZScore_Mitotic_index))=NaN;
+%ZScore_Mitotic_index=ZScore_Mitotic_index-nanmean(ZScore_Mitotic_index(indi));
+%ZScore_Mitotic_index=ZScore_Mitotic_index/nanstd(ZScore_Mitotic_index(indi));
+%BASICDATA_CellType.ZScore_Log2_Mitotic_index=ZScore_Mitotic_index;
+
+%ZScore_Apoptotic_index=log2(BASICDATA_CellType.Apoptotic_index);
+%ZScore_Apoptotic_index(isinf(ZScore_Apoptotic_index))=NaN;
+%ZScore_Apoptotic_index=ZScore_Apoptotic_index-nanmean(ZScore_Apoptotic_index(indi));
+%ZScore_Apoptotic_index=ZScore_Apoptotic_index/nanstd(ZScore_Apoptotic_index(indi));
+%BASICDATA_CellType.ZScore_Log2_Apoptotic_index=ZScore_Apoptotic_index;
+
+%--------------------------------------------------------------------
+% PhenoType Gathering.. the second set
+
+% load classification data
+handles = struct();
+if  SVM_Set_Available
+    handles = LoadMeasurements(handles,fullfile(strPath,'Measurements_Nuclei_CellTypeClassificationPerColumn.mat'));
+end
+try
+    handles = LoadMeasurements(handles,fullfile(strPath,'Measurements_Nuclei_AreaShape.mat'));
+    AreaShape_Available=1;
+    disp('AreaShape is available');
+catch
+    AreaShape_Available=0;
+    disp('AreaShape is NOT available');
+end
+try
+    handles = LoadMeasurements(handles,fullfile(strPath,'Measurements_Nuclei_VirusScreen_ClassicalInfection2.mat'));
+    Infection_Available=1;
+    disp('Infection is available');
+catch
+    Infection_Available=0;
+    disp('Infection is NOT available');
+end
+try
+    handles = LoadMeasurements(handles,fullfile(strPath,'Measurements_Nuclei_GridNucleiEdges.mat'));
+    handles = LoadMeasurements(handles,fullfile(strPath,'Measurements_Nuclei_GridNucleiCount.mat'));
+    GridNuclei_Available=1;
+    disp('GridNuclei is available');
+catch
+    try
+        handles = LoadMeasurements(handles,fullfile(strPath,'Measurements_OrigNuclei_GridNucleiEdges.mat'));
+        handles = LoadMeasurements(handles,fullfile(strPath,'Measurements_OrigNuclei_GridNucleiCount.mat'));
+        GridNuclei_Available=1;
+        disp('GridNuclei is available');
+    catch
+        GridNuclei_Available=0;
+        disp('GridNuclei is NOT available');
+    end
+end
+
+load(char(SearchTargetFolders(strPath,'BASICDATA_*.mat')));
+
+for well=1:size(BASICDATA.WellRow,2)
+    if  SVM_Set_Available
+        MitoticInfected=0;
+        ApoptoticInfected=0;
+        Mitotic_number=0;
+        Apoptotic_number=0;
+    end
+    if GridNuclei_Available
+        LocalCellDensityMean=0;
+        LocalCellDensityStd=0;
+        EdgeNumber=0;
+        NonEdgeNumber=0;
+    end
+    if Infection_Available
+        EdgeInfected=0;
+        NonEdgeInfected=0;
+    end
+    if AreaShape_Available
+        SizeMean=0;
+        SizeStd=0;
+    end
+
+    for image=1:BASICDATA.RawImages(well)
+        imageIndex=BASICDATA.ImageIndices{1,well}(image);
+
+        if  SVM_Set_Available
+            Interphase=handles.Measurements.Nuclei.Interphase{imageIndex};
+            Mitotic=handles.Measurements.Nuclei.Mitotic{imageIndex};
+            Apoptotic=handles.Measurements.Nuclei.Apoptotic{imageIndex};
+            
+            if isempty(Interphase)
+                Interphase=[];
+            end
+            if isempty(Mitotic)
+                Mitotic=[];
+            end
+            if isempty(Apoptotic)
+                Apoptotic=[];
+            end
+            Mitotic_number=Mitotic_number+sum(Mitotic);
+            Apoptotic_number=Apoptotic_number+sum(Apoptotic);
+        end
+
+        if GridNuclei_Available
+            try
+                Density=handles.Measurements.Nuclei.GridNucleiCount{imageIndex};
+                Edge=handles.Measurements.Nuclei.GridNucleiEdges{imageIndex};
+            catch
+                Density=handles.Measurements.OrigNuclei.GridNucleiCount{imageIndex};
+                Edge=handles.Measurements.OrigNuclei.GridNucleiEdges{imageIndex};
+            end
+            if isempty(Density)
+                Density=[];
+            end
+            if isempty(Edge)
+                Edge=[];
+            end
+            LocalCellDensityMean=LocalCellDensityMean+nanmean(Density);
+            LocalCellDensityStd=LocalCellDensityStd+nanstd(Density);
+            EdgeNumber=EdgeNumber+sum(Edge);
+            NonEdgeNumber=NonEdgeNumber+sum(1-Edge);
+        end
+
+        if Infection_Available
+            Infected=handles.Measurements.Nuclei.VirusScreen_ClassicalInfection{imageIndex};
+            if isempty(Infected)
+                Infected=[];
+            end
+            if GridNuclei_Available
+                EdgeInfected=EdgeInfected+sum(Edge & Infected);
+                NonEdgeInfected=EdgeInfected+sum(~Edge & Infected);
+            end
+            if  SVM_Set_Available
+                MitoticInfected=MitoticInfected+sum(Mitotic & Infected);
+                ApoptoticInfected=ApoptoticInfected+sum(Apoptotic & Infected);
+            end
+        end
+
+        if AreaShape_Available
+            Size=handles.Measurements.Nuclei.AreaShape{imageIndex}(:,1);
+            if isempty(Size)
+                Size=[];
+            end
+            if  SVM_Set_Available
+                SizeMean=SizeMean+nanmean(Size(boolean(Interphase)));
+                SizeStd=SizeStd+nanstd(Size(boolean(Interphase)));
+            else
+                SizeMean=SizeMean+nanmean(Size);
+                SizeStd=SizeStd+nanstd(Size);
+            end
+        end
+    end
+    
+    % Raw number data
+
+    if GridNuclei_Available
+        BASICDATA_CellType.LocalCellDensityMean(1,well)=LocalCellDensityMean;
+        BASICDATA_CellType.LocalCellDensityStd(1,well)=LocalCellDensityStd;
+        BASICDATA_CellType.EdgeNumber(1,well)=EdgeNumber;
+        BASICDATA_CellType.NonEdgeNumber(1,well)=NonEdgeNumber;
+        
+        % Ratio
+        BASICDATA_CellType.EdgeRatio(1,well)=NonEdgeNumber/EdgeNumber;
+    end
+    if Infection_Available
+        if  SVM_Set_Available
+            BASICDATA_CellType.MitoticInfected(1,well)=MitoticInfected;
+            BASICDATA_CellType.ApoptoticInfected(1,well)=ApoptoticInfected;
+            % Indices (normalized later)
+
+            BASICDATA_CellType.ZScoreLog2MitoticII(1,well)=MitoticInfected/Mitotic_number;
+            BASICDATA_CellType.ZScoreLog2ApoptoticII(1,well)=ApoptoticInfected/Apoptotic_number;
+        end
+        if GridNuclei_Available
+            BASICDATA_CellType.ZScoreLog2EdgeII(1,well)=EdgeInfected/EdgeNumber;
+            BASICDATA_CellType.ZScoreLog2NonEdgeII(1,well)=NonEdgeInfected/NonEdgeNumber;
+        end
+    end
+    if AreaShape_Available
+        BASICDATA_CellType.SizeMean(1,well)=SizeMean;
+        BASICDATA_CellType.SizeStd(1,well)=SizeStd;
+    end
+
+end
+indi=BASICDATA.WellCol>2 & BASICDATA.WellCol<23;
+
+% ZScore Log2 normalizations
+if Infection_Available
+    if  SVM_Set_Available
+        BASICDATA_CellType.ZScoreLog2MitoticII=log2(BASICDATA_CellType.ZScoreLog2MitoticII);
+        BASICDATA_CellType.ZScoreLog2MitoticII(isinf(BASICDATA_CellType.ZScoreLog2MitoticII))=NaN;
+        BASICDATA_CellType.ZScoreLog2MitoticII=BASICDATA_CellType.ZScoreLog2MitoticII-nanmean(BASICDATA_CellType.ZScoreLog2MitoticII(indi));
+        BASICDATA_CellType.ZScoreLog2MitoticII=BASICDATA_CellType.ZScoreLog2MitoticII/nanstd(BASICDATA_CellType.ZScoreLog2MitoticII(indi));
+
+        BASICDATA_CellType.ZScoreLog2ApoptoticII=log2(BASICDATA_CellType.ZScoreLog2ApoptoticII);
+        BASICDATA_CellType.ZScoreLog2ApoptoticII(isinf(BASICDATA_CellType.ZScoreLog2ApoptoticII))=NaN;
+        BASICDATA_CellType.ZScoreLog2ApoptoticII=BASICDATA_CellType.ZScoreLog2ApoptoticII-nanmean(BASICDATA_CellType.ZScoreLog2ApoptoticII(indi));
+        BASICDATA_CellType.ZScoreLog2ApoptoticII=BASICDATA_CellType.ZScoreLog2ApoptoticII/nanstd(BASICDATA_CellType.ZScoreLog2ApoptoticII(indi));
+    end
+    if GridNuclei_Available
+        BASICDATA_CellType.ZScoreLog2EdgeII=log2(BASICDATA_CellType.ZScoreLog2EdgeII);
+        BASICDATA_CellType.ZScoreLog2EdgeII(isinf(BASICDATA_CellType.ZScoreLog2EdgeII))=NaN;
+        BASICDATA_CellType.ZScoreLog2EdgeII=BASICDATA_CellType.ZScoreLog2EdgeII-nanmean(BASICDATA_CellType.ZScoreLog2EdgeII(indi));
+        BASICDATA_CellType.ZScoreLog2EdgeII=BASICDATA_CellType.ZScoreLog2EdgeII/nanstd(BASICDATA_CellType.ZScoreLog2EdgeII(indi));
+
+        BASICDATA_CellType.ZScoreLog2NonEdgeII=log2(BASICDATA_CellType.ZScoreLog2NonEdgeII);
+        BASICDATA_CellType.ZScoreLog2NonEdgeII(isinf(BASICDATA_CellType.ZScoreLog2NonEdgeII))=NaN;
+        BASICDATA_CellType.ZScoreLog2NonEdgeII=BASICDATA_CellType.ZScoreLog2NonEdgeII-nanmean(BASICDATA_CellType.ZScoreLog2NonEdgeII(indi));
+        BASICDATA_CellType.ZScoreLog2NonEdgeII=BASICDATA_CellType.ZScoreLog2NonEdgeII/nanstd(BASICDATA_CellType.ZScoreLog2NonEdgeII(indi));
+    end
+end
+% saving data
+disp(sprintf('SAVING %s',fullfile(strPath,'Measurements_Nuclei_CellType_Overview.mat')))
+save(fullfile(strPath,'Measurements_Nuclei_CellType_Overview.mat'),'BASICDATA_CellType')
+
+
+
+
+		

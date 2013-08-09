@@ -2,7 +2,7 @@ DEP
 ===
 
 DEP stands for `DEPloyed code`.  It is a repository for deployed code developed
-and maintained by members of Lucas Pelkmans lab http://www.pelkmanslab.org
+and maintained by members of Lucas Pelkmans' lab http://www.pelkmanslab.org
 
 Repository is designed to host only very well tested, stable and reliable code
 that is deployed on HPC sites like Brutus Cluster, etc.
