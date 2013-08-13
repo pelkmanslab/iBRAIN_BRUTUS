@@ -4,7 +4,8 @@ function [matImageSnake,matStitchDimensions] = get_image_snake(intMaxImagePositi
 % usage [intImagePosition,strMicroscopeType] = get_image_snake(strImageName)
 %
 % possible values for strMicroscopeType are 'CW', 'BD', and 'MD'
-% [NB YY] added strMicroscopeType 'CV7K'
+% [NB YY] added strMicroscopeType 'CV7K'. Latest modification on the
+% 10/11/11 by NB
 
 
 
@@ -79,8 +80,13 @@ function [matImageSnake,matStitchDimensions] = get_image_snake(intMaxImagePositi
     else
         % simple algorithm to guess the correct dimensions for image 
         % stitching
-        matI = round(sqrt(intMaxImagePosition))-5 : round(sqrt(intMaxImagePosition))+5; % set up search dimension
-        matII = matI' * matI; % symmetric search space
+        
+        % [NB] Fix: if sites aquired is 6 it gave negative values
+        matI = [0:10];
+        if (intMaxImagePosition) >= 25
+            matI = round(sqrt(intMaxImagePosition))-5 : round(sqrt(intMaxImagePosition))+5; % set up search dimension
+        end;
+        matII = matI' * matI; % symmetric search space        
         [i,j] = find(triu(matII)==intMaxImagePosition); % find the multiple that matches our image count
         matStitchDimensions = sort([matI(i(1)),matI(j(1))],'descend');% assume more rows than columns
     end
@@ -112,23 +118,27 @@ function [matImageSnake,matStitchDimensions] = get_image_snake(intMaxImagePositi
             matImageSnake = [matRows;matCols];
 
         % for the MD microscope
-        elseif strcmpi(strMicroscopeType,'MD')
+        elseif strcmpi(strMicroscopeType,'MD')...
+                || strcmpi(strMicroscopeType,'CV7K') %line added by NB 10/11/11
             for i = 1:matStitchDimensions(1);
                 matRows = [matRows,0:matStitchDimensions(2)-1];
                 matCols = [matCols,repmat(i-1,1,matStitchDimensions(2))];
             end
             matImageSnake = [matRows;matCols];
         % for the CV7K microscope
-        elseif strcmpi(strMicroscopeType,'CV7K')
-            for i = 1:matStitchDimensions(1);
-                if ~mod(i,2)
-                    matRows = [matRows,matStitchDimensions(2)-1:-1:0];
-                else
-                    matRows = [matRows,0:matStitchDimensions(2)-1];
-                end
-                matCols = [matCols,repmat(i-1,1,matStitchDimensions(2))];
-            end
-            matImageSnake = [matRows;matCols];
+%%[NB] The new software does it the same way than the MD. So I
+%%comment this out  10/11/11
+%         elseif strcmpi(strMicroscopeType,'CV7K')
+%             for i = 1:matStitchDimensions(1);
+%                 if ~mod(i,2)
+%                     matRows = [matRows,matStitchDimensions(2)-1:-1:0];
+%                 else
+%                     matRows = [matRows,0:matStitchDimensions(2)-1];
+%                 end
+%                 matCols = [matCols,repmat(i-1,1,matStitchDimensions(2))];
+%             end
+%             matImageSnake = [matRows;matCols];
+%%End of comment out 10/11/11
         end
         
         fprintf('%s: %d images per well, of type %s. cols = %d, rows = %d\n',mfilename,intMaxImagePosition, char(strMicroscopeType), max(matRows(:)+1),max(matCols(:)+1))
