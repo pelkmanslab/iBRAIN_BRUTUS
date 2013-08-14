@@ -19,9 +19,9 @@ function handles = MeasureSpotLocalizationNormalization(handles)
 % Neighbour status of the closest membrane
 % (1 is it close to a neighbour membrane and
 % 2 it is close to a non neighbour membrane, if the
-% border of the image is closest this is set to 3)         |       2
+% border of the image is closest this is set to nan)       |       2
 % Distance of children to parent Centroid                  |       3
-% Distance of children to third refernce Centroid          |       4
+% Distance of children to third reference Centroid         |       4
 % Distance of children to membrane along
 % the children-third reference axis                        |       5
 % Mean distance of child to all other children in parent   |       6
@@ -32,7 +32,7 @@ function handles = MeasureSpotLocalizationNormalization(handles)
 % Fraction of all other children at y distances from child | 8+x+1->8+x+y
 %
 %
-% Note all distances are calculated in pixels.
+% Note all distances are calculated in pixels. 
 %
 % Authors:
 %   Nico Battich
@@ -41,9 +41,8 @@ function handles = MeasureSpotLocalizationNormalization(handles)
 %
 % Website: http://www.imls.uzh.ch/research/pelkmans.html
 %
-%
+% $Revision: 2856 $
 
-%%VariableRevisionNumber = 5
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
@@ -56,36 +55,34 @@ drawnow
 %textVAR01 = What are the parent objects? e.g Cells.
 %infotypeVAR01 = objectgroup
 %defaultVAR01 = Cells
-%choiceVAR01 =
 ParentObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
 %textVAR02 = What are the children objects for which you what to compute distances?
 %infotypeVAR02 = objectgroup
 %defaultVAR02 = Spots
-%choiceVAR02 =
 ChildrenObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 
 %textVAR03 = What are the objects for which you what to compute distance to the children objects? (note: this object must be a direct child or a direct parent of the 'Parent' inputed above, e.g. Nuclei)
 %infotypeVAR03 = objectgroup
 %defaultVAR03 = Nuclei
-%choiceVAR03 =
 ThirdObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu
 
-%textVAR04 = What is the minimal distance between two neighbouring cells? (px) recommended: 10
+%textVAR04 = What is the distance between two neighbouring cells? (pixel) recommended: 10
 %defaultVAR04 = 10
 DilationFactor = str2double(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = Enter X1 value. Will be used for calculating the distance from the child which cover X1% of childred in the Parent.
+%textVAR05 = Distance(s) required to cover this / these fraction(s) of sibling spots (values between 0 and 1).
 %defaultVAR05 = [0.10 0.25 0.50 0.75]
 PercentageVect = (handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%textVAR06 = Enter a value (pixels) to calculate the number of children neighbours that a child has within a cell.
+%textVAR06 = Fraction of siblings at this / these distances (pixels).
 %defaultVAR06 = [40 90]
 RadiousVect = (handles.Settings.VariableValues{CurrentModuleNum,6});
 
+%%VariableRevisionNumber = 5
 
 
 %%%%%%%%%%%%%%%%%%%%
@@ -140,11 +137,7 @@ matRadiousVector = eval(RadiousVect);
 %%%%%%%%%%%%%%%%%%%%%%
 
 
-% if handles.Current.SetBeingAnalyzed==1
-
-%%% If first cycle is being analysed mane the localization features to be extracted
-%handles.Measurements.(ChildrenObjectName).ChildrenLocalization = cell(1,handles.Current.NumberOfImageSets);
-
+% create names of features.
 if ThirdStatus
     
     strFeautesGlobal = {strcat('Dis_Outline_',ParentObjectName),...
@@ -174,9 +167,8 @@ else
     for i = 1:length(matRadiousVector)
         strFeautesGlobal{end+1} = strcat('Dis_Percentage_',sprintf('%.4d',matRadiousVector(i)));
     end
-    %handles.Measurements.(ChildrenObjectName).ChildrenLocalizationFeatures{handles.Current.SetBeingAnalyzed} = strFeautesGlobal;
 end
-% end
+
 
 
 
@@ -201,8 +193,6 @@ if ObjCounts < 1
 else
     listUniq = [1:ObjCounts];
 end
-
-
 
 
 %%% initialize parameters
@@ -243,7 +233,6 @@ if ImageEmpty == false
     [SegmentedParentObjectImageExp,CurrentObjLabels] = bwdist(SegmentedParentObjectImage);
     SegmentedParentObjectImageExp = (SegmentedParentObjectImageExp < DilationFactor).*SegmentedParentObjectImage(CurrentObjLabels);
     
-    %     figure;imagesc(SegmentedParentObjectImageExp)
     isBackground=false(size(SegmentedParentObjectImageExp));
     for k=1:length(backgroundID)
         isBackground(SegmentedParentObjectImageExp==backgroundID(k))=true;
@@ -254,8 +243,8 @@ if ImageEmpty == false
     %%% expand background by two pixels
     isBackgroundExp = bwmorph(isBackground,'dilate',2);
     
-    %%% get the edges of the cells
-    % matEdgeImagesIX = findedge(SegmentedParentObjectImageExp);
+    %%% get the edges of the cells, in such a way that later shrinking
+    %%% would still yield a continuous edge
     filter1 = fspecial('sobel'); %
     filter2 = filter1';
     %%% Applies each of the sobel filters to the original image.
@@ -288,16 +277,7 @@ if ImageEmpty == false
     if LisOfObjects(1) == 0 % remove background, if present
         LisOfObjects = LisOfObjects(2:end);
     end
-    
-    %previous version of getting membrane IDs
-    %     if min(LisOfObjects)==0 % note that coordinates in output have form [Y X]
-    %         cellMembraneLocation = arrayfun(@(x) ind2sub2(size(SegmentedParentObjectImage),...
-    %             find(SegmentedParentObjectImageExp==x & matEdgeFinal)),LisOfObjects(2:end), 'uniformoutput',false);
-    %     else
-    %         cellMembraneLocation = arrayfun(@(x) ind2sub2(size(SegmentedParentObjectImage),...
-    %             find(SegmentedParentObjectImageExp==x & matEdgeFinal)),LisOfObjects, 'uniformoutput',false);
-    %     end
-    
+        
     
     %%% Obtain pixels at inner periphery of cells. note that this will
     %%% reduce the computing time of spot features by more than 50% since much
@@ -307,6 +287,8 @@ if ImageEmpty == false
     props = regionprops(FinalLabelMatrixImage,'BoundingBox');
     BoxPerObj = cat(1,props.BoundingBox);
     
+    % get outer coordinates of bounding box of each object (note that
+    % bounding boxes will speed up morphological image operations)
     N = floor(BoxPerObj(:,2)-distanceToObjectMax-1);                    f = N < 1;                                 N(f) = 1;
     S = ceil(BoxPerObj(:,2)+BoxPerObj(:,4)+distanceToObjectMax+1);   	f = S > size(FinalLabelMatrixImage,1);    S(f) = size(FinalLabelMatrixImage,1);
     W = floor(BoxPerObj(:,1)-distanceToObjectMax-1);                    f = W < 1;                                W(f) = 1;
@@ -328,7 +310,7 @@ if ImageEmpty == false
             % there is a finger like extension of cells. When following the
             % reverse strategy to extend the background there can be a few
             % extra pixels, however since they are rare they will be
-            % neglectilbe for the speed of the later calculation and it is
+            % neglectible for the speed of the later calculation and it is
             % favourable to have closed cell membranes
             padbw = padarray(bwminiImage,[1 1]); % pad with 0s to ensure that background on all sides
             ipadbw = ~padbw; % get background
@@ -336,13 +318,14 @@ if ImageEmpty == false
             dpadbw = tpadbw & ~ipadbw; % get inner pixels of objects
             dpadbwR = dpadbw(2:(end-1),2:(end-1)); % reverse padding to get correct coordinates
             
-            dpadbwR = bwmorph(dpadbwR,'thin'); % thin so that across diagonals around 1/3 of pixels is lost. will increase spot parameter calculation
+            dpadbwR = bwmorph(dpadbwR,'thin'); % thin so that across diagonals around 1/3 of pixels is lost. will increase speed spot parameter calculation.
             
             % now map back the linear indices
             [r c] = find(dpadbwR);
             
             % get indices for final image (note that mini image might have
-            % permitted regions of other cells).
+            % permitted regions of other cells and thus boxes can not be 
+            % directly overlaid).
             r = r-1+N(k);
             c = c-1+W(k);
             w = sub2ind(size(FinalLabelMatrixImage2),r,c);
@@ -364,7 +347,7 @@ if ImageEmpty == false
     for j=LisOfObjects'
         CurrCand = cellMembraneLocationId(j).PixelList;
         if ~isempty(CurrCand)
-            cellMembraneLocation(j) = {[CurrCand(:,2) CurrCand(:,1)]}; % preserve format of previous versions of this moduel and use [Y X] for membrane coordinates};
+            cellMembraneLocation(j) = {[CurrCand(:,2) CurrCand(:,1)]}; % preserve format of previous versions of this module and use [Y X] for membrane coordinates};
         end
     end
     
@@ -373,7 +356,9 @@ if ImageEmpty == false
     % each pixel, which depends upon the status of the closest edge, is
     % slow, it is only done once per image. It allows to use inner pixels
     % of the cells as membrane pixels - even if they might be away from
-    % edge in extended segementation image by a few pixels.
+    % edge in extended segementation image by a few pixels. This way the
+    % size of the cells does not have to become changed and distance does
+    % not have to caluclated back.
     [~,ELabel] = bwdist(matEdge_NonEdge);
     matEdge_NonEdge = matEdge_NonEdge(ELabel);
     clear ELabel;
@@ -383,7 +368,7 @@ if ImageEmpty == false
     % be directly interpretable
     matEdge_NonEdge(matEdge_NonEdge==3) = nan;
     
-    %get the ID of the parents per child (spot)
+    %get the ID of the parents of each child (spot)
     matParentObject = handles.Measurements.(ChildrenObjectName).Parent{handles.Current.SetBeingAnalyzed}(:,IXParentObject);
     
     %%% get parent  and third object centroid coordinates
@@ -398,8 +383,12 @@ if ImageEmpty == false
     %%% A) The background
     forbiddenObjectIDs = 0;
     
-    %%% B) Cells, which occupy more than half of the image (huge individual
-    %%% false positively identified cells + lots of spots --> out of memory
+    %%% B) DISCARD CELLS > 50% of image
+    % Cells, which occupy more than half of the image are discarded. In our
+    % case these represent rare cases, where cells are not correctly
+    % identified. They will ususally increase the memory requirement by
+    % >30GB, which causes some computational jobs to crash. If these cells
+    % should not be discarded, consider commenting the following code
     nonZeroIds = sort(SegmentedParentObjectImageExp(SegmentedParentObjectImageExp~=0)); % get non background pixels and sort them
     if any(nonZeroIds)
         
@@ -414,8 +403,9 @@ if ImageEmpty == false
         
     end
     clear nonZeroIds; clear SegmentedParentObjectImageExp;
+    % end of B) DISCARD CELLS > 50% image
     
-    tic
+    tic % on actin images, with many spots, calculation should be around 20 min
     %%% looping through cells
     for i = unique(matParentObject)'
         
@@ -441,7 +431,7 @@ if ImageEmpty == false
                 
                 %%% Standardization %%%
                 % Use radomly placed pixels as spots
-                numIterations = 100;
+                numIterations = 100; % set the number of iterations, which should be used for normalization. Consider changing to another value depending on computational infrastructure.
                 CurrParentsPixels =  ParentPixels(i).PixelList;
                 if size(CurrParentsPixels,1) < tempTotalChildren % if the region, which is not tertiary object is smaller than the amount of children, use pixels of complete cell as reference
                     CurrParentsPixels = NonThirdPixels(i).PixelList;
@@ -462,8 +452,8 @@ if ImageEmpty == false
                     if length(u)>= tempTotalChildren
                         IX = IX(randperm(length(IX)));
                         randIX = randIX(IX(1:tempTotalChildren));
-                    else
-                        randIX = randperm(numParentPixels); % note that this would be slow if executed for all cells
+                    else % If not, permute all pixels. Note that this would be slow, if executed for all cells
+                        randIX = randperm(numParentPixels); 
                         randIX  = randIX(1:tempTotalChildren);
                     end
                     tempRandomChildLocation = CurrParentsPixels(randIX,:);

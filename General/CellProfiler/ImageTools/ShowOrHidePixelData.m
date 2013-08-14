@@ -50,7 +50,7 @@ function ShowOrHidePixelData(handles)
 %%% the outdated pixval command. The bug has been reported to Mathworks.
 warning off Images:pixval:obsoleteFunction
 pixval
-%warning on Images:pixval:obsoleteFunction
+warning on Images:pixval:obsoleteFunction
 
 %%% If we ever do end up using impixelinfoval instead of pixval, we should
 %%% also create a mechanism to delete the pixel info tool. Pixval works

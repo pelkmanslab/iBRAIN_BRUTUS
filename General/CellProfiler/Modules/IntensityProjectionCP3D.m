@@ -26,8 +26,8 @@ StackName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
 %textVAR02 = How do you want to call the intensity projection image?
-%defaultVAR02 = MIPBlue
-OutputName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+%defaultVAR02 = OrigBlue
+OutputImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %infotypeVAR02 = imagegroup indep
 
 %textVAR03 = Do you want to create max or sum intensity projections?
@@ -52,4 +52,5 @@ else
     IPStack = sum(CurrStack,3);
 end
 
-handles.Pipeline.(OutputName) = IPStack;
+handles.Pipeline.(OutputImageName) = IPStack;
+

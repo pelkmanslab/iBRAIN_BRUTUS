@@ -177,6 +177,12 @@ handles.Pipeline.(RescaledImageName) = RescaledImage;
 handles.Measurements.Image.(['Background_',ImageName]){handles.Current.SetBeingAnalyzed} = [intBackgroundValue,intForegroundvalue];
 handles.Measurements.Image.(['Background_',ImageName,'Features']) = {'Background','Foreground'};
 
+%%%
+% let's do a little check here...
+RescaledImage2 = CPretrieveimage(handles,RescaledImageName,ModuleName);
+isequal(RescaledImage,RescaledImage2)
+%%%
+
 
 function [intMaxXindex, intMaxX] = findmax(X)
 %

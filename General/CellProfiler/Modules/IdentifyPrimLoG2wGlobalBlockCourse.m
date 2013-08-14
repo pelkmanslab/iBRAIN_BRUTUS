@@ -144,7 +144,6 @@ sSpotDefintion = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %inputtypeVAR08 = popupmenu
 
 
-
 %%%VariableRevisionNumber = 1
 
 
@@ -173,6 +172,11 @@ Radius = settings.Radius;
 %%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+
 
 
 ImgThresholdMin = quantile(OrigImage(:),settings.minQuantileImgIntensity);
@@ -543,9 +547,10 @@ end
 % handles = CPaddmeasurements(handles, objectName, 'Location_Center_Y', 'Location_Center_Y', centroids(:,2));
 % handles = CPaddmeasurements(handles,Object,   Measure,                Feature,            Data)
 % which('CPaddmeasurements')
-handles = CPaddmeasurements(handles, objectName, 'Location_Center_X', centroids(:,1));
-handles = CPaddmeasurements(handles, objectName, 'Location_Center_Y', centroids(:,2));
-                        
+% handles = CPaddmeasurements(handles, objectName, 'Location_Center_X', centroids(:,1));
+% handles = CPaddmeasurements(handles, objectName, 'Location_Center_Y', centroids(:,2));
+handles = CPaddmeasurements(handles, objectName, 'Location', centroids);                        
+
 function string = CPjoinstrings(varargin)
 %CPjoinstrings Build underscore-separated string from parts.
 %
@@ -650,8 +655,9 @@ end
 %%% Verify we can add this type of Measurement to this type of object
 if ischar(Data) && (~ strcmp(ObjectName, 'Image')),
     error(['This should not happen.  CellProfiler Coding Error.  Attempting to add string measurement to non-image ', ObjectName, '.', FeatureName]);
-elseif ~strcmp(ObjectName, 'Image') && ~isvector(Data) && ~isempty(Data)
-    error(['This should not happen.  CellProfiler Coding Error.  Attempting to add multidimensional (', int2str(size(Data)), ') measurement ', ObjectName, '.', FeatureName]);
+% [TS removed this check to allow standard format for saving Location ]
+% elseif ~strcmp(ObjectName, 'Image') && ~isvector(Data) && ~isempty(Data)
+%     error(['This should not happen.  CellProfiler Coding Error.  Attempting to add multidimensional (', int2str(size(Data)), ') measurement ', ObjectName, '.', FeatureName]);
 elseif strcmp(ObjectName, 'Image') && isnumeric(Data) && ~isscalar(Data),
     error(['This should not happen.  CellProfiler Coding Error.  Attempting to add non-scalar (', int2str(size(Data)), ') measurement to ', ObjectName, '.', FeatureName]);
 end

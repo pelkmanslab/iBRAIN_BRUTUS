@@ -197,7 +197,7 @@ for ObjectNameNbr = 1:ObjectNameCount
         warning off all
         ColumnsToDelete = ~logical(ColumnTotals);
         RowsToDelete = ~logical(RowTotals);
-        %warning on all
+        warning on all
         drawnow
         CroppedLabelMatrix = LabelMatrixImage{ObjectNameNbr};
         CroppedLabelMatrix(:,ColumnsToDelete,:) = [];

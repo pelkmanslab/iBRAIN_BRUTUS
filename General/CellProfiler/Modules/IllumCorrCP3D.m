@@ -1,20 +1,20 @@
 function handles = IllumCorrCP3D(handles)
 
-% Help for the NBBS_IluminationCorrection_Calc module:
+% Help for the IllumCorrCP3D
 % Category: Image Processing
 %
 % SHORT DESCRIPTION:
-% applies NBBS Illumination correction from batch folder to a CP3D stack
+% applies NBBS Illumination correction (which has to be in default output
+% folder) to a CP3D stack
 %
 % *************************************************************************
 %
 %
 % Authors:
-%   Nico Battich
-%   Berend Snijder
-%   Thomas Stoeger for CP3D version
+%   Nico Battich (original 2D)
+%   Berend Snijder (original 2D)
+%   Thomas Stoeger (3D adaptation)
 %
-% Website: http://www.cellprofiler.org
 %
 % $Revision: 1879 $
 

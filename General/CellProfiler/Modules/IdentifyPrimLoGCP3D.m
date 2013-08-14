@@ -2,18 +2,75 @@ function handles = IdentifyPrimLoGCP3D(handles)
 % Help for the IdentifyPrimLGCP3D module:
 % Category: Object Processing
 %
-% SHORT DESCRIPTION:
-% Will Determine Spots in 3D Image stacks by Laplacian Of Gaussian
-% Filtering.
-%
-% Filtering can either be done in 2D or in 3D according to Raj et al.; In
-% addition security thresholds are included to add limits of the rescaling
-% of individual images prior to application of the filtering. This can
-% prevent the identification of true positive, but biological false
-% positive, spots in dim images, e.g. if autofluorescence is grainy 
-%
-% *************************************************************************
 
+% SHORT DESCRIPTION:
+% Will Determine Spots in 3D Image stacks after Laplacian Of Gaussian (LoG)
+% enhancing of spots. Many of the input arguments are optional. Note that
+% while an external script has to be run in order to choose robust values,
+% manual selection of the parameters can often yield good estimates, if
+% the signal is clear enough.
+%
+% WHAT DID YOU CALL THE IMAGES YOU WANT TO PROCESS?
+% Object detection should be done on this image.
+%
+% HOW DO YOU WANT TO CALL THE OBJECTS IDENTIFIED BY THIS MODULE?
+% This is the name of the the spots identified after thresholding the LoG
+% image.
+%
+% WHICH SPOT ENHANCEMENT DO YOU WANT TO USE?
+% You can either enhance spots only within their plane or alternatively
+% with the including information from adjacent planes, as described by Raj
+% et al. 2009.
+%
+% OBJECTSIZE
+% This value corresponds to the approximate size of you spots in the 2D plane. It should
+% be their diameter in pixels. The LoG will use a mask of this size to
+% enhance radial signal of that size. Note that in practice the specific value
+% does not affect the number of spots, if spots are bright (eg. pixel size 5
+% or 6).
+%
+% INTENSITY QUANTA PER IMAGE
+% Prior to spot detection the images are rescaled according to their
+% intensity. Since the specific value of minimal and maximal intensities
+% are frequently not robust across multiple images, intensity quantile are
+% used instead. [0 1] would correspond to using the single dimmest pixel
+% for minimal intensity and the single brightest pixel for maximal
+% intensity. [0.01 0.90] would mean that the minimum intensity is derived
+% from the pixel, which is the 1% brightest pixel of all and that the
+% maximum intensity is derived from the pixel, which is the 90% brightest
+% pixel .
+%
+% INTENSITY BORERS FOR INTENSITY RESCALING OF IMAGES
+% Most extreme values that the image intensity minimum and image intensity
+% maximum (as defined by the quanta) are allowed to have
+% [LowestPossibleGreyscaleValueForImageMinimum
+% HighestPossibleGreyscaleValueForImageMinimum
+% LowestPossibleGreyscaleValueForImageMaximum
+% HighestPossibleGreyscaleValueForImageMaximum]
+% To ignore individual values, place a NaN.
+% Note that these parameters very strongly depend upon the variability of
+% your illumination source. When using a robust confocal microscope you can
+% set the lowest and highest possible values to values,  which are very
+% close (or even identical). If your light source is variable during the
+% acquisition (which can be the case with Halogen lamps) you might choose 
+% less strict borders to detect spots of varying intensites.
+%
+% THRESHOLD OF SPOT DETECTION
+% This is the threshold value for spot detection. The higher it is the more
+% stringent your spot detection is. Use external script to determine a
+% threshold where the spot number is robust against small variations in the
+% threshold.
+%
+% WHAT IS THE MINIMAL INTENSITY OF A VOXEL WITHIN A SPOT?
+% Minimal greyscale value of a voxel, which a voxel has to have in order to
+% be recognized to be within a spot. Opitonal argument to make spot
+% detection even more robust against very dim spots. In practice, we have
+% never observed that this parameter would have any influence on the spot
+% detection. However, you might include it as an additional safety measure.
+%
+%
+% [TS]
+% *************************************************************************
 
 drawnow
 
@@ -29,7 +86,7 @@ StackName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %infotypeVAR02 = objectgroup indep
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = Which Spot amplification do you want to use?
+%textVAR03 = Which Spot enhancement do you want to use?
 %choiceVAR03 = 3D LoG, Raj
 %choiceVAR03 = 2D LoG
 iFilterType = char(handles.Settings.VariableValues{CurrentModuleNum,3});
@@ -52,7 +109,7 @@ iRescaleThr = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %defaultVAR07 = 0.01
 iDetectionThr = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
-%textVAR08 = What is the minimal intensity of a pixel within a spot?
+%textVAR08 = What is the minimal intensity of a voxel within a spot?
 %defaultVAR08 = /
 iObjIntensityThr = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
@@ -151,7 +208,7 @@ switch size(SegmentationCC.ImageSize,2)
         % The only reason for inducing this crash is to prevent
         % amiguity resulting from not having the dimensions not named
         % clearly. Thus if someone wants to add more, one should
-        % conciously make a simple adaptation (or ask TS to do so)
+        % conciously make a simple adaptation 
 end
 
 if SegmentationCC.NumObjects ~= 0 % determine centroid, if at least one object
@@ -167,10 +224,6 @@ end
 %%%%%%%%%%%%%%%%%%%
 %%% DISPLAY %%%%%%%
 %%%%%%%%%%%%%%%%%%%
-
-% Display centroid might be more informative!
-
-
 
 
 % Create Occupancy image, which shows how manz Z planes have an object

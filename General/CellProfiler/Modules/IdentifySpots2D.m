@@ -92,8 +92,9 @@ function handles = IdentifySpots2D(handles)
 %
 % The design of this module largely follows a IdentifyPrimLoG2 by 
 % Baris Sumengen
+%
+% $Revision: 1889 $
 
-%%VariableRevisionNumber = 5
 
 drawnow
 
@@ -150,6 +151,9 @@ iDoBiasCorrection = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 %infotypeVAR11 = imagegroup
 iCorrectionName = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 %inputtypeVAR11 = popupmenu
+
+%%VariableRevisionNumber = 5
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%  CHECK INPUT   %%%%%%%%%%%%%%%%%

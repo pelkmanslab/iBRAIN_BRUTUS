@@ -196,9 +196,6 @@ end
 %%% Retrieves the pixel size that the user entered (micrometers per pixel).
 PixelSize = str2double(handles.Settings.PixelSize);
 
-%%% [BS, 090223] Going crazy by the warnings of division-by-zero...
-warning off all
-
 %%% START LOOP THROUGH ALL THE OBJECTS
 for i = 1:length(ObjectNameList)
     ObjectName = ObjectNameList{i};
@@ -259,52 +256,51 @@ for i = 1:length(ObjectNameList)
             Zernike = zeros(NumObjects,size(Zernikeindex,1));
 
             for Object = 1:NumObjects
-                try                
-                    %%% Calculate Zernike shape features
-                    [xcord,ycord] = find(LabelMatrixImage==Object);
-                    diameter = max((max(xcord)-min(xcord)),(max(ycord)-min(ycord)));
-                    if rem(diameter,2)== 0, diameter = diameter + 1;end   % An odd number facilitates implementation
+                %%% Calculate Zernike shape features
+                [xcord,ycord] = find(LabelMatrixImage==Object);
+                diameter = max((max(xcord)-min(xcord)),(max(ycord)-min(ycord)));
+                if rem(diameter,2)== 0, diameter = diameter + 1;end   % An odd number facilitates implementation
 
-                    % Calculate the Zernike basis functions
-                    [x,y] = meshgrid(linspace(-1,1,diameter),linspace(-1,1,diameter));
-                    r = sqrt(x.^2+y.^2);
-                    phi = atan(y./(x+eps));
-                    Zf = zeros(size(x,1),size(x,2),size(Zernikeindex,1));
+                % Calculate the Zernike basis functions
+                [x,y] = meshgrid(linspace(-1,1,diameter),linspace(-1,1,diameter));
+                r = sqrt(x.^2+y.^2);
+                phi = atan(y./(x+eps));
+                Zf = zeros(size(x,1),size(x,2),size(Zernikeindex,1));
 
-                    for k = 1:size(Zernikeindex,1)
-                        n = Zernikeindex(k,1);
-                        m = Zernikeindex(k,2);
-                        s = zeros(size(x));
-                        for l = 0:(n-m)/2;
-                            s  = s + (-1)^l*fak(n-l)/( fak(l) * fak((n+m)/2-l) * fak((n-m)/2-l)) * r.^(n-2*l).*exp(sqrt(-1)*m*phi);
-                        end
-                        s(r>1) = 0;
-                        Zf(:,:,k) = s;
+                for k = 1:size(Zernikeindex,1)
+                    n = Zernikeindex(k,1);
+                    m = Zernikeindex(k,2);
+                    s = zeros(size(x));
+                    for l = 0:(n-m)/2;
+                        s  = s + (-1)^l*fak(n-l)/( fak(l) * fak((n+m)/2-l) * fak((n-m)/2-l)) * r.^(n-2*l).*exp(sqrt(-1)*m*phi);
                     end
+                    s(r>1) = 0;
+                    Zf(:,:,k) = s;
+                end
 
-                    % Get image patch
-                    rmax = max(xcord);
-                    rmin = max(xcord)-diameter+1;
-                    if rmin < 1
-                        rmin = 1;
-                        rmax = min(diameter,size(LabelMatrixImage,1));
-                    end
+                % Get image patch
+                rmax = max(xcord);
+                rmin = max(xcord)-diameter+1;
+                if rmin < 1
+                    rmin = 1;
+                    rmax = min(diameter,size(LabelMatrixImage,1));
+                end
 
-                    cmax = max(ycord);
-                    cmin = max(ycord)-diameter+1;
-                    if cmin < 1
-                        cmin = 1;
-                        cmax = min(diameter,size(LabelMatrixImage,2));
-                    end
+                cmax = max(ycord);
+                cmin = max(ycord)-diameter+1;
+                if cmin < 1
+                    cmin = 1;
+                    cmax = min(diameter,size(LabelMatrixImage,2));
+                end
 
-                    BWpatch   = LabelMatrixImage(rmin:rmax,cmin:cmax) == Object;
-
-                    % Apply Zernike functions
+                BWpatch   = LabelMatrixImage(rmin:rmax,cmin:cmax) == Object;
+                
+                % Apply Zernike functions
+                try
                     Zernike(Object,:) = squeeze(abs(sum(sum(repmat(BWpatch,[1 1 size(Zernikeindex,1)]).*Zf))))';
                 catch
                     Zernike(Object,:) = 0;
                     display(sprintf([ObjectName,' number ',num2str(Object),' was too big to be calculated. Batch Error! (this is included so it can be caught during batch processing without quitting out of the analysis)']))
-                    display(sprintf('%s: [Added extra BS bugfix to prevent freakydeaky crashes]',mfilename))
                 end
             end
         end

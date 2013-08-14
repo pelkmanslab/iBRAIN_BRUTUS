@@ -1,4 +1,4 @@
-function [handles, OutputImage, ReadyFlag] = CPaverageimages(handles, Mode, ImageName, ProjectionImageName, intSubstrationValue)
+function [handles, OutputImage, ReadyFlag] = CPaverageimages(handles, Mode, ImageName, ProjectionImageName)
 
 % Note: Mode can be Accumulate or DoNow.
 %
@@ -44,7 +44,6 @@ if strcmpi(Mode,'DoNow') == 1
     end
     %%% Calculates the mean image. Initializes the variable.
     TotalImage = CPimread(fullfile(Pathname,char(FileList(1))), handles);
-    
     %%% Waitbar shows the percentage of image sets remaining.
     WaitbarHandle = waitbar(0,'');
     %%% Obtains the screen size and determines where the wait bar will
@@ -81,10 +80,6 @@ if strcmpi(Mode,'DoNow') == 1
         waitbar(i/NumberOfImages, WaitbarHandle, WaitbarText)
         drawnow
     end
-    
-
-
-    
     if length(FileList) == 1
         CurrentTime = clock;
         TimeSoFar = etime(CurrentTime,TimeStart);
@@ -93,15 +88,6 @@ if strcmpi(Mode,'DoNow') == 1
     WaitbarText = char(WaitbarText);
     waitbar(i/NumberOfImages, WaitbarHandle, WaitbarText)
     OutputImage = TotalImage / length(FileList);
-    
-    %%% BS/PL HACK: substract background-value if given, set values lower
-    %%% than 0 to 0.
-    if nargin==5
-        fprintf('%s: substracting background value %g\n',mfilename,intSubstrationValue)
-        OutputImage = OutputImage - intSubstrationValue;
-        OutputImage(OutputImage<0) = 0;
-    end
-    
     ReadyFlag = 'Ready';
 
 elseif strcmpi(Mode,'Accumulate') == 1

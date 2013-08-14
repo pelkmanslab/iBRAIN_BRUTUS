@@ -117,7 +117,7 @@ if any(size(SecondaryObjectImage) < size(PrimaryObjectImage))
     warning off all
     ColumnsToDelete = ~logical(ColumnTotals);
     RowsToDelete = ~logical(RowTotals);
-    %warning on all
+    warning on all
     drawnow
     CroppedLabelMatrix = PrimaryObjectImage;
     CroppedLabelMatrix(:,ColumnsToDelete,:) = [];
@@ -135,7 +135,7 @@ elseif any(size(SecondaryObjectImage) > size(PrimaryObjectImage))
     warning off all
     ColumnsToDelete = ~logical(ColumnTotals);
     RowsToDelete = ~logical(RowTotals);
-    %warning on all
+    warning on all
     drawnow
     CroppedLabelMatrix = SecondaryObjectImage;
     CroppedLabelMatrix(:,ColumnsToDelete,:) = [];
@@ -165,7 +165,7 @@ IntensityOutlines = SubregionObjectImage - MaxFilteredImage;
 %%% Converts to logical.
 warning off MATLAB:conversionToLogical
 FinalOutline = logical(IntensityOutlines);
-%warning on MATLAB:conversionToLogical
+warning on MATLAB:conversionToLogical
 
 if ~isfield(handles.Measurements,SubregionObjectName)
     handles.Measurements.(SubregionObjectName) = {};

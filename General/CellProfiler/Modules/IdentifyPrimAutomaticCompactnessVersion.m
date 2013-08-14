@@ -1,4 +1,4 @@
-function handles = IdentifyPrimAutomaticCompactnessVersion(handles)
+function handles = IdentifyPrimAutomatic(handles)
 
 % Help for the Identify Primary Automatic module:
 % Category: Object Processing

@@ -9,6 +9,13 @@ function handles = MeasureChildren(handles)
 % moments. Values with NaNs are excluded from the analysis.
 % *************************************************************************
 %
+% Authors:
+%   Nico Battich
+%   Thomas Stoeger
+%   Lucas Pelkmans
+%
+% Website: http://www.imls.uzh.ch/research/pelkmans.html
+%
 %
 % $Revision: 1725 $
 
@@ -99,7 +106,7 @@ if any(matParentObject>0) && (numParents>0);
             PCNaNStd(j,:) =         nanstd(CurrData,[],1);
 
             
-            for k=1:size(smatImpSpotFeatures,2)
+            for k=1:size(smatImpSpotFeatures,2) % loop through each feature. note that it is possible that only some features have nans.
                 
                 ff = ~(isnan(CurrData(:,k)));
                 CurrColumnData = CurrData(ff,k);

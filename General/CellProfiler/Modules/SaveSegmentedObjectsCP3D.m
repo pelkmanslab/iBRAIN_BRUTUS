@@ -31,7 +31,11 @@ drawnow
 %inputtypeVAR01 = popupmenu
 strObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
-%%%VariableRevisionNumber = 1
+
+%textVAR02 = 
+
+
+%%%VariableRevisionNumber = 145
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

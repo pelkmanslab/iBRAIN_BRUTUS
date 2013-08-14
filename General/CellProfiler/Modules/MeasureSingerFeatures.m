@@ -11,9 +11,10 @@ function handles = MeasureSingerFeatures(handles)
 % see Park et al. 2012 Cell Reports
 %
 % Measurement:             Feature Number:
-% PolarizationIndex             |   1
-% DispersionIndex               |   2
-% SecondMomentOfIntensities     |   3
+% PolarizationIndex                 |   1
+% SecondMomentOfChild               |   2
+% SecondMomentOfHypotheticalUniform    |   3
+% DispersionIndex           |   4
 %
 % POLARIZATION INDEX
 % Measure of the distance of the centroid of all children compared to the

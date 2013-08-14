@@ -18,8 +18,6 @@ function handles = ExtractVesicle(handles)
 % 17.02.2009 Sharif Chowdhury - Some Presentation of measurement is changed
 % 18.02.2009 Sharif Chowdhury - Output is produced according to the object
 % names
-% 19.02.2009 Sharif, Chowdhury output format changed and new statistical
-% measurements added
 
 % using CPaddmeasurements function & detection module is removed from here
 % compatible CP version: 1.0.4553
@@ -116,7 +114,7 @@ ves= CPretrieveimage(handles,fieldname,ModuleName,'DontCheckColor','DontCheckSca
 %linkaxes(h) 
 
 % extract cell level features
-[features,allvesicledata,fnames, vfnames, riplyMatrix, measurementNode] = extract_vesicle_features( double(L), G, ves, rad1, rad2);
+[features,allvesicledata,fnames, vfnames, riplyMatrix] = extract_vesicle_features( double(L), G, ves, rad1, rad2);
 
 
 %%%%%%%%%%%%%%%%%%%%%%%
@@ -165,43 +163,20 @@ fieldname = [ModuleName '_',strImageName];
  if  isfield(handles.Measurements,strMaskObjectName) < 1
      handles.Measurements.(strMaskObjectName) = cell(0);
  end
- 
- numOFcewlls = length(measurementNode);
- dataValues = zeros(numOFcewlls,1);
- 
- 
- if  numOFcewlls >0
-    for i=1 : length( measurementNode{1}.measurementField)
-        measurementFieldName =  measurementNode{1}.measurementField{i};
-        for j =1 : length( measurementNode{1}.(measurementFieldName).fieldNames)
-            dataFieldName =  measurementNode{1}.(measurementFieldName).fieldNames{j};
-            
-            for k =1:numOFcewlls 
-                 dataValues(k,1) = measurementNode{k}.(measurementFieldName).([dataFieldName 'Value']) ;
-            end
-            handles =CPaddmeasurements(handles,strMaskObjectName,[measurementFieldName,strObjectName,'_', strImageName],dataFieldName, dataValues);
-        end
-        
-        
-    end 
- end
- 
- 
- disp('Done')
 
-%  handles =CPaddmeasurements(handles,strMaskObjectName,['Number_of_',strObjectName,'_', strImageName],'Total_Count',features(:,1));
-%  handles =CPaddmeasurements(handles,strMaskObjectName,[strObjectName,'_Size_', strImageName],'Average',features(:,2));
-%  handles =CPaddmeasurements(handles,strMaskObjectName,[strObjectName,'_Intensity_', strImageName],'Average',features(:,3));
-%  handles =CPaddmeasurements(handles,strMaskObjectName,['Number_of_',strObjectName,'_Per_Unit_Cell_Area_',strImageName],'Average',features(:,4));
-%  handles =CPaddmeasurements(handles,strMaskObjectName,['Distance_of_',strObjectName,'_to_Cell_Outline_', strImageName],'Average',features(:,5));
-%  handles =CPaddmeasurements(handles,strMaskObjectName,['Distance_of_',strObjectName,'_to_Cell_Outline_', strImageName], 'STD',features(:,6));
-%  
-%  handles =CPaddmeasurements(handles,strMaskObjectName,['Distance_of_',strObjectName,'_to_Cell_Centre_',strImageName],'Average',features(:,7));
-%  handles =CPaddmeasurements(handles,strMaskObjectName,['Distance_of_',strObjectName,'_to_Cell_Centre_',strImageName], 'STD',features(:,8));
-%  
-%  handles =CPaddmeasurements(handles,strMaskObjectName,['Distance_Between_',strObjectName,'_', strImageName],'Average',features(:,9));
-%  handles =CPaddmeasurements(handles,strMaskObjectName,['Distance_Between_',strObjectName,'_', strImageName],'SRD',features(:,10));
-%  handles =CPaddmeasurements(handles,strMaskObjectName,['Distance_Between_',strObjectName,'_', strImageName], 'Minimum',features(:,11));
+ handles =CPaddmeasurements(handles,strMaskObjectName,['Number_of_',strObjectName,'_', strImageName],'Total_Count',features(:,1));
+ handles =CPaddmeasurements(handles,strMaskObjectName,[strObjectName,'_Size_', strImageName],'Average',features(:,2));
+ handles =CPaddmeasurements(handles,strMaskObjectName,[strObjectName,'_Intensity_', strImageName],'Average',features(:,3));
+ handles =CPaddmeasurements(handles,strMaskObjectName,['Number_of_',strObjectName,'_Per_Unit_Cell_Area_',strImageName],'Average',features(:,4));
+ handles =CPaddmeasurements(handles,strMaskObjectName,['Distance_of_',strObjectName,'_to_Cell_Outline_', strImageName],'Average',features(:,5));
+ handles =CPaddmeasurements(handles,strMaskObjectName,['Distance_of_',strObjectName,'_to_Cell_Outline_', strImageName], 'STD',features(:,6));
+ 
+ handles =CPaddmeasurements(handles,strMaskObjectName,['Distance_of_',strObjectName,'_to_Cell_Centre_',strImageName],'Average',features(:,7));
+ handles =CPaddmeasurements(handles,strMaskObjectName,['Distance_of_',strObjectName,'_to_Cell_Centre_',strImageName], 'STD',features(:,8));
+ 
+ handles =CPaddmeasurements(handles,strMaskObjectName,['Distance_Between_',strObjectName,'_', strImageName],'Average',features(:,9));
+ handles =CPaddmeasurements(handles,strMaskObjectName,['Distance_Between_',strObjectName,'_', strImageName],'SRD',features(:,10));
+ handles =CPaddmeasurements(handles,strMaskObjectName,['Distance_Between_',strObjectName,'_', strImageName], 'Minimum',features(:,11));
 
  if rad2 > 0 && rad2>=rad1
      for i=rad1:rad2 
@@ -215,22 +190,12 @@ fieldname = [ModuleName '_',strImageName];
      handles.Measurements.(strObjectName) = cell(0);
  end
      
+ handles =CPaddmeasurements(handles, strObjectName,['Distance_', strImageName], 'To_Cell_Outline',allvesicledata(:,1));
+ handles =CPaddmeasurements(handles, strObjectName,['Distance_', strImageName], 'To_Cell_Centre',allvesicledata(:,2));
+ handles =CPaddmeasurements(handles, strObjectName,['Intensity_', strImageName], 'Mean',allvesicledata(:,3));
+ handles =CPaddmeasurements(handles, strObjectName,['Area_', strImageName], 'Total',allvesicledata(:,4));
+ handles =CPaddmeasurements(handles, strObjectName,['Orientation_', strImageName], 'Angle',allvesicledata(:,5));
+ handles =CPaddmeasurements(handles, strObjectName,['Parent_Cell_', strImageName], 'CellID',allvesicledata(:,6));
+ 
 
- if length(allvesicledata) > 0
-     handles =CPaddmeasurements(handles, strObjectName,['Distance_', strImageName], 'To_Cell_Outline',allvesicledata(:,1));
-     handles =CPaddmeasurements(handles, strObjectName,['Distance_', strImageName], 'To_Cell_Centre',allvesicledata(:,2));
-     handles =CPaddmeasurements(handles, strObjectName,['Intensity_', strImageName], 'Mean',allvesicledata(:,3));
-     handles =CPaddmeasurements(handles, strObjectName,['Area_', strImageName], 'Total',allvesicledata(:,4));
-     handles =CPaddmeasurements(handles, strObjectName,['Orientation_', strImageName], 'Angle',allvesicledata(:,5));
-     handles =CPaddmeasurements(handles, strObjectName,['Parent_Cell_', strImageName], 'CellID',allvesicledata(:,6));
- else
-     handles =CPaddmeasurements(handles, strObjectName,['Distance_', strImageName], 'To_Cell_Outline',NaN);
-     handles =CPaddmeasurements(handles, strObjectName,['Distance_', strImageName], 'To_Cell_Centre',NaN);
-     handles =CPaddmeasurements(handles, strObjectName,['Intensity_', strImageName], 'Mean',NaN);
-     handles =CPaddmeasurements(handles, strObjectName,['Area_', strImageName], 'Total',NaN);
-     handles =CPaddmeasurements(handles, strObjectName,['Orientation_', strImageName], 'Angle',NaN);
-     handles =CPaddmeasurements(handles, strObjectName,['Parent_Cell_', strImageName], 'CellID',NaN);
-     
- end
-     
 end

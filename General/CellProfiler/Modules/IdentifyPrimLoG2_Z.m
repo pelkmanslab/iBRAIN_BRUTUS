@@ -162,7 +162,7 @@ ThresholdStr = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-ImageName(1 < cellfun(@length ,ImageName));
+ImageName(1 < cellfun(@length ,ImageName))
 
 OrigImage = cellfun(@(x) CPretrieveimage(handles,x,ModuleName,'MustBeGray','CheckScale'),ImageName(1 < cellfun(@length ,ImageName)), 'UniformOutput',false);
 OrigImage = cellfun(@double,OrigImage,'UniformOutput',false);

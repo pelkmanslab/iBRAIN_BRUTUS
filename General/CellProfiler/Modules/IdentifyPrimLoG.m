@@ -176,14 +176,27 @@ elseif strcmpi('Automatic',ThresholdStr(1:9))
         Threshold_correction = 1;
     end
     [handles,Threshold_scaled] = CPthreshold(handles,'RobustBackground Global',0,'0','1',Threshold_correction,ac_scaled,'LoG',ModuleName);
-    fprintf('%s: using %s as background threshold calculation.\n',mfilename,'RobustBackground Global')
-    
+    disp('BEREND: RidlerCalvard Adaptive')
+%     'Otsu','MoG','Background','RobustBackground','RidlerCalvard','Kapur'}
+%     [handles,Threshold_scaled] = CPthreshold(handles,'Otsu Adaptive',0,'0','1',Threshold_correction,ac_scaled,'LoG',ModuleName);
+
     %% Un-scale threshold
     Threshold = (Threshold_scaled .* ac_range) + ac_min;
 end
 
-ac(ac < Threshold) = Threshold;
+size(ac)
+size(Threshold)
+
+if numel(Threshold)==1
+    ac(ac < Threshold) = Threshold;
+else
+    ac(ac < Threshold) = Threshold(ac < Threshold);
+end
 ac = ac - Threshold;
+
+size(ac)
+size(Threshold)
+
 
 bw = false(size(im));
 if any(ac(:))
@@ -202,10 +215,14 @@ FinalLabelMatrixImage = bwlabel(bw);
 % The dilated mask is used only for visualization.
 dilated = imdilate(bw, strel('disk', 2));
 vislabel = bwlabel(dilated);
-r = OrigImage;
-g = OrigImage;
-b = OrigImage;
-r(dilated) = 1;
+% r = OrigImage;
+% g = OrigImage;
+% b = OrigImage;
+r = (OrigImage - min(OrigImage(:))) / max(OrigImage(:));
+g = (OrigImage - min(OrigImage(:))) / max(OrigImage(:));
+b = (OrigImage - min(OrigImage(:))) / max(OrigImage(:));
+
+r(dilated) = max(r(:));
 g(dilated) = 0;
 b(dilated) = 0;
 visRGB = cat(3, r, g, b);
@@ -222,23 +239,23 @@ if any(findobj == ThisModuleFigureNumber)
   hAx = gca;
   title(hAx,[ObjectName, ' cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
   
-  ud(1).img = visRGB;
-  ud(2).img = ac_scaled;
-  ud(3).img = OrigImage;
-  ud(1).title = [ObjectName ' , cycle # ',num2str(handles.Current.SetBeingAnalyzed)];
-  ud(2).title = ['Laplacian of Gaussian transformed ' ObjectName ', cycle # ',num2str(handles.Current.SetBeingAnalyzed)];
-  ud(3).title = ['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)];
-  uicontrol(h_fig, 'Style', 'popup',...
-                    'String', 'Objects on Original Image|Laplacian of Gaussian Transformed|Input Image',...
-                    'UserData',ud,...
-                    'units','normalized',...
-                    'position',[.01 .95 .25 .04],...
-                    'backgroundcolor',[.7 .7 .9],...
-                    'tag','PopupImage',...
-                    'Callback', @CP_ImagePopupmenu_Callback);
+%   ud(1).img = visRGB;
+%   ud(2).img = ac_scaled;
+%   ud(3).img = OrigImage;
+%   ud(1).title = [ObjectName ' , cycle # ',num2str(handles.Current.SetBeingAnalyzed)];
+%   ud(2).title = ['Laplacian of Gaussian transformed ' ObjectName ', cycle # ',num2str(handles.Current.SetBeingAnalyzed)];
+%   ud(3).title = ['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)];
+%   uicontrol(h_fig, 'Style', 'popup',...
+%                     'String', 'Objects on Original Image|Laplacian of Gaussian Transformed|Input Image',...
+%                     'UserData',ud,...
+%                     'units','normalized',...
+%                     'position',[.01 .95 .25 .04],...
+%                     'backgroundcolor',[.7 .7 .9],...
+%                     'tag','PopupImage',...
+%                     'Callback', @CP_ImagePopupmenu_Callback);
   
   text(0.1,-0.08,...
-      ['Threshold: ' num2str(Threshold) ', Number of objects: ' num2str(sum(bw(:)))],...
+      ['Threshold: ' num2str(mean(Threshold(:))) ', Number of objects: ' num2str(sum(bw(:)))],...
       'Color','black',...
       'fontsize',handles.Preferences.FontSize,...
       'Units','Normalized',...
@@ -1060,12 +1077,14 @@ else
     %%% calculate the threshold. If the pObject does not contain a % sign,
     %%% it will continue.  
     %%% pObject is important, but pObjectNew is only used in  2 lines of code.blah
-    if regexp(pObject, '%')
-        pObjectNew = regexprep(pObject, '%', '');
-        pObject = (str2double(pObjectNew)/100);
-    
-    else
-        pObject = str2double(pObject);
+    if ischar(pObject)
+        if  regexp(pObject, '%')
+            pObjectNew = regexprep(pObject, '%', '');
+            pObject = (str2double(pObjectNew)/100);
+
+        else
+            pObject = str2double(pObject);
+        end
     end
     %pObject = str2double(pObject(1:2))/100; old code--need to remove
     %%% Get the probability for a background pixel
@@ -1549,3 +1568,41 @@ else
 end
 
 
+
+
+
+
+function result = CPverLessThan(toolboxstr, verstr)
+
+% This CP function is present only so we can easily replace the
+% verlessThan if necessary.  See documentation for warndlg for usage.
+    
+error(nargchk(2, 2, nargin, 'struct'))
+        
+if ~ischar(toolboxstr) || ~ischar(verstr)
+    error('MATLAB:verLessThan:invalidInput', 'Inputs must be strings.')
+end
+
+if ~isdeployed,
+    toolboxver = ver(toolboxstr);
+    if isempty(toolboxver)
+        error('MATLAB:verLessThan:missingToolbox', 'Toolbox ''%s'' not found.', toolboxstr)
+    end
+
+    toolboxParts = getParts(toolboxver(1).Version);
+else
+    toolboxver = version;
+    if isempty(toolboxver)
+        error('MATLAB:verLessThan:missingToolbox', 'Toolbox ''%s'' not found.', toolboxstr)
+    end
+    toolboxParts = getParts(toolboxver);
+end
+verParts = getParts(verstr);
+
+result = (sign(toolboxParts - verParts) * [1; .1; .01]) < 0;
+
+function parts = getParts(V)
+    parts = sscanf(V, '%d.%d.%d')';
+    if length(parts) < 3
+       parts(3) = 0; % zero-fills to 3 elements
+    end

@@ -90,67 +90,68 @@ ImageList = cellfun(@(x) fullfile(handles.Pipeline.(strcat('Pathname',ImageName)
 %%% images. This module is therefore only runned in the first cycle. This
 %%% also allows for batch processing
 
-if handles.Current.SetBeingAnalyzed == 1 && ~strncmpi(iBrainTakeOver,'y',1)
-    
-    % Initialize the Mean Image
-    LogExampleImage = double(imread(ImageList{1}));
-    
-    % Initialize the STD Image
-    LogStdPixel = nan(length(LogExampleImage(:)),IterationNum);
-    LogMeanPixel = nan(length(LogExampleImage(:)),IterationNum);
-    NumImagesToLoad = 25;
-    if length(ImageList)<25*2
-        NumImagesToLoad = floor(length(ImageList)/2);
+if  ~strncmpi(iBrainTakeOver,'y',1)
+    if handles.Current.SetBeingAnalyzed == 1
+        % Initialize the Mean Image
+        LogExampleImage = double(imread(ImageList{1}));
+
+        % Initialize the STD Image
+        LogStdPixel = nan(length(LogExampleImage(:)),IterationNum);
+        LogMeanPixel = nan(length(LogExampleImage(:)),IterationNum);
+        NumImagesToLoad = 25;
+        if length(ImageList)<25*2
+            NumImagesToLoad = floor(length(ImageList)/2);
+        end
+
+        for i = 1:IterationNum
+            fprintf('%d out of %d... \n',i,IterationNum)
+            tic
+            matRandIndx = randperm(length(ImageList));
+            matRandIndx = matRandIndx(1:NumImagesToLoad)';
+            cellTempImages = arrayfun(@(x) double(imread(ImageList{x})),matRandIndx,'uniformoutput',false);
+            %cellTempImages = arrayfun(@(x) CPimread(ImageList{x},handles),matRandIndx,'uniformoutput',false);
+            %cellTempImages = arrayfun(@(x) x(x == 0) = 1;,matRandIndx,'uniformoutput',false);
+            cellTempImages = cellfun(@log10,cellTempImages,'uniformoutput',false);
+            matTempImages = cell2mat(cellfun(@(x) x(:),cellTempImages,'uniformoutput',false)');
+            matTempImages(matTempImages == -inf) = 0;
+            LogStdPixel(:,i) = nanstd(matTempImages')';
+            LogMeanPixel(:,i) = nanmean(matTempImages')';
+            toc
+        end
+
+
+        LogStdPixel_Mean = nanmean(LogStdPixel')';
+        LogStdImage = reshape(LogStdPixel_Mean,size(LogExampleImage,1),size(LogExampleImage,2));
+
+        LogMeanPixel_Mean = nanmean(LogMeanPixel')';
+        LogMeanImage = reshape(LogMeanPixel_Mean,size(LogExampleImage,1),size(LogExampleImage,2));
+
+
+        H = fspecial('gaussian',[SmoothingSize SmoothingSize],SmoothingSize*SmoothingSigma);
+
+        IllumFilt_STD = imfilter(LogStdImage,H,'replicate');
+        IllumFilt_Mean = imfilter(LogMeanImage,H,'replicate');
+
+        %save to handle structure
+        handles.Pipeline.(Mean_IlluminationImageName) = (10.^IllumFilt_Mean)/65535;
+        handles.Pipeline.(Std_IlluminationImageName) = (10.^IllumFilt_STD)/65535;
+        handles.Pipeline.(strcat(Mean_IlluminationImageName,'_init')) = IllumFilt_Mean;
+        handles.Pipeline.(strcat(Std_IlluminationImageName,'_init')) = IllumFilt_STD;
+
+    else
+        
+        IllumFilt_STD = handles.Pipeline.(strcat(Std_IlluminationImageName,'_init'));
+        IllumFilt_Mean = handles.Pipeline.(strcat(Mean_IlluminationImageName,'_init'));
     end
     
-    for i = 1:IterationNum
-        fprintf('%d out of %d... \n',i,IterationNum)
-        tic
-        matRandIndx = randperm(length(ImageList));
-        matRandIndx = matRandIndx(1:NumImagesToLoad)';
-        cellTempImages = arrayfun(@(x) double(imread(ImageList{x})),matRandIndx,'uniformoutput',false);
-        %cellTempImages = arrayfun(@(x) CPimread(ImageList{x},handles),matRandIndx,'uniformoutput',false);
-        %cellTempImages = arrayfun(@(x) x(x == 0) = 1;,matRandIndx,'uniformoutput',false);
-        cellTempImages = cellfun(@log10,cellTempImages,'uniformoutput',false);
-        matTempImages = cell2mat(cellfun(@(x) x(:),cellTempImages,'uniformoutput',false)');
-        matTempImages(matTempImages == -inf) = 0;
-        LogStdPixel(:,i) = nanstd(matTempImages')';
-        LogMeanPixel(:,i) = nanmean(matTempImages')';
-        toc
-    end
-    
-    
-    LogStdPixel_Mean = nanmean(LogStdPixel')';
-    LogStdImage = reshape(LogStdPixel_Mean,size(LogExampleImage,1),size(LogExampleImage,2));
-    
-    LogMeanPixel_Mean = nanmean(LogMeanPixel')';
-    LogMeanImage = reshape(LogMeanPixel_Mean,size(LogExampleImage,1),size(LogExampleImage,2));
-    
-    
-    H = fspecial('gaussian',[SmoothingSize SmoothingSize],SmoothingSize*SmoothingSigma);
-    
-    IllumFilt_STD = imfilter(LogStdImage,H,'replicate');
-    IllumFilt_Mean = imfilter(LogMeanImage,H,'replicate');
-    
-    %save to handle structure
-    handles.Pipeline.(Mean_IlluminationImageName) = (10.^IllumFilt_Mean)/65535;
-    handles.Pipeline.(Std_IlluminationImageName) = (10.^IllumFilt_STD)/65535;
-    handles.Pipeline.(strcat(Mean_IlluminationImageName,'_init')) = IllumFilt_Mean;
-    handles.Pipeline.(strcat(Std_IlluminationImageName,'_init')) = IllumFilt_STD;
-    
-    
-elseif strncmpi(iBrainTakeOver,'y',1) %&& handles.Current.SetBeingAnalyzed == 1
+else
     
     % load the illum functions assuming iBrain file structure % note: load
     % the functions every cycle because of z-stacks which might make the batch-data file too big.
     
     %get the channel of the image
-    [intChannelNumber,intZstackNumber] = check_image_channel(handles.Pipeline.(strcat('FileList',ImageName)){handles.Current.SetBeingAnalyzed});
+    [intChannelNumber] = check_image_channel(handles.Pipeline.(strcat('FileList',ImageName)){handles.Current.SetBeingAnalyzed});
     intZstackNumber = 0;
-    
-    if isnan(intZstackNumber)
-        intZstackNumber = 1;
-    end
     
     %get the BATCH directory
     strBatchDir = handles.Current.DefaultOutputDirectory;
@@ -160,8 +161,7 @@ elseif strncmpi(iBrainTakeOver,'y',1) %&& handles.Current.SetBeingAnalyzed == 1
     
     IllumFilt_Mean = TempStats.stat_values.mean;
     IllumFilt_STD = TempStats.stat_values.std;
-else
-    return
+
 end
 
 %do correction
@@ -181,47 +181,46 @@ if strncmpi(AplyIllumCorr,'y',1)
     
 end
 
-%display the results     % disabled by TS since outofmemory errors on
-%cluster for some jobs @ quantile operations of visualization
-% drawnow
-% 
-% ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
-% CPfigure(handles,'Image',ThisModuleFigureNumber);
-% CPresizefigure(OrigImage,'TwoByTwo',ThisModuleFigureNumber);
-% subplot(2,2,1);
-% imagesc(IllumFilt_Mean);
-% colormap('JET')
-% colorbar
-% title('Mean Intensity Filter [Log10(intensity)]')
-% subplot(2,2,3);
-% imagesc(IllumFilt_STD);
-% colormap('JET')
-% colorbar
-% title('STD Intensity Filter [Log10(intensity)]')
-% 
-% 
-% subplot(2,4,3);
-% imagesc(OrigImage,[quantile(OrigImage(:), 0.001) quantile(OrigImage(:), 0.999)]);
-% colormap('JET')
-% title('Original Image')
-% subplot(2,4,4);
-% imagesc(ImageOutputPlot,[quantile(ImageOutputPlot(:), 0.001) quantile(ImageOutputPlot(:), 0.999)]);
-% colormap('JET')
-% title('Corrected Image')
-% 
-% subplot(2,4,7);
-% hist(OrigImage(:),round(length(OrigImage(:))/20))
-% set(gca,'xlim',[quantile(OrigImage(:), 0.001) quantile(OrigImage(:), 0.95)])
-% ylabel('Pixel Count')
-% xlabel('Intensity')
-% title('Original Image Histogram')
-% subplot(2,4,8);
-% hist(ImageOutputPlot(:),round(length(ImageOutputPlot(:))/20))
-% set(gca,'xlim',[quantile(OrigImage(:), 0.001) quantile(OrigImage(:), 0.95)])
-% ylabel('Pixel Count')
-% xlabel('Intensity')
-% title('Corrected Image Histogram')
-% drawnow
+%display the results
+drawnow
+
+ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
+CPfigure(handles,'Image',ThisModuleFigureNumber);
+CPresizefigure(OrigImage,'TwoByTwo',ThisModuleFigureNumber);
+subplot(2,2,1);
+imagesc(IllumFilt_Mean);
+colormap('JET')
+colorbar
+title('Mean Intensity Filter [Log10(intensity)]')
+subplot(2,2,3);
+imagesc(IllumFilt_STD);
+colormap('JET')
+colorbar
+title('STD Intensity Filter [Log10(intensity)]')
+
+
+subplot(2,4,3);
+imagesc(OrigImage,[quantile(OrigImage(:), 0.001) quantile(OrigImage(:), 0.999)]);
+colormap('JET')
+title('Original Image')
+subplot(2,4,4);
+imagesc(ImageOutputPlot,[quantile(ImageOutputPlot(:), 0.001) quantile(ImageOutputPlot(:), 0.999)]);
+colormap('JET')
+title('Corrected Image')
+
+subplot(2,4,7);
+hist(OrigImage(:),round(length(OrigImage(:))/20))
+set(gca,'xlim',[quantile(OrigImage(:), 0.001) quantile(OrigImage(:), 0.95)])
+ylabel('Pixel Count')
+xlabel('Intensity')
+title('Original Image Histogram')
+subplot(2,4,8);
+hist(ImageOutputPlot(:),round(length(ImageOutputPlot(:))/20))
+set(gca,'xlim',[quantile(OrigImage(:), 0.001) quantile(OrigImage(:), 0.95)])
+ylabel('Pixel Count')
+xlabel('Intensity')
+title('Corrected Image Histogram')
+drawnow
 
 
 %

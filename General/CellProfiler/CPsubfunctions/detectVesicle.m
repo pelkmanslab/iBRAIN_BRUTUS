@@ -2,7 +2,6 @@
 % Adopted from Source Extractor
 % By: Sharif Mahmud Hasan Chowdhury
 % Date 29.11.2008
-% Date 10.03.2009 color assignment related bug fied
 %Mandatoy Input
 %==============
 % I = 2-dimentional image matrix. Data type unit8
@@ -44,10 +43,6 @@ function  [finalOutputImage finalOutputImage2 vesicleCount Iback Isigma Ifilt ce
 % % % % thresholdLevel
 % % % % 
 
-cmax=max(max(I))
-
-
-
     dr= 32;
     dc= 32;
     if nargin < 2
@@ -75,7 +70,7 @@ cmax=max(max(I))
     end
 
     
-    maxxxxxxxxx = max(max(I))
+    maxxxxxxxxx = max(max(I));
     
 %%initialize
     [r , c] = size(I);
@@ -135,30 +130,20 @@ cmax=max(max(I))
         sigmaMatrix = domedianfilter( sigmaMatrix,windowLength);
         minSigmaMatrix = dominfilter( sigmaMatrix,windowLength+2);
     end
-    
-%     backGroungMatrix = doaverage( backGroungMatrix,3); % commented code
-%     sigmaMatrix = doaverage( sigmaMatrix,3);
-    
-    backGroungMatrix = imresize(backGroungMatrix, size(I), 'bicubic'); % alternative code
-    sigmaMatrix = imresize(sigmaMatrix, size(I), 'bicubic'); % alternative code
-
-    
+    backGroungMatrix = doaverage( backGroungMatrix,3);
+    sigmaMatrix = doaverage( sigmaMatrix,3);
 %%  
 
 %%
 %Back remove Code
-
-
-I = double(I>backGroungMatrix).*(I-backGroungMatrix); % alternative code
-
-%     for i= 1:dr:r %% commented code
-%         for j =1:dc:c
-%             tempI= I( i:min(i+dr-1,r), j:min(j+dc-1, c) );
-%             ir = ceil(i/dr);
-%             ic = ceil(j/dc);
-%             I(i:min(i+dr-1,r), j:min(j+dc-1, c) ) = double( tempI > backGroungMatrix(ir, ic) ).*( double(tempI)- backGroungMatrix(ir, ic));
-%         end
-%     end
+    for i= 1:dr:r
+        for j =1:dc:c
+            tempI= I( i:min(i+dr-1,r), j:min(j+dc-1, c) );
+            ir = ceil(i/dr);
+            ic = ceil(j/dc);
+            I(i:min(i+dr-1,r), j:min(j+dc-1, c) ) = double( tempI > backGroungMatrix(ir, ic) ).*( double(tempI)- backGroungMatrix(ir, ic));
+        end
+    end
 % % figure
 % % imshow(I,[])
 
@@ -249,7 +234,7 @@ I = double(I>backGroungMatrix).*(I-backGroungMatrix); % alternative code
 % %         colormap('jet')
 % %     end
 % %  
-        outPutImage(ly:uy, lx:ux)= outPutImage(ly:uy, lx:ux) + ret+  (double(ret>0)*maxAssignedColor).* double( outPutImage(ly:uy, lx:ux)<0.5 );
+        outPutImage(ly:uy, lx:ux)= outPutImage(ly:uy, lx:ux) + ret + double(ret>0)*maxAssignedColor;
     
 % % %     if maxAssignedColor<2928 && maxAssignedColor + max(max(ret))>=2928
 % % %         iiii = i
@@ -259,11 +244,13 @@ I = double(I>backGroungMatrix).*(I-backGroungMatrix); % alternative code
 % % %         title(num2str(iiii))
 % % %         colormap('jet')
 % % %     end
-        maxAssignedColor = maxAssignedColor + max(max(ret));
+%        maxAssignedColor = maxAssignedColor + max(max(ret));
+        
+        maxAssignedColor = max(max(outPutImage));
     end
 
 % % colMap = getRandom( maxAssignedColor,  maxAssignedColor);
-    colMap = randperm( uint16(max(max(outPutImage))+1 ) );
+    colMap = randperm( uint16(maxAssignedColor+1));
     colMap(1)= 0;
 
 % % finalOutputImage = zeros(size( outPutImage));

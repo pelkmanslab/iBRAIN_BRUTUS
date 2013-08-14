@@ -557,7 +557,7 @@ RowTotals = sum(BinaryCropImage,2)';
 warning off all
 ColumnsToDelete = ~logical(ColumnTotals);
 RowsToDelete = ~logical(RowTotals);
-%warning on all
+warning on all
 drawnow
 CroppedImage = PrelimCroppedImage;
 CroppedImage(:,ColumnsToDelete,:) = [];

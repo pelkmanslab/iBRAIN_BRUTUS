@@ -228,7 +228,7 @@ if ~isempty(strfind(Threshold,'Global')) || ~isempty(strfind(Threshold,'Adaptive
 %             ColumnTotals = sum(PerObjectImage,1);
 %             warning off all
 %             ColumnsToDelete = ~logical(ColumnTotals);
-%             %warning on all
+%             warning on all
 %             drawnow
 %             CroppedImage = PerObjectImage;
 %             CroppedImage(:,ColumnsToDelete,:) = [];

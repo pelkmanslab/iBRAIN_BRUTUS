@@ -186,7 +186,7 @@ IntensityOutlines = FinalLabelMatrixImage - MaxFilteredImage;
 %%% Converts to logical.
 warning off MATLAB:conversionToLogical
 LogicalOutlines = logical(IntensityOutlines);
-%warning on MATLAB:conversionToLogical
+warning on MATLAB:conversionToLogical
 %%% Determines the grayscale intensity to use for the cell outlines.
 LineIntensity = max(OrigImage(:));
 %%% Overlays the outlines on the original image.

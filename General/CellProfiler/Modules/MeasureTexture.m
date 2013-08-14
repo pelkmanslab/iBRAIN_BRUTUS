@@ -218,7 +218,7 @@ for i = 1:6
             warning off all
             ColumnsToDelete = ~logical(ColumnTotals);
             RowsToDelete = ~logical(RowTotals);
-            % %warning on all
+            warning on all
             drawnow
             CroppedLabelMatrix = LabelMatrixImage;
             CroppedLabelMatrix(:,ColumnsToDelete,:) = [];
@@ -615,7 +615,7 @@ H12 = (HXY-HXY1)/max(HX,HY);
 % H13. Information Measure of Correlation 2
 H13 = real(sqrt(1-exp(-2*(HXY2-HXY))));             % An imaginary result has been encountered once, reason unclear
 
-% %warning on MATLAB:DivideByZero
+warning on MATLAB:DivideByZero
 
 % H14. Max correlation coefficient (not currently used)
 % Q = zeros(Levels);

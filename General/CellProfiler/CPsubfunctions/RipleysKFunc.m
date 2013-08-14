@@ -11,15 +11,20 @@ function riplyVector = RipleysKFunc( cellMask , vesicleMask ,rad1, rad2, viz)
         binaryVesc(cy,cx) = 1;
 
     end
- 
+%     rad1
+%     rad2
+%     
     for r=rad1:rad2
+%         r
         [mask count]= getcirclepoints(r);
         riplyVector(r) = getRiplyScore(cellMask , binaryVesc, mask, count, N );
+%         rv = riplyVector(r)
     end
     if viz>0
         figure
         plot(rad1:rad2,riplyVector(rad1:rad2));
     end
+%     riplyVector
 
 function riplyValue = getRiplyScore(cellMask , binaryVesc, mask, count, N )
         

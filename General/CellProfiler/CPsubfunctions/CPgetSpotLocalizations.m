@@ -1,9 +1,7 @@
 function matLocalizationMeasurements = CPgetSpotLocalizations(tempParentLocation,tempChildrenLocation,tempThirdLoc,CurrCellMembraneLocalization,tempTotalChildren,matEdge_NonEdge,matPerVector,matRadiousVector,i)
 % Support Function which calculates multiple spatial features of spots;
 
-% radii required to include xpercentage of spots / fraction of spots at
-% given radii are calculated without couniting the spot of interest in
-% their center
+% global settings
 
 pxDistOfInterest = 1.4142; % size of one pixel distance here square root of 1+1
 
@@ -19,7 +17,9 @@ matMeanDis = NaN(tempTotalChildren,1);
 matStdDis = NaN(tempTotalChildren,1);
 matVarDis = NaN(tempTotalChildren,1);
 
-%%% Calculate features about distances to all other spots and radii
+
+%%%% FEATURES, which depend upon other spots %%%%%%%
+
 if tempTotalChildren>1
     
     %%% get distances to other children
@@ -54,6 +54,8 @@ end
 
 clear nantempChildrenDistance; clear tempChildrenDistance;
 
+%%%% FEATURES, which only depend parent and siblings of parent %%%%%%
+
 %%% calculate distance to parent centroid
 matDisToParentCentroid =...
     ((tempParentLocation(1)-tempChildrenLocation(:,1)).^2+...
@@ -62,16 +64,20 @@ matDisToParentCentroid =...
 %%% caculate distance to closest outline (matDistancesToOutline)
 [matDistancesToOutline matMinIX] = smallestEuc(CurrCellMembraneLocalization(:,[2 1]),tempChildrenLocation(:,:)); % note that CurrCellMembraneLocalization has Y in first and X in second row
 
+%%% obtain, whether closest membrane is adjacent to another cell
 tempLabelIX = sub2ind(size(matEdge_NonEdge),tempMemLocationY(matMinIX), ...
     tempMemLocationX(matMinIX));
 matOutlineLabel = ...
     matEdge_NonEdge(tempLabelIX);
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%% properties, which depend upon third object (Nucleus) %%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%% FEATURES, which only depend upon third object (nucleus) %%%%%%
+%%%% as this calculation is quite time consuming, several trival %%
+%%%% cases are checked at first to reduce computation time %%%%%%%%
+%%%% if these features were deactivated, the total time of the %%%%
+%%%% calculation of the spot features will be reduced to <50%  %%%%
 
 
-% suppIX = 1:size(CurrCellMembraneLocalization,1); % Index. Initiallizing this enumeration will speed up sequential filtering
 suppIX = 1:tempTotalChildren; % Index of Child positions. Initiallizing this enumeration will speed up sequential filtering
 
 bestIX = zeros(tempTotalChildren,1); % DebugOutput Index; while this will not be returned, it is very useful for debugging. consider commenting out all bestIX to save a few permille of processing time
@@ -112,33 +118,32 @@ if any(~f)
         dSpotDiv = (dSpotLoc(:,1).^2 + dSpotLoc(:,2).^2).^(1/2);
         dSpotNorm = [dSpotLoc(:,1)./dSpotDiv dSpotLoc(:,2)./dSpotDiv];
         
-        [distMemResSpots, bIX] = suppEucSquare(dMemNorm,dSpotNorm); %custom function, which outperforms matlab's function for this speciallized case 
+        [distMemResSpots, bIX] = suppEucSquare(dMemNorm,dSpotNorm); %custom function, which outperforms matlab's function for this specialized case
         
         isTrivial = (bIX == matMinIX(CurrAbsSpotID)) | ...     % check if closest membrane also is the one with best angle
-            (dMemDiv(bIX) <= dSpotDiv );               % or if the membrane with the closest angle is closer to the third object than the spot
+            (dMemDiv(bIX) <= dSpotDiv );                       % or if the membrane with the closest angle is closer to the third object than the spot
         
         if isTrivial
             ins = ((dMemLoc(bIX,1)-dSpotLoc(1)).^2+(dMemLoc(bIX,2)-dSpotLoc(2)).^2).^(1/2);
             matDisToThirdCentroid(CurrAbsSpotID) = dSpotDiv;
             matDisToOutlineThirdLine(CurrAbsSpotID) = ins;
-                bestIX(CurrAbsSpotID) =  bIX;
-
-        else %otherwise look for membranes with similar angle, which are closer
-            fAngle = distMemResSpots < 0.12061729; % (2*sin(10*pi/180)= 0.3473).^2; % within +/- 10degrees. note that distance measure is not squared
-
+            bestIX(CurrAbsSpotID) =  bIX;
             
+        else %otherwise look for membranes with similar angle, which are closest.
+            % obtain other membrane pixels with similar angle by using the
+            % previously normalized vectors (all length 1) and geometrical
+            % properties of isosceles triangles. This will be quite fast.
+            fAngle = distMemResSpots < 0.12061729; % (2*sin(10*pi/180)= 0.3473).^2; % within +/- 10degrees.
             
             dMemDivToConsiderForProximity = dMemDiv(fAngle);
             suppIXMembrConsiderForProximity = suppIXMembr(fAngle);
-            
-            
             
             fProximity = dMemDivToConsiderForProximity <= dMemDiv(bIX); % logical
             suppIXMembrConsiderForSmallDeviation = suppIXMembrConsiderForProximity(fProximity); % integer index
             CurrdMemDiv = dMemDivToConsiderForProximity(fProximity);
             CurrdMemLoc = dMemLoc(suppIXMembrConsiderForSmallDeviation,:);
             
-            % get memrane spots, where either x or y is within one
+            % get membrane spots, where either x or y is within one
             % pixel distance
             if dSpotLoc(1) ~= 0   % rescale Y, if any X
                 suit = abs((CurrdMemLoc(:,1)./dSpotLoc(1)).*dSpotLoc(2) - CurrdMemLoc(:,2))< pxDistOfInterest;
@@ -156,13 +161,13 @@ if any(~f)
                 nIX = suppIXMembrConsiderForSmallSuit(fff);
                 ins = ((dMemLoc(nIX,1)-dSpotLoc(1)).^2+(dMemLoc(nIX,2)-dSpotLoc(2)).^2).^(1/2);
                 matDisToOutlineThirdLine(CurrAbsSpotID) = ins;
-                                bestIX(CurrAbsSpotID) =  nIX;
-
+                bestIX(CurrAbsSpotID) =  nIX;
+                
             else
                 ins = ((dMemLoc(bIX,1)-dSpotLoc(1)).^2+(dMemLoc(bIX,2)-dSpotLoc(2)).^2).^(1/2);
                 matDisToOutlineThirdLine(CurrAbsSpotID) = ins;
-                                bestIX(CurrAbsSpotID) =  bIX;
-
+                bestIX(CurrAbsSpotID) =  bIX;
+                
             end
         end
         matDisToThirdCentroid(CurrAbsSpotID) = dSpotDiv;
@@ -184,14 +189,15 @@ matLocalizationMeasurements = [matDistancesToOutline ...
 
 % Commented out code for debugging: hopefully not needed anymore. note that
 % it might has to be readjusted since variables defined slightly
-% differently.
+% differently. will plot position of individual pixels and their
+% propertiers.
 % figure;
 % hold on;
 % scatter(tempMemLocationX(:,1),tempMemLocationY(:,1));
 % scatter(tempChildrenLocation(:,1),tempChildrenLocation(:,2),'or','filled');
 % scatter(tempThirdLoc(1),tempThirdLoc(2),'og','filled')
 % scatter(tempMemLocationX(bestIX,1),tempMemLocationY(bestIX,1),'ok','filled');
-% 
+%
 % title(num2str(i))
 % hold off;
 

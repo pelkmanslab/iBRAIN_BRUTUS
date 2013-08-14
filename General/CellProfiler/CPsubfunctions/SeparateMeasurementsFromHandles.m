@@ -1,5 +1,5 @@
 function SeparateMeasurementsFromHandles(handles,cluster)
-tic
+
 warning off all
 
 % check if handles.Measurements exists
@@ -16,8 +16,13 @@ if nargin == 2 && isfield(cluster, 'BatchFilePrefix')
     EndImage = cluster.EndImage;
 else
     BatchFilePrefix = 'Batch_';
-    StartImage = handles.Current.BatchInfo.Start;
-    EndImage = handles.Current.BatchInfo.End;
+    try
+        StartImage = handles.Current.BatchInfo.Start;
+        EndImage = handles.Current.BatchInfo.End;
+    catch
+        StartImage = 1;
+        EndImage = length(handles.Measurements.Image.FileNames);        
+    end
 end
 
 strDataSorterOutputFolderPath = handles.Current.DefaultOutputDirectory;
@@ -45,26 +50,25 @@ for i = 1:length(ListOfObjects)
 
             % init the output variable Measurements
             Measurements = struct();            
-            
+
             % save MeasurementFields that do not have a DescriptionField as
             % listed in cellstrFieldsWithNoDescription
             if not(isempty(find(strcmp(cellstrFieldsWithNoDescription, char(ListOfMeasurements(ii))))))
                 disp(sprintf('saving %s%d_to_%d_Measurements.%s.%s',BatchFilePrefix,StartImage,EndImage,char(ListOfObjects(i)), char(ListOfMeasurements(ii))))
                 Measurements.(char(ListOfObjects(i))).(char(ListOfMeasurements(ii))) = handles.Measurements.(char(ListOfObjects(i))).(char(ListOfMeasurements(ii)));
-                save(OutPutFile, 'Measurements');%,'-v7.3'               
+                save(OutPutFile, 'Measurements','-v7.3');%
             % also save all fieldnames that have descriptionfields
             elseif not(isempty(intFieldDescriptionIndex))
                 %%% REGULAR CODE
                 disp(sprintf('saving %s%d_to_%d_Measurements.%s.%s and %s',BatchFilePrefix,StartImage,EndImage,char(ListOfObjects(i)), char(ListOfMeasurements(intFieldDescriptionIndex)), char(ListOfMeasurements(ii))))
                 Measurements.(char(ListOfObjects(i))).(char(ListOfMeasurements(intFieldDescriptionIndex))) = handles.Measurements.(char(ListOfObjects(i))).(char(ListOfMeasurements(intFieldDescriptionIndex)));
                 Measurements.(char(ListOfObjects(i))).(char(ListOfMeasurements(ii))) = handles.Measurements.(char(ListOfObjects(i))).(char(ListOfMeasurements(ii)));
-                save(OutPutFile, 'Measurements');%,'-v7.3'
+                save(OutPutFile, 'Measurements','-v7.3');%
             end
             clear Measurements;
         else
             disp(sprintf('SKIPPED %s', char(ListOfMeasurements{ii})))
         end
-        toc
     end
 end
 

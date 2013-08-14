@@ -241,7 +241,7 @@ strLocalDensityCtrlWells = char(handles.Settings.VariableValues{CurrentModuleNum
 
         ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 
-        if intWindowOpenForNumberOfCycles == 28
+        if intWindowOpenForNumberOfCycles == 100
             if any(findobj == ThisModuleFigureNumber)
                 close(ThisModuleFigureNumber);
             end

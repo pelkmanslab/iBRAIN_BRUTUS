@@ -9,7 +9,7 @@ function handles = LoadSegmentedCells(handles)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 1789 $
+% $Revision: 1 $
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%

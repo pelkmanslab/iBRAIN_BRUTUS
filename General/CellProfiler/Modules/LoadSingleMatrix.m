@@ -9,22 +9,46 @@ function handles = LoadSingleMatrix(handles)
 % Note: for most purposes, you will probably want to use the Load Images
 % module, not this one.
 %
-% % similar to Load singe Image. Done by thomas to allow import of relative
-% image values higher than 1, which can be useful for spot detection bias
-% correction.
+% similar to LoadSingeImage of orignal CellProfiler. 
+% However, this module allows the import of relative image values higher than 1, 
+% which can be useful for spot detection bias correction.
 %
 % See also LoadImages.
 
+% 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
 %
+% *** Original Load Single Image Module ****
 % Developed by the Whitehead Institute for Biomedical Research.
 % Copyright 2003,2004,2005.
 %
 % Authors:
-%  Thomas
+%   Anne E. Carpenter
+%   Thouis Ray Jones
+%   In Han Kang
+%   Ola Friman
+%   Steve Lowe
+%   Joo Han Chang
+%   Colin Clarke
+%   Mike Lamprecht
+%   Peter Swire
+%   Rodrigo Ipince
+%   Vicky Lay
+%   Jun Liu
+%   Chris Gang
 %
 % Website: http://www.cellprofiler.org
+%
+% *** Load Single Matrix Module ****
+% 
+% Authors:
+%   Nico Battich
+%   Thomas Stoeger
+%   Lucas Pelkmans
+%
+% Website: http://www.imls.uzh.ch/research/pelkmans.html
+%
 %
 % $Revision: 4533 $
 

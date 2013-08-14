@@ -256,25 +256,24 @@ for i = 1:length(PathFieldnames),
     handles.Pipeline.(PathFieldnames{i}) = BatchImagePath;
 end
 
+
+%%% [080815 BS] Really bad idea, prevents storing of illumination
+%%% correction images
 %%% [070405 BS] Remove temporary images from the handles.Pipeline structure, these
 %%% are not required for cluster analysis and take up a lot of space!
 for i = 1:length(Fieldnames),
     if isa(handles.Pipeline.(char(Fieldnames{i})),'double') && ...
             (all(size(handles.Pipeline.(char(Fieldnames{i}))) > 1)) && ...
-            (~isempty(strfind(Fieldnames{i},'Orig')) || ... 
-            ~isempty(strfind(Fieldnames{i},'Rescaled')) || ... 
-            ~isempty(strfind(Fieldnames{i},'Segmented')))
-        disp(sprintf('CreateBatchFiles: BS-HACK, removing image field from handles.Pipeline: %s',Fieldnames{i}))
+             ~isempty(strfind(Fieldnames{i},'Orig'))
         handles.Pipeline = rmfield(handles.Pipeline,char(Fieldnames{i}));
     end
 end
 
-%%% [070414 BS] Remove all the GUI information, this takes up all the rest
+%%% [070414 BS] Remove all the GUI information, this takes op all the rest
 %%% of the Batch_data.mat file...
 Fieldnames = fieldnames(handles);
 for i = 1:length(Fieldnames),
     if not(isa(handles.(char(Fieldnames{i})),'struct'))
-        disp(sprintf('CreateBatchFiles: BS-HACK, removing GUI field: %s',Fieldnames{i}))        
         handles = rmfield(handles,char(Fieldnames{i}));
     end
 end

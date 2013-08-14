@@ -25,6 +25,10 @@ function handles = CPaddmeasurements(handles,Object,Measure,Feature,Data)
 %
 % $Revision: 2802 $
 
+Object
+Measure
+Feature
+
 FeaturesField = [Measure,'Features'];
 
 if isfield(handles.Measurements.(Object),FeaturesField)

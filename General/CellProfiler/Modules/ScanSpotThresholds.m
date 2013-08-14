@@ -7,7 +7,7 @@ function handles = ScanSpotThresholds(handles)
 % plate wide corrections for spot detection as described by 
 % Battich et al., 2013.
 % ***********************************************
-% Will Determine Spots in 2D Image stacks by Laplacian Of Gaussian
+% Will Determine Spots in 2D Image stacks by Laplacian Of Gaussian (LoG)
 % Filtering at different thresholds. Note that deblending has been
 % disabled.
 %
@@ -54,7 +54,7 @@ function handles = ScanSpotThresholds(handles)
 %
 % RANGE SPOT DETECTION 
 % This is the range of the tested threshold. eg. [0.1:0.01:0.15] would test
-% tresholds 0.1 and 0.11 and 0.12 and 0.13 and 0.14 and 0.15;
+% thresholds 0.1 and 0.11 and 0.12 and 0.13 and 0.14 and 0.15;
 %
 %
 % WHAT IS THE MINIMAL INTENSITY OF A PIXEL WITHIN A SPOT?
@@ -62,7 +62,7 @@ function handles = ScanSpotThresholds(handles)
 % be recognized to be within a spot. Opitonal argument to make spot
 % detection even more robust against very dim spots. In practice, we have
 % never observed that this parameter would have any influence on the spot
-% detection. However, you might include it as an additional safety measure.
+% count. However, you might include it as an additional safety measure.
 %
 % WHICH IMAGE DO YOU WANT TO USE AS A REFERENCE FOR SPOT BIAS CORRECTION?
 % Here you can name a correction matrix which counteracts bias of the spot
@@ -244,7 +244,11 @@ op = fspecialCP3D('2D LoG',iHsize);         % force 2D filter
 
 numThresholds = length(ObjCount);
 for k=1:numThresholds
-%     
+%     % DEACTIVATED: DEBELENDING.
+%     note that code of IDENTIFYSPOTS2D has been commented out.
+%     If deblending should be included, uncommenting and integerating would
+%     not be much work.
+%
 %     % Convert to CP1 standard: labelmatrix
 %     MatrixLabel = double(labelmatrix(SegmentationCC{k}));
     

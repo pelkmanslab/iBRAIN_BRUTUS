@@ -1,7 +1,7 @@
 function handles = DetectVesicleInterface(handles)
 
 % Help for the ExtractVesicle module:
-% Category: Vesicle Analysis
+% Category: Other
 %
 % SHORT DESCRIPTION:
 % Interface for vesicle detection by Sharif, Chowdhury
@@ -22,7 +22,7 @@ drawnow
 %defaultVAR01 = Vesicles
 %infotypeVAR01 = objectgroup indep
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
-disp(ObjectName)
+% disp(ObjectName)
 
 %textVAR02 = Block Size (+/-)(8-64)?
 %defaultVAR02 = 32
@@ -36,7 +36,7 @@ blkSize = str2num(strBlockSize);
 %defaultVAR03 = 1
 %infotypeVAR03 = objectgroup indep
 strMedFlag = char(handles.Settings.VariableValues{CurrentModuleNum,3});
-disp(strMedFlag)
+% disp(strMedFlag)
 
 medFlag = str2num(strMedFlag);
 
@@ -44,7 +44,7 @@ medFlag = str2num(strMedFlag);
 %defaultVAR04 = 3
 %infotypeVAR04 = objectgroup indep
 strMedWindowLen = char(handles.Settings.VariableValues{CurrentModuleNum,4});
-disp(strMedWindowLen)
+% disp(strMedWindowLen)
 
 medWindowLen = 1;
 if medFlag > 0.5
@@ -55,7 +55,7 @@ end
 %defaultVAR05 = 1
 %infotypeVAR05 = objectgroup indep
 strMFThresh = char(handles.Settings.VariableValues{CurrentModuleNum,5});
-disp(strMFThresh)
+% disp(strMFThresh)
 
 MFThresh = 255;
 
@@ -71,7 +71,7 @@ end
 %defaultVAR06 = 1
 %infotypeVAR06 = objectgroup indep
 strK1 = char(handles.Settings.VariableValues{CurrentModuleNum,6});
-disp(strK1)
+% disp(strK1)
 
 k1 = str2num(strK1);
 
@@ -80,7 +80,7 @@ k1 = str2num(strK1);
 %defaultVAR07 = 1.5
 %infotypeVAR07 = objectgroup indep
 strK2 = char(handles.Settings.VariableValues{CurrentModuleNum,7});
-disp(strK2)
+% disp(strK2)
 
 k2 = str2num(strK2);
 
@@ -94,21 +94,21 @@ strVesicleSize = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 vesicleSize = str2num(strVesicleSize);
 
 
-disp(strVesicleSize)
+% disp(strVesicleSize)
 
 %textVAR09 = Input Image Name In Matlab?
-%defaultVAR09 = 
+%defaultVAR09 = OrigGreen
 %infotypeVAR09 = objectgroup indep
 inputImageName = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
 %textVAR10 = Secondary Object Name ( 1- don't use mask)?
 %defaultVAR10 = 1
 %infotypeVAR10 = objectgroup indep
-disp(inputImageName)
+% disp(inputImageName)
 secondaryMaskName = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 
 
-disp(secondaryMaskName)
+% disp(secondaryMaskName)
 
 
 %I = handles.Pipeline.(inputImageName);
@@ -135,45 +135,21 @@ if maxVal<2
     I = uint8(double(I)*256);
 end
 
-gt = round(graythresh(I)*256);
-I = double(I);
-
-I = double(I >=gt).*I;
-I = I+ (I==0) * gt;
-
 [fI fI2 vcI Ib Is Iflt centr] = detectVesicle(I,1,0,blkSize,medFlag,medWindowLen, k1 ,k2,vesicleSize,MFThresh);
 [r c] = size(fI);
 l= length(centr(:,1));
 
 
 fI2 = fI;
-fI2 = fI2 .*  secondaryMaskImage;
-
 for i=1:l
     if centr(i,1)<=r && centr(i,2)<=c && centr(i,1)>0 && centr(i,2)>0
         fI2(centr(i,1), centr(i,2)) =  -fI2(centr(i,1), centr(i,2));
     end
 end
 
-fI3 = getconnectedPoints2(fI2);
-
-
-
-
-% % % % fI3 = double(fI3<0.8).* fI;
-% % % fI3  = fI3 .*  secondaryMaskImage;
-% % % 
-% % % 
-% % % for i=1:l
-% % %     if centr(i,1)<=r && centr(i,2)<=c && centr(i,1)>0 && centr(i,2)>0
-% % %         fI3(centr(i,1), centr(i,2)) =  -fI3(centr(i,1), centr(i,2));
-% % %     end
-% % % end
-% % % 
-% % % fI3  = getconnectedPoints2(fI3);
-% % % 
-
-
+fI3 = getconnectedPoints(fI2);
+fI3 = double(fI3<0.8).* fI;
+fI3  = fI3 .*  secondaryMaskImage;
 fieldName = ['Segmented', ObjectName];
 
 usedLabel = unique(fI3);
@@ -191,6 +167,8 @@ for i= 1:r
     end
 end
 
+mxfI3 = max(max(fI3));
+lenfI3 = length(unique(fI3));
 
 handles.Pipeline.(fieldName)= fI3;
 
@@ -210,3 +188,4 @@ title('Original Image');
 linkaxes
 colormap('jet')
 end
+% %end

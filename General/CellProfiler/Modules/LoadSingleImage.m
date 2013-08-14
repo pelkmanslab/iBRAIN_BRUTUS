@@ -38,7 +38,14 @@ function handles = LoadSingleImage(handles)
 % with stacked or color images.
 %
 % See also LoadImages.
-
+%
+% Authors of modification in this module:
+%   Nico Battich
+%   Thomas Stoeger
+%   Lucas Pelkmans
+%
+% Website: http://www.imls.uzh.ch/research/pelkmans.html
+%
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
 %

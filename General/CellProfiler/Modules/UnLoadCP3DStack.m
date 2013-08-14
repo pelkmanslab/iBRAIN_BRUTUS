@@ -4,11 +4,20 @@ function handles = UnLoadCP3DStack(handles)
 % Category: File Processing
 %
 % SHORT DESCRIPTION:
-% Will set image to an empty matrix
+% Will remove from 3D stacks form memory. It requires a prior
+% LOADCP3DSTACK module. Note that specifically clearing stacks from memory 
+% allows higher control of memory, reducing the risk of running out of 
+% memory during the image anlysis.
 % 
-% *************************************************************************
+%   
+%   Authors:
+%   Nico Battich
+%   Thomas Stoeger
+%   Lucas Pelkmans
 %
-% Website: http://www.cellprofiler.org
+% Battich et al., 2013.
+% Website: http://www.imls.uzh.ch/research/pelkmans.html
+%
 %
 % $Revision: 1879 $
 

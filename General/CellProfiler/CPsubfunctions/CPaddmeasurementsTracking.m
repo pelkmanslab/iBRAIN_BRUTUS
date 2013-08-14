@@ -1,4 +1,4 @@
-function handles = CPaddmeasurements(handles,Object,Measure,Feature,Data)
+function handles = CPaddmeasurementsTracking(handles,Object,Measure,Feature,Data)
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -25,9 +25,7 @@ function handles = CPaddmeasurements(handles,Object,Measure,Feature,Data)
 %
 % $Revision: 2802 $
 
-Object
-Measure
-Feature
+
 
 FeaturesField = [Measure,'Features'];
 
@@ -39,16 +37,16 @@ if isfield(handles.Measurements.(Object),FeaturesField)
         end
         NewColumn = length(handles.Measurements.(Object).(FeaturesField)) + 1;
         handles.Measurements.(Object).(FeaturesField)(NewColumn) = {Feature};
-        handles.Measurements.(Object).(Measure){handles.Current.SetBeingAnalyzed-1}(:,NewColumn) = Data;
+        handles.Measurements.(Object).(Measure){handles.Current.PreviousSetBeingAnalyzed}(:,NewColumn) = Data;
     else
         if length(OldColumn) > 1
             error('Image processing was canceled because you are attempting to create the same measurements, please remove redundant module.');
         elseif isempty(OldColumn)
             error('This should not happen. Please look at code for CPaddmeasurements. OldColumn is empty and it is not the first set being analyzed.');
         end
-        handles.Measurements.(Object).(Measure){handles.Current.SetBeingAnalyzed-1}(:,OldColumn) = Data;
+        handles.Measurements.(Object).(Measure){handles.Current.PreviousSetBeingAnalyzed}(:,OldColumn) = Data;
     end
 else
     handles.Measurements.(Object).(FeaturesField) = {Feature};
-    handles.Measurements.(Object).(Measure){handles.Current.SetBeingAnalyzed} = Data;
+    handles.Measurements.(Object).(Measure){handles.Current.PreviousSetBeingAnalyzed} = Data;
 end

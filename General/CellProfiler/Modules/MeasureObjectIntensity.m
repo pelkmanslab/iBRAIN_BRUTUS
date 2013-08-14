@@ -177,7 +177,7 @@ for i = 1:length(ObjectNameList)
         warning off all
         ColumnsToDelete = ~logical(ColumnTotals);
         RowsToDelete = ~logical(RowTotals);
-        %warning on all
+        warning on all
         drawnow
         CroppedLabelMatrix = LabelMatrixImage;
         CroppedLabelMatrix(:,ColumnsToDelete,:) = [];
@@ -228,7 +228,7 @@ for i = 1:length(ObjectNameList)
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             %%% [bs081112] TEMP BEREND DEBUGGING %%%
             if isempty(props(Object).PixelIdxList)
-                % disp(sprintf('%s: BEREND BUGFIX: DETECTED EMPTY OBJECT, SKIPPING MEASUREMENT.',mfilename))
+                disp(sprintf('%s: BEREND BUGFIX: DETECTED EMPTY OBJECT, SKIPPING MEASUREMENT.',mfilename))
                 continue
             end
             

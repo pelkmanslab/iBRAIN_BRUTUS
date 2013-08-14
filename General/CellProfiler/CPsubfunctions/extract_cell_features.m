@@ -10,7 +10,6 @@ function [featmat,fnames] = extract_cell_features(C,I,visualize)
 %   fname = feature names
 
 % 13.5.2008 (C) Pekka Ruusuvuori
-% 28.10.2008 PR - bug fixes
 
 if nargin < 4
     visualize = 0;
@@ -31,7 +30,7 @@ num_corners_vec = zeros(num_cells,1);
 boundaryvar_vec = zeros(num_cells,1);
 howmany = 3; %  how many sectors are separated: 3 = border, middle, center of cell
 meanIntensity_vec = zeros(num_cells,howmany);
-isonboundary_vec = zeros(num_cells,1);
+%isonboundary_vec = zeros(num_cells,1);
 relativeboundary_vec = zeros(num_cells,1);
 %equivalentdiameter_vec = zeros(num_cells,1);
 spatialenergy_vec = zeros(num_cells,3);
@@ -49,7 +48,8 @@ BIB = bwmorph(BI,'bridge');
 boundary = BIB - bwmorph(BIB,'erode');
 boundarycellID = unique(boundary.*double(C));  % which cells are on some boundary
 boundarycellID = boundarycellID(2:end);  % discard zero
-isonboundary_vec(boundarycellID) = 1;
+isonboundary(boundarycellID) = 1;
+isonboundary_vec = isonboundary(:);
 allboundaries = BI - bwmorph(BI,'erode');
 %figure, imshow(allboundaries-boundary,[]) % there are some areas in
 %"boundary" which do not appear in "allboundaries" -- problem?
@@ -91,14 +91,6 @@ for ind = 1:num_cells
 
     % boundary-related features
     bwb = bwboundaries(OneCell);
-    
-    %%% [BS, 090305 BUGFIX HACK]
-    if isempty(bwb); 
-        fprintf('%s: applying berend bugfix for funky cell',mfilename)
-        continue; 
-    end
-    %%% END OF BUGFIX HACK BEREND
-    
     bu = bwb{1};
     if visualize == 1
         figure(99)
@@ -107,20 +99,17 @@ for ind = 1:num_cells
         hold on
     end
     fl = 30; % filter length for boundary smoothing
-    if length(bu) > floor(fl/2)
-        ext_bu = [bu(end-floor(fl/2):end,:); bu; bu(1:ceil(fl/2),:)];
-        smooth_bu = [conv(ext_bu(:,1),ones(fl,1)/fl), conv(ext_bu(:,2),ones(fl,1)/fl)];
-        smooth_bu = smooth_bu(fl:end-fl-1,:);
-    else  % too small cell, no smoothing done
-        smooth_bu = bu;
-    end
+    ext_bu = [bu(end-floor(fl/2):end,:); bu; bu(1:ceil(fl/2),:)];
+    smooth_bu = [conv(ext_bu(:,1),ones(fl,1)/fl), conv(ext_bu(:,2),ones(fl,1)/fl)];
+    smooth_bu = smooth_bu(fl:end-fl-1,:);
     if visualize == 1
         plot(smooth_bu(:,2)+s2-1,smooth_bu(:,1)+s1-1,'r')
     end
     fd_vec(ind,:) = fourier_descriptors(smooth_bu); %#ok<AGROW>
-
-    % Note: boundary variance becomes zero for cells that are too short for
-    % smoothing
+    %distsignature = sqrt((smooth_bu(:,1) - mean(smooth_bu(:,1))).^2 + (smooth_bu(:,2) - mean(smooth_bu(:,2))).^2);
+    %distsignature = distsignature - mean(distsignature);
+    %distsignature = distsignature / std(distsignature); % what to do with this? :)
+    % plot(distsignature)
     boundaryvar = mean(sum((bu - smooth_bu).^2,2));
     boundaryvar_vec(ind) = boundaryvar;
     

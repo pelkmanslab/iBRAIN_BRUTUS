@@ -41,7 +41,7 @@ catch
     warning off all
     ColumnsToDelete = ~logical(ColumnTotals);
     RowsToDelete = ~logical(RowTotals);
-    %warning on all
+    warning on all
     drawnow
     CroppedParentLabelMatrix = ParentLabelMatrix;
     CroppedParentLabelMatrix(:,ColumnsToDelete,:) = [];

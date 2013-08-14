@@ -28,7 +28,7 @@ function FileNames = CPretrievemediafilenames(Pathname, TextToFind, recurse, Exa
 %%% Lists all the contents of that path into a structure which includes the
 %%% name of each object as well as whether the object is a file or
 %%% directory.
-FilesAndDirsStructure = CPdir(Pathname);
+FilesAndDirsStructure = CPdir(Pathname); %dir(Pathname) Changed by TS: CPdir will speed up (in case of InitializeCP3D stack,) where there are a lot of mediafiles present in the directory 100sec --> 5 sec
 %%% Puts the names of each object into a list.
 FileAndDirNames = sortrows({FilesAndDirsStructure.name}');
 %%% Puts the logical value of whether each object is a directory into a list.
@@ -119,3 +119,4 @@ if(strncmpi(recurse,'Y',1))
         end
     end
 end
+

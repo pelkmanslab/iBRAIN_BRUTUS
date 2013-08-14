@@ -253,7 +253,7 @@ intNumOfParentObjects = handles.Measurements.Image.ObjectCount{intCurrentImage}(
 % 4) parent reference enrichment score
 % 5) vesicle enrichment - reference enrichment
 % 6) median vesicle intensity
-matEnrichmentScorePerParent = NaN(intNumOfParentObjects,5);
+matEnrichmentScorePerParent = NaN(intNumOfParentObjects,6);
 for iParent = 1:intNumOfParentObjects
     
     cur_parent_bw = logical(bw) .* logical(ParentLabelMatrixImage==iParent);
@@ -301,10 +301,10 @@ for iParent = 1:intNumOfParentObjects
     % store average log2 ratio of vesicle-peak vs average of closest 5
     % reference dots
     matEnrichmentScorePerParent(iParent,1) = median(log2(matVesicleValues ./ matMeanClosestReferenceValues));
-
+    
     % store median vesicle intensity per cell
     matEnrichmentScorePerParent(iParent,6) = median(matVesicleValues);
-    
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%% calculate the reference enrichment scores %%%
     

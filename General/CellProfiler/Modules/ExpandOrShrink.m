@@ -135,7 +135,7 @@ if strcmp(ShrinkOrExpand,'Shrink') == 1
         %%% Converts to logical.
         warning off MATLAB:conversionToLogical
         FinalOutline = logical(IntensityOutlines);
-        %warning on MATLAB:conversionToLogical
+        warning on MATLAB:conversionToLogical
         SegmentedImage(FinalOutline) = 0;
     end
     %%% Shrinks the three incoming images.  The "thin" option nicely removes
@@ -278,7 +278,7 @@ if ~strcmpi(SaveOutlines,'Do not save')
     %%% Converts to logical.
     warning off MATLAB:conversionToLogical
     LogicalOutlines = logical(IntensityOutlines);
-    %warning on MATLAB:conversionToLogical
+    warning on MATLAB:conversionToLogical
     handles.Pipeline.(SaveOutlines) = LogicalOutlines;
 end
 

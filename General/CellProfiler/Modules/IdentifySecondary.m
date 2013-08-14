@@ -778,7 +778,7 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
     warning on MATLAB:conversionToLogical
     %%% Determines the grayscale intensity to use for the cell outlines.
     %[NB-HACK] so that images are not so dim!!!!
-    LineIntensity = quantile(OrigImage(:), 0.99);
+    LineIntensity = quantile(OrigImage(:), 0.95);
     %%% Overlays the outlines on the original image.
     ObjectOutlinesOnOrigImage = OrigImage;
     ObjectOutlinesOnOrigImage(LogicalOutlines) = LineIntensity;

@@ -176,15 +176,16 @@ elseif strcmpi('Automatic',ThresholdStr(1:9))
         Threshold_correction = 1;
     end
 %     [handles,Threshold_scaled] = CPthreshold(handles,'RobustBackground Global',0,'0','1',Threshold_correction,ac_scaled,'LoG',ModuleName);
-%     disp('BEREND: RidlerCalvard Adaptive')
+    disp('BEREND: RidlerCalvard Adaptive')
 %     'Otsu','MoG','Background','RobustBackground','RidlerCalvard','Kapur'}
     [handles,Threshold_scaled] = CPthreshold(handles,'RobustBackground Adaptive',0,'0','1',Threshold_correction,ac_scaled,'LoG',ModuleName);
-    fprintf('%s: using %s as background threshold calculation.\n',mfilename,'RobustBackground Adaptive')
 
     %% Un-scale threshold
     Threshold = (Threshold_scaled .* ac_range) + ac_min;
 end
 
+size(ac)
+size(Threshold)
 
 if numel(Threshold)==1
     ac(ac < Threshold) = Threshold;
@@ -192,6 +193,9 @@ else
     ac(ac < Threshold) = Threshold(ac < Threshold);
 end
 ac = ac - Threshold;
+
+size(ac)
+size(Threshold)
 
 
 bw = false(size(im));

@@ -93,10 +93,7 @@ switch SmoothingMethod
         else
             sigma = SizeOfSmoothingFilter/2.35; % Convert between Full Width at Half Maximum (FWHM) to sigma
         end
-        FiltLength = min(250,max(1,ceil(2*sigma))); % Determine filter size, min 3 pixel, max 61
-        
-        sprintf('%s: filter size in median filter: %d\n',mfilename,FiltLength)
-        
+        FiltLength = min(30,max(1,ceil(2*sigma))); % Determine filter size, min 3 pixel, max 61
         [x,y] = meshgrid(-FiltLength:FiltLength,-FiltLength:FiltLength);      % Filter kernel grid
         f = exp(-(x.^2+y.^2)/(2*sigma^2));f = f/sum(f(:));                    % Gaussian filter kernel
         %%% The original image is blurred. Prior to this blurring, the

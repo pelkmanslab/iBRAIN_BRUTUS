@@ -869,15 +869,9 @@ if any(findobj == ThisModuleFigureNumber)
     warning on MATLAB:conversionToLogical
     %%% Determines the grayscale intensity to use for the cell outlines.
     %[NB-HACK] so that images are not so dim!!!!
-    ObjectOutlinesOnOrigImage = OrigImage;
-    ObjectOutlinesOnOrigImage=ObjectOutlinesOnOrigImage-quantile(OrigImage(:), 0.025);
-    ObjectOutlinesOnOrigImage(ObjectOutlinesOnOrigImage<0)=0;
-    ObjectOutlinesOnOrigImage(ObjectOutlinesOnOrigImage>quantile(ObjectOutlinesOnOrigImage(:), 0.95))=quantile(ObjectOutlinesOnOrigImage(:), 0.95);
-    LineIntensity = quantile(ObjectOutlinesOnOrigImage(:), 0.99);
-    
+    LineIntensity = quantile(OrigImage(:), 0.99);
     %%% Overlays the outlines on the original image.
-    %ObjectOutlinesOnOrigImage = OrigImage;
-    
+    ObjectOutlinesOnOrigImage = OrigImage;
     ObjectOutlinesOnOrigImage(LogicalOutlines) = LineIntensity;
     %%% Calculates BothOutlinesOnOrigImage for displaying in the figure
     %%% window in subplot(2,2,4).

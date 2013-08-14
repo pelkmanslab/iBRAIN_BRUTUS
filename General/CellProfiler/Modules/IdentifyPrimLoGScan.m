@@ -1,18 +1,81 @@
 function handles = IdentifyPrimLoGScan(handles)
-% Help for the IdentifyPrimLoGPScan module:
+% Help for the IdentifyPrimLoGScan module:
 % Category: Object Processing
 %
 % SHORT DESCRIPTION:
+% Determines spots at multiple different thresholds. Can be used to make
+% plate wide corrections for spot detection as described by 
+% Battich et al., 2013.
+% ***********************************************
 % Will Determine Spots in 2D Image stacks by Laplacian Of Gaussian
-% Filtering at different thresholds.
+% Filtering at different thresholds. Note that deblending has been
+% disabled.
 %
-% Spot detection by Laplacian of Gaussian with global boundaries for
-% individual thresholds and one global threshold for spot detection. Also
-% see SCRIPTIDENTIFYPARAMETERSFORSPOTDETECTION
-% *************************************************************************
-
-
-drawnow
+% % WHAT DID YOU CALL THE IMAGES YOU WANT TO PROCESS?
+% Object detection should be done on this image.
+%
+% HOW DO YOU WANT TO CALL THE OBJECTS IDENTIFIED PRIOR TO DEBLENDING?
+% This is the name of the the spots identified after thresholding the LoG
+% image.
+%
+%
+% OBJECTSIZE
+% This value corresponds to the approximate size of you spots. It should
+% be their diameter in pixels. The LoG will use a mask of this size to
+% enhance radial signal of that size. Note that in practice the specific value
+% does not affect the number of spots, if spots are bright (eg. pixel size 5
+% or 6).
+%
+% INTENSITY QUANTA PER IMAGE
+% Prior to spot detection the images are rescaled according to their
+% intensity. Since the specific value of minimal and maximal intensities
+% are frequently not robust across multiple images, intensity quantile are
+% used instead. [0 1] would correspond to using the single dimmest pixel
+% for minimal intensity and the single brightest pixel for maximal
+% intensity. [0.01 0.90] would mean that the minimum intensity is derived
+% from the pixel, which is the 1% brightest pixel of all and that the
+% maximum intensity is derived from the pixel, which is the 90% brightest
+% pixel .
+%
+% INTENSITY BORDERS FOR INTENSITY RESCALING OF IMAGES
+% Most extreme values that the image intensity minimum and image intensity
+% maximum (as defined by the quanta) are allowed to have
+% [LowestPossibleGreyscaleValueForImageMinimum
+% HighestPossibleGreyscaleValueForImageMinimum
+% LowestPossibleGreyscaleValueForImageMaximum
+% HighestPossibleGreyscaleValueForImageMaximum]
+% To ignore individual values, place a NaN.
+% Note that these parameters very strongly depend upon the variability of
+% your illumination source. When using a robust confocal microscope you can
+% set the lowest and highest possible values to values,  which are very
+% close (or even identical). If your light source is variable during the
+% acquisition (which can be the case with Halogen lamps) you might choose 
+% less strict borders to detect spots of varying intensites.
+%
+% RANGE SPOT DETECTION 
+% This is the range of the tested threshold. eg. [0.1:0.01:0.15] would test
+% tresholds 0.1 and 0.11 and 0.12 and 0.13 and 0.14 and 0.15;
+%
+%
+% WHAT IS THE MINIMAL INTENSITY OF A PIXEL WITHIN A SPOT?
+% Minimal greyscale value of a pixel, which a pixel has to have in order to
+% be recognized to be within a spot. Opitonal argument to make spot
+% detection even more robust against very dim spots. In practice, we have
+% never observed that this parameter would have any influence on the spot
+% detection. However, you might include it as an additional safety measure.
+%
+% WHICH IMAGE DO YOU WANT TO USE AS A REFERENCE FOR SPOT BIAS CORRECTION?
+% Here you can name a correction matrix which counteracts bias of the spot
+% correction across the field of view. Note that such a correction matrix
+% has to be loaded previously by a separate module, such as
+% LOADSINGLEMATRIX
+%
+% Authors:
+%   Nico Battich
+%   Thomas Stoeger
+%   Lucas Pelkmans
+%
+% Website: http://www.imls.uzh.ch/research/pelkmans.html
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
