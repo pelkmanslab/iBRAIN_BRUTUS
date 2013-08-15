@@ -43,7 +43,7 @@ function main {
         else
             IMGCOUNT=0
         fi
-        if [ -d $NIKOTMPDIR ]; then
+        if [ -d $NIKONTMPDIR ]; then
             # CHECK HOW MANY IMAGEs BEEN RENAMED
             RENAMEDIMGCOUNT=$(find $NIKONTMPDIR -maxdepth 1 -type f -name "*.tif*"  | wc -l)
             RENAMEDNIKONRESULTCOUNT=$(find $BATCHDIR -maxdepth 1 -type f -name "RenameNikon_*.results" | wc -l)
