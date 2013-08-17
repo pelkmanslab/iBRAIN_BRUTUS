@@ -1,4 +1,4 @@
-function [] = renameImages(strInputDir, strOutputDir, boolDoCopy)
+function renameImages(strInputDir, strOutputDir, boolDoCopy)
 %RENAMEIMAGES of Nikon camera into iBRAIN suitable format
 %
 % Starting point function for nikon package (that calls other functions in 
