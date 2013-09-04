@@ -1,7 +1,7 @@
  function Detect_BorderCells(strRootPath)
 
     if nargin==0
-        strRootPath = 'Y:\Data\Users\Prisca\090403_A431_Dextran_GM1_harlink1\090403_A431_Dextran_GM1-CP395-1ag\BATCH';
+        strRootPath = '\\nas-unizh-imsb1.ethz.ch\share-2-$\Data\Users\Prisca\121011-TIRF-AKT2-JAK3\AKT-staining\BATCH';
     end
 
     strRootPath = npc(strRootPath);
@@ -31,7 +31,11 @@
         % current image name
         strFileName = handles.Measurements.Image.FileNames{i}(1,1);
         % reformat into segmentation image name
-        strSegmentationFileName = strrep(strFileName,'.png','_SegmentedCells.png');
+        if ~cellfun(@isempty,strfind(strFileName,'png'))
+            strSegmentationFileName = strrep(strFileName,'.png','_SegmentedCells.png');
+        else
+            strSegmentationFileName = strrep(strFileName,'.tif','_SegmentedCells.png');
+        end
         % load image segmentation for current object Cells
         matImageSegmentation = imread(fullfile(strImagePath,strSegmentationFileName{1,:}));
 

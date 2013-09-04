@@ -16,7 +16,7 @@ boolInputPathExists = fileattrib(strPath);
 if not(boolInputFileExists)
     error('SVM_Classify_iBRAIN: could not read input file %s',input_file_name)
 elseif not(boolInputPathExists)
-    error('SVM_Classify_iBRAIN: could not read input strPath %s',strPath)    
+    error('SVM_Classify_iBRAIN: could not read input strPath %s',strPath)
 else
     disp(sprintf('SVM_Classify_iBRAIN: PERFORMING CLASSIFICATION \n  %s \n  ON %s\n',input_file_name,strPath))
 end
@@ -44,7 +44,7 @@ svmname = strrep(svmname,'-','_');
 disp(sprintf('  SVM output name is %s\n',svmname))
 
 %loading the savefile
-load(input_file_name); 
+load(input_file_name);
 
 % Loading the plate measurement data
 PlateHandles = struct();
@@ -68,6 +68,10 @@ for iField=cellFields'
 end
 clear PlateHandles2;
 
+% DEFINE OBJECT NAME TO GRAB AND COUNT (usually 'Nuclei')
+objectName = 'Nuclei';
+
+
 % CALCULATING THE SIGMOID MODEL FOR PROBABILITY CALCULATION
 [foo,votes,dfce] = mvsvmclass2(savedata.svm_data.X,savedata.svm_model);
 classes=size(votes,1);
@@ -77,18 +81,21 @@ if classes==2
     sigmoid_model = mlsigmoid(svm_output);
 end
 
-% CLASSIFYING 
+% CLASSIFYING
 disp(sprintf('\nClassifying...'))
 model=savedata.svm_model;
 featurename=[svmname,'_Features'];
 handles.Measurements.SVM.(featurename)=savedata.classNames;
 handles.Measurements.SVMp.(featurename)=['Probability_of_',savedata.classNames{1}];
 images=length(PlateHandles.Measurements.Image.ObjectCount);
+
 for image=1:images
 	disp(sprintf('  PROCESSING IMAGE %d OF %d',image,images))
-	nuclei=PlateHandles.Measurements.Image.ObjectCount{image}(1);
-	feature_matrix=zeros(nuclei,0);
-	for nucleus=1:nuclei
+    objectIndex = grabColumnIndex(PlateHandles.Measurements.Image, objectName);
+	objects = PlateHandles.Measurements.Image.ObjectCount{image}(objectIndex);
+
+	feature_matrix=zeros(objects,0);
+	for nucleus=1:objects
 		index=0;
 		feature_index=0; %all loaded measurements index
 		for field=1:length(savedata.Measurement_names)
@@ -96,7 +103,7 @@ for image=1:images
 				cut=strfind(savedata.Measurement_names{field},'_');
 				fieldname1=savedata.Measurement_names{field}(1:(cut-1));
 				fieldname2=savedata.Measurement_names{field}((cut+1):end);
-				
+
 				for feature=1:size(PlateHandles.Measurements.(fieldname1).(fieldname2){image},2)
 					feature_index=feature_index+1;
 					if savedata.used_features(feature_index)
@@ -106,7 +113,7 @@ for image=1:images
 								(PlateHandles.Measurements.(fieldname1).(fieldname2){image}(nucleus,feature)-...
 								PlateHandles.Measurements.(fieldname1).([fieldname2,'_median'])(feature))/...
 								PlateHandles.Measurements.(fieldname1).([fieldname2,'_mad'])(feature);
-                            
+
 						catch
 							feature_matrix(nucleus,index)=PlateHandles.Measurements.(fieldname1).(fieldname2){image}(nucleus,feature);
 						end
@@ -115,16 +122,16 @@ for image=1:images
 			end
 		end
     end
-    
+
 	if not(isempty(feature_matrix))
         feature_matrix(isnan(feature_matrix))=0;
 		% using the stprtool
 		% (http://cmp.felk.cvut.cz/cmp/software/stprtool/index.html)
-        
+
         [y2,votes,dfce] = mvsvmclass2(feature_matrix',model);
         handles.Measurements.SVM.(svmname){image}=y2'; % the final class label
-        
-        if classes==2    
+
+        if classes==2
             handles.Measurements.SVMp.(svmname){image}=sigmoid(dfce,sigmoid_model)';
         else
             handles.Measurements.SVMp.(svmname){image}=[]; %nothing here (yet)
@@ -145,3 +152,25 @@ PlotBinaryClassificationResults(strPath,strOutputFileName);
 
 clear handles;
 clear PlateHandles;
+
+end
+
+
+function objectIndex = grabColumnIndex(matImage, objectName)
+%GRABCOLUMNINDEX Get matrix column index from 'features' cell array
+
+matImageObjectCount = cat(1, matImage.ObjectCount{:});
+cellObjectCountFeatures = matImage.ObjectCountFeatures;
+
+if size(unique(matImageObjectCount','rows'),1)==1
+    % this means that all object count columns are equal, so it doesn't
+    % matter which one we take
+   objectIndex = 1;
+   return
+end
+
+%  otherwise, look for colum index containing object names ("Nuclei"), take that
+%  column
+objectIndex = find(~cellfun(@isempty,strfind(cellObjectCountFeatures, objectName)), 1 ,'first');
+
+end

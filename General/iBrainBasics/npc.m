@@ -13,18 +13,26 @@ function localPath = npc(networkPath)
 %
 % Settings
 %
-% settings = struct();
-% settings(1).pattern = '/BIOL/imsb/fs2/bio3/bio3';
-% settings(1).replace = '/share/nas/ethz-share2';
-% settings(2).pattern = '/BIOL/imsb/fs3/bio3/bio3';
-% settings(2).replace = '/share/nas/ethz-share3';
-% settings(3).pattern = '/BIOL/sonas/biol_uzh_pelkmans_s4';
-% settings(3).replace = '/share/nas/ethz-share4';
-% settings(4).pattern = '/BIOL/sonas/biol_uzh_pelkmans_s6';
-% settings(4).replace = '/share/nas/ethz-share6';
-% settings(5).pattern = '/BIOL/sonas/biol_uzh_pelkmans_s7';
-% settings(5).replace = '/share/nas/ethz-share7';
-% save([os.path.dirname(which('npc')) filesep 'npc.local.mat'],'settings');
+%     settings = struct();
+%     settings(1).pattern = '/BIOL/imsb/fs2/bio3/bio3';
+%     settings(1).replace = '/share/nas/ethz-share2';
+%     settings(2).pattern = '/BIOL/imsb/fs3/bio3/bio3';
+%     settings(2).replace = '/share/nas/ethz-share3';
+%     settings(3).pattern = '/BIOL/sonas/biol_uzh_pelkmans_s4';
+%     settings(3).replace = '/share/nas/ethz-share4';
+%     settings(4).pattern = '/BIOL/sonas/biol_uzh_pelkmans_s6';
+%     settings(4).replace = '/share/nas/ethz-share6';
+%     settings(5).pattern = '/BIOL/sonas/biol_uzh_pelkmans_s7';
+%     settings(5).replace = '/share/nas/ethz-share7';
+%     filename = [os.path.dirname(which('npc')) filesep 'npc.local'];
+%
+% Then to save as .MAT 
+% 
+%     save([filename '.mat'],'settings');
+% 
+% or as 
+%
+%     string.write([filename '.json'], savejson('', settings));
 %
 %
 % @author: Berend Snijder <berend.snijder@imls.uzh.ch>
@@ -83,35 +91,25 @@ end
 
 
 function settings = getLocalSettings()
-persistent localSettingsFilename;
 persistent localSettings;
-if isempty(localSettingsFilename)
+if isempty(localSettings)
     localSettings = [];
     [pathstr, name, ext] = fileparts(mfilename('fullpath'));
-    localSettingsFilename = [pathstr filesep name '.local.mat'];
-    if os.path.exists(localSettingsFilename)
-        data = load(localSettingsFilename);
+    matSettingsFile = [pathstr filesep name '.local.mat'];
+    jsonSettingsFile = [pathstr filesep name '.local.json'];
+    if os.path.exists(matSettingsFile)     
+        data = load(matSettingsFile);
         localSettings = data.settings;
-        return
-    end
-    localSettingsFilename = [pathstr filesep name '.local.yaml'];
-    if os.path.exists(localSettingsFilename)
-        if ~exist('ReadYaml')
-            % Please install ReadYaml package from 
-            % http://code.google.com/p/yamlmatlab/
+    elseif os.path.exists(jsonSettingsFile)        
+        if ~exist('loadjson')
+            % Please install JSONlab package from 
+            % http://www.mathworks.com/matlabcentral/fileexchange/33381
             return
         end
-        settings = ReadYaml(localSettingsFilename, true, true);  
-        return
+        localSettings = loadjson(jsonSettingsFile);
     end
 end
 settings = localSettings;
-end
-
-
-function amIBrutus = amIBrutus
-[~, name] = system('hostname');
-amIBrutus = any(strfind(name,'brutus'));
 end
 
 
