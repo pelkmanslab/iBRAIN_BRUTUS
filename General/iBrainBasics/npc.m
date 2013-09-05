@@ -104,6 +104,7 @@ if isempty(localSettings)
         if ~exist('loadjson')
             % Please install JSONlab package from 
             % http://www.mathworks.com/matlabcentral/fileexchange/33381
+            settings = [];
             return
         end
         localSettings = loadjson(jsonSettingsFile);
