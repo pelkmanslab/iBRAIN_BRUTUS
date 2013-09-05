@@ -1,7 +1,7 @@
  function Detect_BorderCells(strRootPath)
 
     if nargin==0
-        strRootPath = '\\nas-unizh-imsb1.ethz.ch\share-2-$\Data\Users\Prisca\121011-TIRF-AKT2-JAK3\AKT-staining\BATCH';
+        strRootPath = '/Volumes/biol_uzh_pelkmans_s6/Data/Users/Vicky/1307_Vix_RVHCT116_DZGW/1307_Vix_RVHCT116_DZGW_DZ07_2I/BATCH';
     end
 
     strRootPath = npc(strRootPath);
@@ -21,7 +21,7 @@
     %  otherwise, look for "Nuclei" containing object names, take that
     %  column
     matIX = find(~cellfun(@isempty,strfind(handles.Measurements.Image.ObjectCountFeatures,'Cell')));
-    matImageObjectCount = matImageObjectCount(:,1);
+    matImageObjectCount = matImageObjectCount(:,matIX);
     clear matIX
 
 
