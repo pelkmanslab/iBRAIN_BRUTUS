@@ -162,9 +162,9 @@ strMicroscopeType = unique(strMicroscopeType);
 try
     strucImageInfo = imfinfo(fullfile(strTiffPath,cellFileNames{1}));
     matImageSize = [strucImageInfo.Height, strucImageInfo.Width];% [height, width]
-catch fooBar % safia removed her images... nice.
-    matImageSize = [1040 1392];
-    
+catch exception
+    warning(exception);
+    matImageSize = [1040 1392];    
 end
 
 

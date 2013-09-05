@@ -9,7 +9,13 @@ externalFolders(1).path = fullfile(os.path.dirname(repositoryPath), 'cmt');
 externalFolders(1).ignoreList = {
     ['cmt' filesep 'Compiled'] ...
     ['cmt' filesep 'cmt'] ...
+    ['cmt' filesep 'Patches'] ...
 };
+externalFolders(2).path = fullfile(os.path.dirname(repositoryPath), 'CellClassifierDev');
+externalFolders(2).ignoreList = {
+    ['CellClassifierDev' filesep 'classify_gui'] ...
+};
+
 
 morefolders = '';
 for iFolder = 1:numel(externalFolders)
