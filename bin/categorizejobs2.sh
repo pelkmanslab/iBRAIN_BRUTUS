@@ -8,6 +8,12 @@ echo "<!-- INPUT FOR $0 SHOULD BE A VALID FILE -->"
 exit 0
 fi
 
+# No jobs found
+if [ -s $1 ]; then
+echo "<!-- NO JOBS WERE FOUND -->"
+exit 0
+fi
+
 # Count all unique shell scripts
 for procesName in $(sed 's|  *| |g' $1 | cut -d " " -f7- | grep -i -e '.*\.sh' | sed -e 's|\(.*\)\.sh.*|\1\.sh|g' | sort | uniq -i); do
 JOBCOUNT=$(grep $procesName $1 -c)
