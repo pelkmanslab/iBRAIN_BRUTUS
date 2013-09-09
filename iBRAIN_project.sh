@@ -1,4 +1,4 @@
-#! /bin/bash	
+#! /bin/bash
 #
 # iBRAIN_project.sh
 
@@ -6,7 +6,7 @@
 
 #############################################
 ### INCLUDE IBRAIN CONFIGURATION
-if [ ! "$IBRAIN_ROOT" ]; then 
+if [ ! "$IBRAIN_ROOT" ]; then
     IBRAIN_ROOT=$(dirname `readlink -m $0`)
     if [ -f $IBRAIN_ROOT/etc/config ]; then
         . $IBRAIN_ROOT/etc/config
@@ -36,7 +36,7 @@ echo "<?xml-stylesheet type=\"text/xsl\" href=\"../../project.xsl\"?>"
 INCLUDEDPATH="$1" # a path of the project to analyze
 PRECLUSTERBACKUPPATH="$2"
 PROJECTXMLDIR="$3"
-NEWPROJECTXMLOUTPUT="$4"    
+NEWPROJECTXMLOUTPUT="$4"
 
 echo "<project>"
 echo "<!--"
@@ -51,49 +51,49 @@ else
 echo "PRECLUSTERBACKUPPATH=$2 (NOT OK!)"
 fi
 echo "-->"
-    
+
 echo " <project_xml_dir>$PROJECTXMLDIR</project_xml_dir>"
 echo " <this_file_name>$NEWPROJECTXMLOUTPUT</this_file_name>"
 echo " <now>$(date +"%y%m%d_%H%M%S")</now>"
 
-    
+
 if [ "$INCLUDEDPATH" ] && [ -d $INCLUDEDPATH ]; then
 
 
     # to speed up ibrain_project.sh, request full information on all jobs once, store in a file, and grep from there...
     JOBSFILE=$IBRAIN_LOG_PATH/"temp_bjobs_w_$(date +"%y%m%d_%H%M%S_%N").txt"
     echo "   <!-- gather job information in $JOBSFILE"
- 	bjobs -w 1> $JOBSFILE 
+ 	bjobs -w 1> $JOBSFILE
     echo "   -->"
-    
+
     # Log includedpath
     echo "   <path>$INCLUDEDPATH</path>"
 
-    
+
     ### CHECK FOR PROJECT SPECIFIC PRECLUSTER SETTINGS FILE
     # echo "  LOOKING FOR PIPELINE IN ${INCLUDEDPATH}"
     PRECLUSTERSETTINGS=$($IBRAIN_BIN_PATH/searchforpreclusterfile.sh "${INCLUDEDPATH}" " " "${PRECLUSTERBACKUPPATH}")
     # store this as separate file as well...
     PROJECTPRECLUSTERFILE=$PRECLUSTERSETTINGS
     echo "   <pipeline>$PRECLUSTERSETTINGS</pipeline>"
-    
-    
+
+
     ### CHECKING PATH SPECIFIC JOB COUNT (PENDING AND RUNNING) (Note that this can cause mistakes in jobcount statistics for nested iBRAIN projects)
     # WE CHECK THE PROJECT IN A JOB, SO SUBSTRACT THIS JOB...
     ALLPROJECTJOBCOUNT=$(grep "$INCLUDEDPATH" $JOBSFILE -c)
     echo "<!-- ALLPROJECTJOBCOUNT=$ALLPROJECTJOBCOUNT -->"
     IBRAINPROJECTJOBCOUNT=$(grep "$PROJECTXMLDIR" $JOBSFILE -c)
-    echo "<!-- IBRAINPROJECTJOBCOUNT=$IBRAINPROJECTJOBCOUNT-->"    
+    echo "<!-- IBRAINPROJECTJOBCOUNT=$IBRAINPROJECTJOBCOUNT-->"
     PROJECTJOBCOUNT=$(($ALLPROJECTJOBCOUNT - $IBRAINPROJECTJOBCOUNT))
     echo "   <job_count_total>$PROJECTJOBCOUNT</job_count_total>"
 
 
     ### INIT PLATES XML ELEMENT
     echo "   <plates>"
-    
-    ### GET LIST OF ALL UNDERLYING PLATE FOLDERS (e.g. containing TIFF, also see wiki/docs for full definition of a plate folder) 
+
+    ### GET LIST OF ALL UNDERLYING PLATE FOLDERS (e.g. containing TIFF, also see wiki/docs for full definition of a plate folder)
     echo "    <!-- "
-    . ./core/functions/list_plate_folders.sh    
+    . ./core/functions/list_plate_folders.sh
     echo "        Looking for plates inside the project path: $INCLUDEDPATH"
     PLATEDIRECTORYLISTING=$( list_plate_folders "$INCLUDEDPATH" )
     echo "    --> "
@@ -108,14 +108,14 @@ if [ "$INCLUDEDPATH" ] && [ -d $INCLUDEDPATH ]; then
         BATCHDIR=${PROJECTDIR}/BATCH/
         POSTANALYSISDIR=${PROJECTDIR}/POSTANALYSIS/
         JPGDIR=${PROJECTDIR}/JPG/
-        
+
         echo "     <tiff_dir>$TIFFDIR</tiff_dir>"
         echo "     <plate_dir>$PROJECTDIR</plate_dir>"
         echo "     <batch_dir>$BATCHDIR</batch_dir>"
         echo "     <postanalysis_dir>$POSTANALYSISDIR</postanalysis_dir>"
         echo "     <jpg_dir>$JPGDIR</jpg_dir>"
         echo "     <plate_name>$(basename $PROJECTDIR)</plate_name>"
-        
+
         ### IF WARNINGFLAG=1 DISPLAY FULL DEBUG (PRINTENV) DATA PER TIFF FOLDER
         WARNINGFLAG=0
 
@@ -124,9 +124,9 @@ if [ "$INCLUDEDPATH" ] && [ -d $INCLUDEDPATH ]; then
         # substract one job count if the PROJECTDIR equals the INCLUDEDPATH
         if [ "$(echo $PROJECTDIR | sed 's|/|__|g')" == "$(echo $INCLUDEDPATH | sed 's|/|__|g')" ]; then
         	PLATEJOBCOUNT=$(( $PLATEJOBCOUNT - 1 ))
-        fi 
+        fi
         echo "     <job_count_total>$PLATEJOBCOUNT</job_count_total>"
-        
+
         ###############################################################
         ### CHECK IF ALL CRUCIAL DIRECTORIES ARE WRITABLE BY IBRAIN ###
         if ([ -d $PROJECTDIR ] && [ ! -w $PROJECTDIR ]) || ([ -d $TIFFDIR ] && [ ! -w $TIFFDIR ]) || ([ -d $BATCHDIR ] && [ ! -w $BATCHDIR ]); then
@@ -146,7 +146,7 @@ if [ "$INCLUDEDPATH" ] && [ -d $INCLUDEDPATH ]; then
             echo "      </plate>"
             continue
         fi
-        ###############################################################        
+        ###############################################################
 
         # let's just create the batch directory, we need this in any case, and I've seen some cases where iBRAIN was behaving strangely because this directory was missing...
         if [ ! -d $BATCHDIR ]; then
@@ -166,7 +166,7 @@ if [ "$INCLUDEDPATH" ] && [ -d $INCLUDEDPATH ]; then
         ### DO TIMEOUTS ON DATA (mainly TIFF)... ###
         . ./core/modules/check_image_set.sh
         ############################################
-        
+
 
         ###############################################################
         ### START STAGE 0: png conversion, illumination correction, ###
@@ -176,7 +176,7 @@ if [ "$INCLUDEDPATH" ] && [ -d $INCLUDEDPATH ]; then
 
             # - illumination correction
             . ./core/modules/do_illumination_correction.sh
- 
+
             # - PNG conversion
             . ./core/modules/convert_tiff_to_png.sh
 
@@ -192,12 +192,13 @@ if [ "$INCLUDEDPATH" ] && [ -d $INCLUDEDPATH ]; then
 
             # - MIP creation (only if we have z-stacks in images)
             if [ ! -e ${BATCHDIR}/has_zstacks ] && [ ! -e ${BATCHDIR}/CreateMIPs.complete ]; then
-                . ./core/modules/create_mips.sh check_zstacks
+                export DO_ZSTACK_CHECK=check_zstacks
+                . ./core/modules/create_mips.sh
             elif [ -e ${BATCHDIR}/has_zstacks ]; then
                 . ./core/modules/create_mips.sh
             fi
 
-            # - JPG creation (is of course dependent on the dataset being complete, 
+            # - JPG creation (is of course dependent on the dataset being complete,
             #   and is better run after pngconversion or MIPs creation)
             if [ ! -e ${BATCHDIR}/has_zstacks ] || [ -e ${BATCHDIR}/CreateMIPs.complete ]; then
                 # there would be no MIPS creation, start with creating JPGs
@@ -213,7 +214,7 @@ if [ "$INCLUDEDPATH" ] && [ -d $INCLUDEDPATH ]; then
             && ( [ ! -e ${BATCHDIR}/has_zstacks ] || [ -e ${BATCHDIR}/CreateMIPs.complete ]); then
             . ./core/modules/stage_one.sh
         fi
-        # includes the following steps: 
+        # includes the following steps:
         # - PreCluster
         # - cpcluster
         # - datafusion & check & cleanup
@@ -224,22 +225,22 @@ if [ "$INCLUDEDPATH" ] && [ -d $INCLUDEDPATH ]; then
 
         # SEE IF THERE IS A Measurements_Image_ObjectCount.mat FILE
         OBJECTCOUNTCOUNT=$(find $BATCHDIR -maxdepth 1 -type f -name "Measurements_Image_ObjectCount.mat" | wc -l)
-        
+
         # if stage 1 is completed, and if there are object count measurements, perform the following checks
         if [ -e $PROJECTDIR/iBRAIN_Stage_1.completed ] && [ $OBJECTCOUNTCOUNT -gt 0 ]; then
 
-            . ./core/modules/create_out_of_focus_measurement.sh        
- 
-            . ./core/modules/create_plate_normalization.sh 
- 
+            . ./core/modules/create_out_of_focus_measurement.sh
+
+            . ./core/modules/create_plate_normalization.sh
+
             . ./core/modules/create_population_context_measurements.sh
- 
+
             . ./core/modules/stitch_segmentation_per_well.sh
-  
+
             . ./core/modules/create_plate_overview.sh
-             
+
             . ./core/modules/do_svm_classification.sh
- 
+
             . ./core/modules/do_bin_correction.sh
 
             . ./core/modules/do_cell_tracking.sh
@@ -247,18 +248,18 @@ if [ "$INCLUDEDPATH" ] && [ -d $INCLUDEDPATH ]; then
             . ./core/modules/create_celltype_overview.sh
 
         fi # end check if stage 1 has been completed. end of stage 2.
-        #####################################################################################        
-        
-        
+        #####################################################################################
+
+
         ##########################################
         ### DISPLAY DEBUG IF WARNING FLAG IS 1 ###
-        
+
         if [ $WARNINGFLAG -eq 1 ]; then
             echo " <!--"
             echo $(printenv)
             echo " -->"
         fi
-        
+
         echo "    </plate>"
     done # end loop over TIFF folders
 
@@ -270,12 +271,12 @@ if [ "$INCLUDEDPATH" ] && [ -d $INCLUDEDPATH ]; then
     . ./core/modules/fuse_basic_data.sh
     ##########################
 
-    
+
     # clean up jobsfile
     echo "   <!-- cleaning up jobsfile"
        rm -f $JOBSFILE >& /dev/null
     echo "   -->"
-        
+
 else # if [ -d $INCLUDEDPATH ]; then
 
     # The project directory (INCLUDEDPATH) does not exist, report and exit.

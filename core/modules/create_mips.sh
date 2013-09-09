@@ -5,15 +5,14 @@
 
 ############################
 #  INCLUDE PARAMETER CHECK #
-. ./core/modules/parameter_check.sh 
+. ./core/modules/parameter_check.sh
 ############################
 
-export DO_ZSTACK_CHECK="$1"
 
 function main {
 
         # Check if image filenames contain "z000", i.e. are z-stacks
-        if [ "$DO_ZSTACK_CHECK" == "check_zstacks" ]; then
+        if [ "${DO_ZSTACK_CHECK}" == "check_zstacks" ]; then
             # we consider only PNGs..
             ZSTACKCOUNT=$( find $TIFFDIR -maxdepth 1 -type f -regex ".*_z[0-9]+.*\.png$" | wc -l )
             if [ $ZSTACKCOUNT -eq 0 ]; then
@@ -23,9 +22,9 @@ function main {
                 echo "      </message>"
                 echo "      <output>"
                 touch ${BATCHDIR}/CreateMIPs.complete
-                echo "      </output>"           
+                echo "      </output>"
                 echo "     </status>"
-            else   
+            else
                 echo "     <status action=\"${MODULENAME}\">preparing"
                 echo "      <message>"
                 echo "       Preparing to create MIPs for z-stack images."
@@ -37,7 +36,7 @@ function main {
                 return
             fi
         fi
-        
+
         # Exit if no z-stack flag found or BATCH contains a "complete" flag.
         if [ ! -e ${BATCHDIR}/has_zstacks ] || [ -e $BATCHDIR/CreateMIPs.complete ]; then
             echo "     <status action=\"${MODULENAME}\">completed</status>"
@@ -60,7 +59,7 @@ import re
 from sh import bash, touch
 
 class CreateMIPs(BrainyModule):
-    
+
     def __init__(self, env):
         BrainyModule.__init__(self, 'CreateMIPs', env)
         self.files = os.listdir(self.env['tiff_dir'])
@@ -160,7 +159,7 @@ create_mips = CreateMIPs(dict(
 # Do we want to submit?
 if create_mips.is_submitted is False and create_mips.is_resubmitted is False \
     and create_mips.is_missing_projections:
-    
+
     print('''
      <status action="${MODULENAME}">submitting
      <output>%(submission_result)s</output>
@@ -186,13 +185,13 @@ elif (create_mips.is_submitted or create_mips.is_resubmitted) \
 # Resubmit if no MIPs but job results found.
 elif create_mips.is_submitted and create_mips.is_resubmitted is False \
     and len(create_mips.found_mips) == 0 and create_mips.results_count > 0:
-    
+
     print('''
      <status action="${MODULENAME}">submitting
      <output>%(submission_result)s</output>
      </status>
     ''' % {'submission_result': create_mips.resubmit_jobs()})
-           
+
 elif create_mips.is_submitted and create_mips.is_resubmitted \
     and len(create_mips.found_mips) == 0 and create_mips.results_count > 1:
 
@@ -224,7 +223,7 @@ else:
 PYTHON
 
 }
-     
+
 
 # run standardized bash-error handling of iBRAIN
 execute_ibrain_module "$@"
