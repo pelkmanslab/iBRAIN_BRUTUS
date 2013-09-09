@@ -1,24 +1,24 @@
 #!/bin/bash
 #
 # iBRAIN.sh
-# 
+#
 # 120822: renamed into iBRAIN.sh
 #
 # 081009: udpate: split iBRAIN.sh (wrapper) and iBRAIN_project.sh, and store iBRAIN_project.sh output as project specific XML
 #   Preferably, we only store the per project output if the data has changed, so we must do a 'diff -b -i -B old.xml new.xml'
-#	to check for this, and only store differences. Note that we should therefore not include any now-dates etc. in the project.xml 
+#	to check for this, and only store differences. Note that we should therefore not include any now-dates etc. in the project.xml
 #   output.
 #
-# 081023: update: We can actually submit the ibrain_project.sh as a job to the nodes. This way, we parrallelize the checking, and 
-#   we loose the annoying problem that bigger projects block the analysis of smaller projects. Gotta think what the consequences 
-#   are for the wrapper.html creation... Let's see.   
+# 081023: update: We can actually submit the ibrain_project.sh as a job to the nodes. This way, we parrallelize the checking, and
+#   we loose the annoying problem that bigger projects block the analysis of smaller projects. Gotta think what the consequences
+#   are for the wrapper.html creation... Let's see.
 
 
 #############################################
 ### INCLUDE IBRAIN CONFIGURATION
 
 # Find and include configuration.
-if [ ! "$IBRAIN_ROOT" ]; then 
+if [ ! "$IBRAIN_ROOT" ]; then
     IBRAIN_ROOT=$(dirname `readlink -m $0`)
     if [ -f $IBRAIN_ROOT/etc/config ]; then
         . $IBRAIN_ROOT/etc/config
@@ -28,7 +28,7 @@ if [ ! "$IBRAIN_ROOT" ]; then
     fi
 fi
 # Assume configuration is set by this point.
-# TODO: implement and run configuration check function here. 
+# TODO: implement and run configuration check function here.
 
 # Best case scenario if we stay inside ROOT (thus relative pathnames will work).
 if [ -d "$IBRAIN_ROOT" ]; then
@@ -39,7 +39,7 @@ else
 fi
 
 #############################################
-### CHECK IF IBRAIN IS ALREADY RUNNING. 
+### CHECK IF IBRAIN IS ALREADY RUNNING.
 ### ONLY START IF NO INSTANCES ARE PRESENT
 #INSTANCES=$( ps -u $IBRAIN_USER | grep $(basename $0 .sh) -c )
 INSTANCES=$( pidof $(basename $0) | wc -w )
@@ -51,7 +51,7 @@ INSTANCES=$( pidof $(basename $0) | wc -w )
 if [ $INSTANCES -gt 2 ]; then
     echo "Aborting: $(basename $0) is already running (total: $INSTANCES instances)"
     echo "  INSTANCES: $INSTANCES"
-    echo "  HOSTNAME: $HOSTNAME"    
+    echo "  HOSTNAME: $HOSTNAME"
     exit 1
 fi
 #############################################
@@ -65,7 +65,7 @@ echo "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>"
 echo "<?xml-stylesheet type=\"text/xsl\" href=\"../wrapper.xsl\"?>"
 echo "<ibrain_log>"
 
-### GET OVERVIEW OF JOBS ONLY ONCE, AND RE-PARSE PER PROJECT, 
+### GET OVERVIEW OF JOBS ONLY ONCE, AND RE-PARSE PER PROJECT,
 ### IN STEAD OF QUERYING ALL JOBS FOR EACH PROJECT.
 echo " <!-- Getting an overview over scheduled jobs"
 PRESENTJOBS=$(bjobs -w 1> $IBRAIN_LOG_PATH/bjobsw.txt)
@@ -104,7 +104,7 @@ echo "  <projext_xml_xsl_file>$PROJECTXMLXSLFILE</projext_xml_xsl_file>"
 ###
 # Check if included paths file is present, error if not..
 if [ -e $INCLUDEDPATHSFILE ]; then
-    echo "  <cfg_path_file>$INCLUDEDPATHSFILE</cfg_path_file>"	
+    echo "  <cfg_path_file>$INCLUDEDPATHSFILE</cfg_path_file>"
 else
     echo "  <error type=\"CouldNotReadCgfPathsFile\">"
 	echo "ABORTING iBRAIN $INCLUDEDPATHSFILE COULD NOT BE READ"
@@ -112,7 +112,7 @@ else
 	echo "  Is the NAS not mounted properly on the cluster perhaps?"
     echo "  </error>"
     echo " </ibrain_meta>"
-    echo "</ibrain_log>"    
+    echo "</ibrain_log>"
 	exit 1
 fi
 ###
@@ -123,7 +123,7 @@ for iOutputFile in $(find ~/.lsbatch/ -size +1G 2> /dev/null); do
 	FILEJOBID=$(echo $iOutputFile | sed 's/[0-9]*\.\([0-9]*\)\.out/\1/g')
     echo "  <error type=\"TooBigOutputFile\">"
 	echo "KILLING JOB $FILEJOBID, BECAUSE OUTPUT FILE $iOutputFile WAS GETTING BIGGER THAN 1GB!"
-	mail -s "iBRAIN: $(basename $0): KILLED JOB $FILEJOBID, OUTPUT FILE TOO BIG!" "snijder@imsb.biol.ethz.ch" < bjobs -l $FILEJOBID	
+	mail -s "iBRAIN: $(basename $0): KILLED JOB $FILEJOBID, OUTPUT FILE TOO BIG!" "${IBRAIN_ADMIN_EMAIL}" < bjobs -l $FILEJOBID
 	JOBDESCRIPTION:
 	bjobs -w $FILEJOBID
 	bkill $FILEJOBID
@@ -134,8 +134,8 @@ done
 
 
 ###
-# report disk space free for share-2 & share-3, and set panic 
-# switch ALLOWSUBMISSION to 0 if there is not enough space 
+# report disk space free for share-2 & share-3, and set panic
+# switch ALLOWSUBMISSION to 0 if there is not enough space
 # left free.
 ALLOWSUBMISSION=1
 if [ -e $IBRAIN_LOG_PATH/diskusage.txt ]; then
@@ -162,14 +162,14 @@ if [ -e $IBRAIN_LOG_PATH/diskusage.txt ]; then
 		# if this flag is not present, sent a mail to the entire lab at once!
 		if [ ! -e $IBRAIN_LOG_PATH/sentmailtoentirelab.submitted ]; then
 			touch $IBRAIN_LOG_PATH/sentmailtoentirelab.submitted
-			echo -e "Hi all,\n\nThere is not enough free space on our NAS shares. Here is how it breaks down:\n\nKBYTES FREE ON SHARE-2-$ = $SHARE2FREE.\nKBYTES FREE ON SHARE-3-$ = $SHARE3FREE.\n\nThis is an automatically generated message. See http://www.ibrain.ethz.ch/explorer for more details.\n\nKind regards,\nBerend." | mail -s "iBRAIN: PANIC! NOT ENOUGH FREE SPACE ON NAS SHARES!" pelkmans_lab@imls.lists.uzh.ch 
+			echo -e "Hi all,\n\nThere is not enough free space on our NAS shares. Here is how it breaks down:\n\nKBYTES FREE ON SHARE-2-$ = $SHARE2FREE.\nKBYTES FREE ON SHARE-3-$ = $SHARE3FREE.\n\nThis is an automatically generated message. See http://www.ibrain.ethz.ch/explorer for more details.\n\nKind regards,\nBerend." | mail -s "iBRAIN: PANIC! NOT ENOUGH FREE SPACE ON NAS SHARES!" pelkmans_lab@imls.lists.uzh.ch
 		fi
 
 		echo "empty mail." | mail -s "iBRAIN: $(basename $0): PANIC! NOT ENOUGH FREE SPACE ON NAS SHARES!" snijder@imsb.biol.ethz.ch
 		echo "</output>"
 	    echo "  </error>"
 	    #echo " </ibrain_meta>"
-	    #echo "</ibrain_log>"    
+	    #echo "</ibrain_log>"
 		#exit 1
 		ALLOWSUBMISSION=0
 	elif [ -e $IBRAIN_LOG_PATH/sentmailtoentirelab.submitted ]; then
@@ -182,14 +182,14 @@ fi
 ### PARSE ALL QUEUED JOBS FOR UNIQUE JOB NAMES/PROCESSES/ETC.
 echo "  <job_overview>"
 echo "   <running>"
-$IBRAIN_BIN_PATH/categorizejobs2.sh $IBRAIN_LOG_PATH/bjobsrw.txt
+$IBRAIN_BIN_PATH/categorizejobs2.sh $IBRAIN_LOG_PATH/bjobsrw.txt | escape_xml.py
 echo "   </running>"
 echo "   <all>"
-$IBRAIN_BIN_PATH/categorizejobs2.sh $IBRAIN_LOG_PATH/bjobsw.txt
+$IBRAIN_BIN_PATH/categorizejobs2.sh $IBRAIN_LOG_PATH/bjobsw.txt | escape_xml.py
 echo "   </all>"
 echo "  </job_overview>"
 
-### Let's add a little block that links to the latest result files ran on the Brutus cluster. 
+### Let's add a little block that links to the latest result files ran on the Brutus cluster.
 ### Note, this is experimental as of 090803, and should be checked later on, to see if it's still working...
 # ~/iBRAIN/report_latest_resultfiles.sh
 
@@ -203,35 +203,35 @@ echo " <projects>"
 ### AND LOOP OVER EACH ENTRY IN THE INCLUDEDPATHSFILE
 for INCLUDEDPATH in $(sed -e 's/[[:cntrl:]]//g' $INCLUDEDPATHSFILE); do
 
-    # REMOVE TRAILING SLASH IF PRESENT 
+    # REMOVE TRAILING SLASH IF PRESENT
     INCLUDEDPATH=$(echo $INCLUDEDPATH | sed 's|/$||g')
 
     # Start project output
     echo "  <project>"
     echo "   <path>$INCLUDEDPATH</path>"
-   
+
    # IF INCLUDEDPATH IS A VALID DIRECTORY
     if [ -d $INCLUDEDPATH ]; then
-        
+
         # create the project xml output directory
         PROJECTXMLDIR="$PROJECTXMLPATH/$(echo $INCLUDEDPATH | sed 's|/|__|g')"
         if [ ! -d $PROJECTXMLDIR ]; then
         	mkdir -p $PROJECTXMLDIR
-        fi 
-        
+        fi
+
         # unique and stable identifier for each project, use the inode number of the projectxmldirectory
         PROJECTID=$(stat $PROJECTXMLDIR -c '%i')
         echo "   <project_id>$PROJECTID</project_id>"
-        
+
         # get the number of ibrain_project.sh jobs running for this projectxmldir
-        # add forward slash to end of grep string to prevent partial job-name matches from being counted 
+        # add forward slash to end of grep string to prevent partial job-name matches from being counted
         IBRAINPROJECTJOBCOUNT=$(grep ${PROJECTXMLDIR} $IBRAIN_LOG_PATH/bjobsw.txt -c)
         ALLIBRAINPROJECTJOBCOUNTS=$(grep ${PROJECTXMLDIR} $IBRAIN_LOG_PATH/bjobsaw.txt -c)
-        RUNNINGIBRAINPROJECTJOBCOUNT=$(grep ${PROJECTXMLDIR} $IBRAIN_LOG_PATH/bjobsrw.txt -c)        
-        
+        RUNNINGIBRAINPROJECTJOBCOUNT=$(grep ${PROJECTXMLDIR} $IBRAIN_LOG_PATH/bjobsrw.txt -c)
+
         # store the last modified date of the project
-        echo "   <date_last_modified>$(stat $INCLUDEDPATH | grep Modify | awk '{print $2,$3}')</date_last_modified>"        
-        
+        echo "   <date_last_modified>$(stat $INCLUDEDPATH | grep Modify | awk '{print $2,$3}')</date_last_modified>"
+
         # find the SECOND most recent project.xml file
         # (NOTE, THERE'S A RISK HERE THAT WE ARE CHECKING THE .XML FILE THAT IS CURRENTLY BEING PRODUCED! AVOID THIS!!)
         if [ $RUNNINGIBRAINPROJECTJOBCOUNT -eq 0 ]; then
@@ -248,7 +248,7 @@ for INCLUDEDPATH in $(sed -e 's/[[:cntrl:]]//g' $INCLUDEDPATHSFILE); do
         fi
 
         BOOLCHECKINGSEEMSFUTILE=0
-        if [ "$LATESTPROJECTXMLOUTPUT" ] && [ -e "$LATESTPROJECTXMLOUTPUT" ]; then 
+        if [ "$LATESTPROJECTXMLOUTPUT" ] && [ -e "$LATESTPROJECTXMLOUTPUT" ]; then
 	        ERRORCOUNT=$(grep "<warning>" "$LATESTPROJECTXMLOUTPUT" -c)
 	        PLATECOUNT=$(grep "<plate>" "$LATESTPROJECTXMLOUTPUT" -c)
 
@@ -264,12 +264,12 @@ for INCLUDEDPATH in $(sed -e 's/[[:cntrl:]]//g' $INCLUDEDPATHSFILE); do
            ERRORCOUNT=0;
            PLATECOUNT=0;
         fi
-        
+
         echo "   <warning_count>$ERRORCOUNT</warning_count>"
         echo "   <plate_count>$PLATECOUNT</plate_count>"
         echo "   <current_project_xml_file>$LATESTPROJECTXMLOUTPUT</current_project_xml_file>"
-                
-        
+
+
         # store job_counts: running, present within last hour, and present. Note adding a slash to the searchstring would make it more specific...
         # Currently Running
         echo "   <job_count_running>$(( $(grep $INCLUDEDPATH $IBRAIN_LOG_PATH/bjobsrw.txt -c) - $RUNNINGIBRAINPROJECTJOBCOUNT ))</job_count_running>"
@@ -278,11 +278,11 @@ for INCLUDEDPATH in $(sed -e 's/[[:cntrl:]]//g' $INCLUDEDPATHSFILE); do
         # Total currently present
         CURRENTJOBCOUNT=$(($(grep $INCLUDEDPATH $IBRAIN_LOG_PATH/bjobsw.txt -c) - $IBRAINPROJECTJOBCOUNT))
         echo "   <job_count_present>$CURRENTJOBCOUNT</job_count_present>"
-        
 
-        ########## DISCUSSION        
+
+        ########## DISCUSSION
         # thought of another case where we should check a project: if in the previous project_xml there were jobs running or created!
-    	# it might happen that jobs fail without creating output, causing the last modified date on the project_dir not to be changed, 
+    	# it might happen that jobs fail without creating output, causing the last modified date on the project_dir not to be changed,
     	# but a new ibrain check would see that there are no jobs present, and restart those failed jobs
     	# (of course most jobs will fail and output results to the BATCH dir, causing the last-mod. time to be changed and a new ibrain
     	# check to be triggered)
@@ -290,32 +290,32 @@ for INCLUDEDPATH in $(sed -e 's/[[:cntrl:]]//g' $INCLUDEDPATHSFILE); do
     	# have been written to the directory. The resetting itself is by now obsolete! :-)
     	#
     	# run ibrain_project.sh if the previous project_xml says there were jobs running! or if ibrain was waiting.
-    	
-    	
+
+
     	if [ "$LATESTPROJECTXMLOUTPUT" ]; then
-    	  	
+
     		# check for number of jobs present, or keywords that indicate activity on a certain project.
             PREVIOUSJOBCOUNTMATCHES=$(grep -i -e 'checking' -e 'resubmitting' -e 'resetting' -e 'waiting' -e '\[KNOWN ERROR FOUND\]' -e 'is submitted to queue' -e '<job_count_total>[1-9]*</job_count_total>' $LATESTPROJECTXMLOUTPUT)
             echo "<!-- PREVIOUSJOBCOUNTMATCHES: (escaping html/xml characters)"
             echo "$(echo $PREVIOUSJOBCOUNTMATCHES | sed -e 's|[<>!]| |g' -e 's/[[:cntrl:]]//g')"
             echo "    END OF PREVIOUSJOBCOUNTMATCHES -->"
-            
+
             if [ $IBRAINPROJECTJOBCOUNT -eq 0 ]; then
 	            # check if the xml is valid (--noout will only produce (error) output if there are parsing errors)
 	            # but only do it if there is no current job running, otherwise we may be checking incomplete output
 	            PREVIOUSXMLVALIDATION=$(xmllint --noout $LATESTPROJECTXMLOUTPUT 2>&1)
             else
-                PREVIOUSXMLVALIDATION="";  
+                PREVIOUSXMLVALIDATION="";
             fi
-            
+
             ##################
-            # EXPERIMENTAL: 'DATE MODIFIED' IS ONLY CHANGED IF SOMETHING DIRECTLY IN THE DIRECTORY CHANGES. 
-            # SO TO BE MORE ACCURATE IN DETECTING DATA CHANGES, WE CAN EXTRACT PLATE PATHS FROM LATESTPROJECTXMLOUTPUT, 
+            # EXPERIMENTAL: 'DATE MODIFIED' IS ONLY CHANGED IF SOMETHING DIRECTLY IN THE DIRECTORY CHANGES.
+            # SO TO BE MORE ACCURATE IN DETECTING DATA CHANGES, WE CAN EXTRACT PLATE PATHS FROM LATESTPROJECTXMLOUTPUT,
             # AND CHECK THOSE FOR DATA CHANGES.
             # EXTRACT PLATE PATHS FROM $LATESTPROJECTXMLOUTPUT, TRANSFORM BACK TO NAS-PATHS, AND LOOP UNTIL NEWER FOUND
             BOOLDATACHANGE=0; # Set to 1 if we want to run because of data change
             if [ "$LATESTPROJECTXMLOUTPUT" ] && [ -e "$LATESTPROJECTXMLOUTPUT" ]; then
-                echo "<!-- checking for data changes"            	
+                echo "<!-- checking for data changes"
 	            if [ "$INCLUDEDPATH" -nt "$LATESTPROJECTXMLOUTPUT" ]; then
 					# Mark data change and stop further checking.
 					BOOLDATACHANGE=1
@@ -338,16 +338,16 @@ for INCLUDEDPATH in $(sed -e 's/[[:cntrl:]]//g' $INCLUDEDPATHSFILE); do
 							fi
 						else
 						    echo "error: $PLATEDIR does not exist!"
-						fi					
+						fi
 					done
 				fi
 				echo "BOOLDATACHANGE=$BOOLDATACHANGE"
 				echo "checking for data changes -->"
     	   fi
     	   ##################
-    	   
-            
-    	fi	
+
+
+    	fi
         ##########
 
         # set to 1 if we want to run ibrain_project.sh
@@ -357,7 +357,7 @@ for INCLUDEDPATH in $(sed -e 's/[[:cntrl:]]//g' $INCLUDEDPATHSFILE); do
             echo "No submission, because mayor ibrain errors occured"
             echo "</update_info>"
             BOOLRUN=0
-        else        	
+        else
 	        if [ $IBRAINPROJECTJOBCOUNT -eq 0 ]; then
 		        if [ ! "$LATESTPROJECTXMLOUTPUT" ] || [ ! "$LATESTPROJECTHTMLOUTPUT" ]; then
 		            echo "<update_info update=\"yes\" reason=\"first_run\">"
@@ -368,10 +368,10 @@ for INCLUDEDPATH in $(sed -e 's/[[:cntrl:]]//g' $INCLUDEDPATHSFILE); do
 		            echo "<update_info update=\"yes\" reason=\"previous_xml_invalid\">"
 		            echo "The previous project_xml file was invalid (run)"
 		            echo "</update_info>"
-		            BOOLRUN=1            
+		            BOOLRUN=1
 		        elif [ $BOOLDATACHANGE -eq 1 ]; then
 		           # previous code was:
-		           # [ "$LATESTPROJECTXMLOUTPUT" ] && [ "$INCLUDEDPATH" -nt "$LATESTPROJECTXMLOUTPUT" ]; then 
+		           # [ "$LATESTPROJECTXMLOUTPUT" ] && [ "$INCLUDEDPATH" -nt "$LATESTPROJECTXMLOUTPUT" ]; then
 		            echo "<update_info update=\"yes\" reason=\"data_change\">"
 		            echo "$INCLUDEDPATH is newer than $LATESTPROJECTXMLOUTPUT, and there are fewer than 200 jobs present (run)"
 		            echo "</update_info>"
@@ -386,7 +386,7 @@ for INCLUDEDPATH in $(sed -e 's/[[:cntrl:]]//g' $INCLUDEDPATHSFILE); do
                     echo "All five last checks of this projects did not result in any jobs being submitted. Checking is therefore deemed futile."
                     echo "</update_info>"
                     BOOLRUN=0
-		        elif [ $CURRENTJOBCOUNT -lt 200 ] && [ $CURRENTJOBCOUNT -gt 0 ] || ([ "$LATESTPROJECTXMLOUTPUT" ] && [ "$PREVIOUSJOBCOUNTMATCHES" ]); then 
+		        elif [ $CURRENTJOBCOUNT -lt 200 ] && [ $CURRENTJOBCOUNT -gt 0 ] || ([ "$LATESTPROJECTXMLOUTPUT" ] && [ "$PREVIOUSJOBCOUNTMATCHES" ]); then
 		            echo "<update_info update=\"yes\" reason=\"expecting_new_jobs\">"
 		            echo "Previous check indicated jobs present, but $INCLUDEDPATH is older than $LATESTPROJECTXMLOUTPUT (run)"
 		            #echo "$PREVIOUSJOBCOUNTMATCHES"
@@ -394,7 +394,7 @@ for INCLUDEDPATH in $(sed -e 's/[[:cntrl:]]//g' $INCLUDEDPATHSFILE); do
 		            BOOLRUN=1
 		        else
 		            echo "<update_info update=\"no\" reason=\"nothing_new\">"
-		            echo "Skipping project for iBRAIN check (skip)"            
+		            echo "Skipping project for iBRAIN check (skip)"
 		            echo "- A previous version of project_xml is found."
 		            echo "- Project_dir is not newer than the last project_xml_file."
 		            echo "- The latest project_xml_file is newer than ibrain (components)."
@@ -404,13 +404,13 @@ for INCLUDEDPATH in $(sed -e 's/[[:cntrl:]]//g' $INCLUDEDPATHSFILE); do
 		        fi
 	        elif [ $IBRAINPROJECTJOBCOUNT -gt 0 ] && [ $RUNNINGIBRAINPROJECTJOBCOUNT -eq 0 ]; then
 	            echo "<update_info update=\"no\" reason=\"scheduled\">"
-	            echo "Skipping project for iBRAIN check (skip)"            
+	            echo "Skipping project for iBRAIN check (skip)"
 	            echo "- A check has been queued"
 	            echo "</update_info>"
-	            BOOLRUN=0        
-	        elif [ $IBRAINPROJECTJOBCOUNT -gt 0 ] && [ $RUNNINGIBRAINPROJECTJOBCOUNT -gt 0 ]; then  
+	            BOOLRUN=0
+	        elif [ $IBRAINPROJECTJOBCOUNT -gt 0 ] && [ $RUNNINGIBRAINPROJECTJOBCOUNT -gt 0 ]; then
 	            echo "<update_info update=\"no\" reason=\"running\">"
-	            echo "Skipping project for iBRAIN check (skip)"            
+	            echo "Skipping project for iBRAIN check (skip)"
 	            echo "- It is currently being checked"
 	            echo "</update_info>"
 	            BOOLRUN=0
@@ -428,16 +428,16 @@ for INCLUDEDPATH in $(sed -e 's/[[:cntrl:]]//g' $INCLUDEDPATHSFILE); do
 		        deletedcounter=$(( $deletedcounter + 1 ))
 		    fi
 		done
-		echo "-->"         
-        
+		echo "-->"
+
         # Submit ibrain_project.sh if BOOLRUN is bigger than 0
         if [ ! $BOOLRUN -eq 0 ]; then
-        	
+
 	        # the new ibrain_project output should be stored here
 	        OUTPUTBASENAME=$(date +"%y%m%d_%H%M%S_%N")
             NEWPROJECTXMLOUTPUT="$PROJECTXMLDIR/${OUTPUTBASENAME}_project.xml"
 	        NEWPROJECTHTMLOUTPUT="$PROJECTXMLDIR/index.html"
-	        
+
 	        if [ $IBRAINPROJECTJOBCOUNT -eq 0 ]; then
 	            # We could make it a 1 hour job if not many plates are present, and an 8 hour job if there are many plates or if the last ibrain_project.sh timed out...
 	        	PROJECTPLATECOUNT=${#PROJECTPLATEDIRS[@]}
@@ -465,15 +465,15 @@ else
 fi
 EOS
                 echo "-->"
-                
+
 	        else
 	           echo "<!-- NOT submitting ibrain_project.sh on $INCLUDEDPATH... already running -->"
 	        fi
-	        
+
         fi
-        
-        
-        # If a project needs to be checked again, and it has not been checked within the last hour, prioritize the checking. 
+
+
+        # If a project needs to be checked again, and it has not been checked within the last hour, prioritize the checking.
         # Otherwise, leave the job in the queue first-in-first-out.
         if [ $IBRAINPROJECTJOBCOUNT -gt 0 ] && [ $RUNNINGIBRAINPROJECTJOBCOUNT -eq 0 ]; then
 	        if [ $(find $PROJECTXMLDIR -maxdepth 1 -type f -mmin +10 -name "ibrain_project_sh_output.results" | wc -l) -gt 0 ]; then
@@ -482,19 +482,19 @@ EOS
 	            $IBRAIN_BIN_PATH/prioritizejobs.sh "$PROJECTXMLDIR/"
                 # If prioritizing job, touch the ibrain_project_sh_output.results file to prevent repeated prioritization
                 touch -cm $PROJECTXMLDIR/ibrain_project_sh_output.results
-	            echo "-->"  
+	            echo "-->"
 	        fi
         fi
-        
+
 
     else # if [ -d $INCLUDEDPATH ]; then
 
         echo "   <warning type=\"InvalidPath\">$INCLUDEDPATH DOES NOT EXIST</warning>"
 
     fi
-    
+
     echo "  </project>"
-        
+
 done # end loop over lines in paths.txt
 
 #echo "FINISHED CHECKING FOLDERS"
@@ -508,14 +508,14 @@ for filename in $(ls -r $WRAPPERXMLPATH/*_wrapper_brutus.xml 2>/dev/null); do
     	rm -f $filename
     fi
 done
-echo "-->" 
+echo "-->"
 
 # let's keep some statistics of job usage
 echo "<!-- storing job stats for overview plotting"
 echo "$(date +"%y%m%d %H:%M:%S") - $(busers 2>/dev/null | tail -n 1 )" >> $JOBCOUNTFILE
 echo "-->"
 
-# Close iBRAIN Log xml file element    
+# Close iBRAIN Log xml file element
 echo "</ibrain_log>"
 
 # End of script.
