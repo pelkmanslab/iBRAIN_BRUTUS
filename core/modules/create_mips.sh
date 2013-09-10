@@ -207,7 +207,7 @@ elif create_mips.is_submitted and create_mips.is_resubmitted \
         '$IBRAIN_BIN_PATH/check_resultfiles_for_known_errors.sh $BATCHDIR '
         '"CreateMIPs" $PROJECTDIR/CreateMIPs.resubmitted')})
 
-elif create_mips.is_submitted and not create_mips.is_missing_projections:
+elif not create_mips.is_missing_projections:
 
     print('     <status action="${MODULENAME}">completed</status>')
     touch('$BATCHDIR/CreateMIPs.complete')
