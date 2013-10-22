@@ -428,7 +428,7 @@ for k=1:numThresholdsToTest
     
     %%% Bug workaround (see step 9).
     %%% [NB, WATERSHED BUG IN VERSION 2011A OR HIGHER HAS BEEN FIXED. SO CHECK VERSION FIRST]
-    if verLessThan('matlab', '7.12.0')
+    if verLessThan('matlab', '7.12.0') && ~isunix
         BlackWatershedLinesPre2 = im2bw(BlackWatershedLinesPre,.5);
         BlackWatershedLines = bwlabel(BlackWatershedLinesPre2);
         %%% [NB] hack. save memory.
@@ -552,7 +552,7 @@ for k=1:numThresholdsToTest
     %%% steps, inappropriate regions are weeded out anyway.
     
     %%% [NB, WATERSHED BUG IN VERSION 2011A OR HIGHER HAS BEEN FIXED. SO CHECK VERSION FIRST]
-    if verLessThan('matlab', '7.12.0')
+    if verLessThan('matlab', '7.12.0') && ~isunix
         SecondWatershedPre2 = im2bw(SecondWatershedPre,.5);
         SecondWatershed = bwlabel(SecondWatershedPre2);
         %%% [NB] hack.save memory
