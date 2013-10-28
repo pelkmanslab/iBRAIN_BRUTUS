@@ -1,11 +1,11 @@
 #! /bin/bash
 #
 # stage_one.sh
-        
-############################ 
+
+############################
 #  INCLUDE PARAMETER CHECK #
 . ./core/modules/parameter_check.sh #
-############################ 
+############################
 
 function main {
 
@@ -258,11 +258,11 @@ function main {
           if [ ! -r ${BATCHDIR}/$(basename $BATCHJOBFILE .txt)_OUT.mat ]; then
             REPORTFILE=$(basename $BATCHJOBFILE .txt)_%J_$(date +"%y%m%d%H%M%S").results
             if [ -e $PROJECTDIR/SubmitBatchJobs.runlimit ] || [ -e $PROJECTDIR/SubmitBatchJobs.resubmitted.runlimit ]; then
-bsub -W 34:00 -o ${BATCHDIR}/$REPORTFILE -R 'rusage[mem=3000]' "matlab -singleCompThread -nodisplay -nojvm << M_PROG
+bsub -W 34:00 -o ${BATCHDIR}/$REPORTFILE -R 'rusage[mem=8192]' "matlab -singleCompThread -nodisplay -nojvm << M_PROG
 CPCluster('${BATCHDIR}/Batch_data.mat','${BATCHDIR}/$(basename $BATCHJOBFILE .txt).mat');
 M_PROG"
             else
-bsub -W 8:00 -o ${BATCHDIR}/$REPORTFILE -R 'rusage[mem=2000]' "matlab -singleCompThread -nodisplay -nojvm << M_PROG
+bsub -W 8:00 -o ${BATCHDIR}/$REPORTFILE -R 'rusage[mem=4096]' "matlab -singleCompThread -nodisplay -nojvm << M_PROG
 CPCluster('${BATCHDIR}/Batch_data.mat','${BATCHDIR}/$(basename $BATCHJOBFILE .txt).mat');
 M_PROG"
             fi

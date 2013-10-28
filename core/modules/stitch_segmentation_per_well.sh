@@ -34,8 +34,8 @@ function main {
                 echo "      <output>"
                 STITCHRESULTFILE="StitchSegmentationPerWell_$(date +"%y%m%d%H%M%S").results"
                 bsub -W 8:00 -o "${BATCHDIR}$STITCHRESULTFILE" "matlab -singleCompThread -nodisplay -nojvm << M_PROG
-                stitchSegmentationPerWell('${BATCHDIR}');
-                M_PROG"
+stitchSegmentationPerWell('${BATCHDIR}');
+M_PROG"
                 touch $PROJECTDIR/StitchSegmentationPerWell.submitted
                 echo "      </output>"
                 echo "     </status>"
@@ -91,7 +91,7 @@ function main {
         fi
 
     fi #end of check if there's a segmentation directory present
-        
+
 }
 
 # standardized bash-error handling of iBRAIN
