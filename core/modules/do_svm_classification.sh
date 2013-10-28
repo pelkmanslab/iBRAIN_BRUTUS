@@ -73,18 +73,18 @@ function main {
                 echo "      <output>"
                 SVMRESULTFILE="$SVMRESULTFILEBASE$(date +"%y%m%d%H%M%S").results"
                 # do a 8h submission in case of timeout, otherwise do a 1h submission.
-#                if [ -e $SVMRUNLIMITFILE ]; then
-#bsub -W 8:00 -o "${BATCHDIR}$SVMRESULTFILE" "matlab -singleCompThread -nodisplay << M_PROG
-#SVM_Classify_with_Probabilities_iBRAIN('${SVMSETTINGSFILE}','${BATCHDIR}');
-#M_PROG"
-#                else
-#bsub -W 1:00 -o "${BATCHDIR}$SVMRESULTFILE" "matlab -singleCompThread -nodisplay << M_PROG
-#SVM_Classify_with_Probabilities_iBRAIN('${SVMSETTINGSFILE}','${BATCHDIR}');
-#M_PROG"
-#                fi
-bsub -W 36:00 -R 'rusage[mem=16384]' -o "${BATCHDIR}$SVMRESULTFILE" "matlab -singleCompThread -nodisplay << M_PROG
+                 if [ -e $SVMRUNLIMITFILE ]; then
+bsub -W 8:00 -R 'rusage[mem=4096]' -o "${BATCHDIR}$SVMRESULTFILE" "matlab -singleCompThread -nodisplay << M_PROG
 SVM_Classify_with_Probabilities_iBRAIN('${SVMSETTINGSFILE}','${BATCHDIR}');
 M_PROG"
+                else
+bsub -W 1:00 -R 'rusage[mem=2048]' -o "${BATCHDIR}$SVMRESULTFILE" "matlab -singleCompThread -nodisplay << M_PROG
+SVM_Classify_with_Probabilities_iBRAIN('${SVMSETTINGSFILE}','${BATCHDIR}');
+M_PROG"
+                fi
+# bsub -W 36:00 -R 'rusage[mem=16384]' -o "${BATCHDIR}$SVMRESULTFILE" "matlab -singleCompThread -nodisplay << M_PROG
+# SVM_Classify_with_Probabilities_iBRAIN('${SVMSETTINGSFILE}','${BATCHDIR}');
+# M_PROG"
                 touch $SVMSUBMITTEDFILE
                 echo "      </output>"
                 echo "     </status>"
