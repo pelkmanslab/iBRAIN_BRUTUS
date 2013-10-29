@@ -6,13 +6,12 @@ A command-line interface to run a single iBRAIN module.
 import os
 import sys
 from ext_path import get_root_path
-import brainy
+import brainy.modules
 import argparse
 from pprint import pformat
-import sh
 
 
-brainy.IBRAIN_ROOT = get_root_path(
+brainy.modules.IBRAIN_ROOT = get_root_path(
     os.path.abspath(__file__), 'root', readlink=False)
 config = brainy.get_config()
 
@@ -24,6 +23,7 @@ NAMES_OF_MODULE_PARAMETERS = [
     'PROJECTPATH',  # old INCLUDEDPATH
     'PLATEDIRECTORYLIST',  # old PLATEDIRECTORYLISTING
     'PLATEPATH',  # old PROJECTDIR
+    'PIPESPATH',  # For iBRAIN PIPES
     # Inferable
     'TIFFPATH',  # old TIFFPATH
     'BATCHPATH',  # old BATCHPATH
@@ -88,6 +88,7 @@ def parse_module_parameters(args):
         batchpath = os.path.join(platepath, 'BATCH')
     if not os.path.exists(batchpath):
         raise ParameterError('BATCH path does not exists: %s' % batchpath)
+    module_parameters['batchpath'] = batchpath
 
     postanalysispath = module_parameters['postanalysispath']
     if not postanalysispath:
@@ -95,12 +96,21 @@ def parse_module_parameters(args):
     if not os.path.exists(postanalysispath):
         sys.stderr.write('POSTANALYSIS path does not exists (yet?): %s\n' %
                          postanalysispath)
+    module_parameters['postanalysispath'] = postanalysispath
 
     jpgpath = module_parameters['jpgpath']
     if not jpgpath:
         jpgpath = os.path.join(platepath, 'JPG')
     if not os.path.exists(jpgpath):
         sys.stderr.write('JPG path does not exists (yet?): %s\n' % jpgpath)
+    module_parameters['jpgpath'] = jpgpath
+
+    pipespath = module_parameters['pipespath']
+    if not pipespath:
+        pipespath = os.path.join(platepath, 'PIPES')
+    if not os.path.exists(pipespath):
+        sys.stderr.write('PIPES path does not exists (yet?): %s\n' % pipespath)
+    module_parameters['pipespath'] = pipespath
 
     # jobsfile = module_parameters['jobsfile']
     # if not jobsfile:
@@ -140,6 +150,7 @@ export POSTANALYSISDIR=%(postanalysispath)s
 export JPGDIR=%(jpgpath)s
 export JOBSFILE=%(jobsfile)s
 export PLATEJOBCOUNT=%(jobsfile)s
+export PIPESDIR=%(pipespath)s
 . ${IBRAIN_ROOT}/etc/config
 . ${IBRAIN_ROOT}/core/functions/execute_ibrain_module.sh
 . %(module_path)s

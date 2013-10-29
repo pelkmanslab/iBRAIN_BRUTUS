@@ -221,7 +221,7 @@ if [ "$INCLUDEDPATH" ] && [ -d $INCLUDEDPATH ]; then
         ##################################
 
         #####################################################################################
-        ### START MAIN LOGICS: STAGE 2, i.e. depends on successfull CellProfiler analysis ###
+        ### START MAIN LOGICS: STAGE 2, i.e. depends on successful CellProfiler analysis ###
 
         # SEE IF THERE IS A Measurements_Image_ObjectCount.mat FILE
         OBJECTCOUNTCOUNT=$(find $BATCHDIR -maxdepth 1 -type f -name "Measurements_Image_ObjectCount.mat" | wc -l)

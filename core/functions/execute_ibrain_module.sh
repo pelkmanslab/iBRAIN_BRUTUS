@@ -1,9 +1,9 @@
-#! /bin/bash	
+#! /bin/bash
 #
 # execute_ibrain_module.sh
 
-# execute_ibrain_module is the standard function called at the end of iBRAIN modules that have a "main" function. 
-# It does basic BASH error handling & reporting, and imporves robustness to crashes from individual modules by 
+# execute_ibrain_module is the standard function called at the end of iBRAIN modules that have a "main" function.
+# It does basic BASH error handling & reporting, and imporves robustness to crashes from individual modules by
 # escaping their XML output.
 function execute_ibrain_module {
 
@@ -18,7 +18,8 @@ function execute_ibrain_module {
     # We can ignore certain errors,  such as "MATLAB job.", which our cluster throws upon submission of a matlab job :)
     MODULERR=$(echo $MODULERR | sed -e "s/MATLAB job.//g")
     MODULERR=$(echo $MODULERR | sed -e "s/Generic job.//g")
-    MODULERR=$(echo $MODULERR | sed -e "s/ //g")
+    MODULERR=$(echo $MODULERR | ${IBRAIN_BIN_PATH}/escape_xml.py )
+    #MODULERR=$(echo $MODULERR | sed -e "s/ //g")
 
 	if [ "$MODULERR" ]; then
         # We can check if despite the error the module still produced valid xml. If so, just show the module xml, otherwise, revert to error-message

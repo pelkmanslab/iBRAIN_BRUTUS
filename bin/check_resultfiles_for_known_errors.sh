@@ -3,7 +3,7 @@
 ####################################
 ### RESULT FILE ERROR MANAGEMENT ###
 ####################################
-### Loop over all result files, check for errors that should be retried. 
+### Loop over all result files, check for errors that should be retried.
 ### If found, also remove .submitted file to allow for retry
 ###
 ### If no result files are found, remove submitted file and retry (Is this safe?)
@@ -29,7 +29,7 @@ fi
 #  echo "    RESULTFILESUFFIX=$RESULTFILESUFFIX"
 #  echo "    SUBMITTEDFILE=$SUBMITTEDFILE"
 # echo $(find $BATCHDIR -maxdepth 1 -name "${RESULTFILESUFFIX}*.results")
-### 
+###
 
 ERRORCAUSE="[UNKNOWN]"
 ERRORGREP=""
@@ -95,7 +95,7 @@ for resultFile in $(ls $BATCHDIR/${RESULTFILESUFFIX}*.results -tr 2>/dev/null | 
     ERRORGREP=$(cat $resultFile | grep -A2 "Error")
   else
   ### THERE IS NO 'ERROR' (KNOWN OR UNKNOWN) IN THE FILE...
-    echo "      <warning>Strangely, no known or unknown errors were found. <result_file>$resultFile</result_file></warning>"
+    echo "      <warning>Strangely, no known errors were found. <result_file>$resultFile</result_file></warning>"
     ERRORCAUSE="[UNKNOWN] No error found"
   fi
 

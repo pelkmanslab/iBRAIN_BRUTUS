@@ -16,6 +16,7 @@ class Lsf(object):
     def __init__(self):
         self.bsub = None
         self.bjobs = None
+        self.__bjobs_cache = None
         self.bkill = None
         self.init_scheduling()
 
@@ -23,10 +24,15 @@ class Lsf(object):
         try:
             from sh import bjobs as _bjobs, bsub as _bsub, bkill as _bkill
             self.bsub = _bsub
-            self.bjobs = _bjobs
+            self._bjobs = _bjobs
             self.bkill = _bkill
         except ImportError:
             exception = NoSchedulerFound('Failed to locate LSF commands like '
                                          'bjobs, bsub, bkill. Is LSF '
                                          'installed?')
             logger.warn(exception)
+
+    def bjobs(self, *args, **kwds):
+        if not self.__bjobs_cache:
+            self.__bjobs_cache = self._bjobs(*args, **kwds)
+        return self.__bjobs_cache

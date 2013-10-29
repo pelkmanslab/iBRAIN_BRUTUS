@@ -7,4 +7,5 @@ all:
 install:
 		[ -d ${INSTALL_FOLDER} ] || mkdir ${INSTALL_FOLDER}
 		cp ${CURR_FOLDER}/*.sh ${INSTALL_FOLDER}/
-		
+		cp ${CURR_FOLDER}/*.py ${INSTALL_FOLDER}/
+
