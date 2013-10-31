@@ -81,6 +81,9 @@ if handles.Current.SetBeingAnalyzed == 1
     % Get the BATCH directory and load illcor statistics.
     strBatchDir = handles.Current.DefaultOutputDirectory;
     TempStats = load(fullfile(strBatchDir,sprintf('Measurements_batch_illcor_channel%03d_zstack%03d.mat',intChannelNumber,intZstackNumber)));    
+    
+    TempStats.stat_values.mean = double(TempStats.stat_values.mean);
+    TempStats.stat_values.std = double(TempStats.stat_values.std);
 
     % Optional smoothing of illumination statistics computed by iBRAIN.
     switch DoMeanStdSmoothing
@@ -121,7 +124,6 @@ ImageOutput = (ImageOutput .* mean(IllumFilt_STD(:))) + mean(IllumFilt_Mean(:));
 % Reverse log10 transform that was applied to images when learning 
 % mean/std statistics as well the corrected image.
 ImageOutput = 10 .^ ImageOutput;
-
 
 % store non-scaled for visualization
 ImageOutputPlot = ImageOutput;
