@@ -133,7 +133,7 @@ ImageOutput = ImageOutput/65535;
 ImageOutput = fixNonNumericalValueInImage(ImageOutput);
 %save to handle structure
 handles.Pipeline.(OutputName) = ImageOutput;
-    
+
 
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
