@@ -82,6 +82,7 @@ def parse_module_parameters(args):
         tiffpath = os.path.join(platepath, 'TIFF')
     if not os.path.exists(tiffpath):
         raise ParameterError('TIFF path does not exists: %s' % tiffpath)
+    module_parameters['tiffpath'] = tiffpath
 
     batchpath = module_parameters['batchpath']
     if not batchpath:
@@ -167,6 +168,8 @@ if __name__ == '__main__':
                                      epilog='Example: ./iBRAIN_module.py '
                                      '--name dummy_module --run --set-platepa'
                                      'th <...>')
+    parser.add_argument('-v', '--verbose', dest='verbose',
+                        action='store_true', help='Verbose mode')
     parser.add_argument('-d', '--dry-run', dest='dryrun',
                         action='store_true', help='Dry-run mode')
     parser.add_argument('--name', help='Name of the module in core/module/'
@@ -183,6 +186,8 @@ if __name__ == '__main__':
                         const='run', help='Dry-run mode')
 
     args = parser.parse_args()
+    if args.verbose:
+        VERBOSE = True
     if args.dryrun:
         DRY_RUN = True
     try:

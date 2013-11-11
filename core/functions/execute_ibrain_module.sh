@@ -9,17 +9,17 @@ function execute_ibrain_module {
 
 	echo "<!-- executing module function"
 	ERRORLOG=$(mktemp)
-	MODULEOUT=$( main 2> $ERRORLOG)
+	MODULEOUT=$( main 2> $ERRORLOG )
 	MODULEEXITCODE=$?
-	MODULERR=$(cat $ERRORLOG )
+	MODULERR="$( cat $ERRORLOG )"
 	rm $ERRORLOG
 	echo "end of module function -->"
 
     # We can ignore certain errors,  such as "MATLAB job.", which our cluster throws upon submission of a matlab job :)
-    MODULERR=$(echo $MODULERR | sed -e "s/MATLAB job.//g")
-    MODULERR=$(echo $MODULERR | sed -e "s/Generic job.//g")
-    MODULERR=$(echo $MODULERR | ${IBRAIN_BIN_PATH}/escape_xml.py )
-    #MODULERR=$(echo $MODULERR | sed -e "s/ //g")
+    MODULERR=$(echo "$MODULERR" | sed -e "s/MATLAB job.//g")
+    MODULERR=$(echo "$MODULERR" | sed -e "s/Generic job.//g")
+    MODULERR=$(echo "$MODULERR" | ${IBRAIN_BIN_PATH}/escape_xml.py )
+    #MODULERR=$(echo "$MODULERR" | sed -e "s/ //g")
 
 	if [ "$MODULERR" ]; then
         # We can check if despite the error the module still produced valid xml. If so, just show the module xml, otherwise, revert to error-message

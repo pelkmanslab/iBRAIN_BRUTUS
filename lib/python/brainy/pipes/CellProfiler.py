@@ -1,7 +1,8 @@
 import os
 import re
 import fnmatch
-from brainy.pipes import BrainyProcess, BrainyPipe, BrainyProcessError
+from brainy.process import BrainyProcess, BrainyProcessError
+from brainy.pipes import BrainyPipe
 
 
 class Pipe(BrainyPipe):

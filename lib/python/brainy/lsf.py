@@ -24,7 +24,7 @@ class Lsf(object):
         try:
             from sh import bjobs as _bjobs, bsub as _bsub, bkill as _bkill
             self.bsub = _bsub
-            self._bjobs = _bjobs
+            self.bjobs = _bjobs
             self.bkill = _bkill
         except ImportError:
             exception = NoSchedulerFound('Failed to locate LSF commands like '
