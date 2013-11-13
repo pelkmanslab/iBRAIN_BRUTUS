@@ -1,5 +1,3 @@
-!
-
  iBrain
  ======
 
@@ -11,9 +9,9 @@ obtained results. It contains numerous meta-information on genes and proteins,
 obtained from ontology databases and STRING. It also incorporates probabilistic
 algorithms to determine the true loss-of-function phenotype of a gene from
 measurements of multiple siRNAs targeting the same gene. Some of these
-algorithms have been developed in Lucas Pelkmans group by Berend Snijder, and 
+algorithms have been developed in Lucas Pelkmans group by Berend Snijder, and
 will be published in the near future. iBRAIN also provides a webbrowser-
-compatible user interface with which the progress in computational analysis 
+compatible user interface with which the progress in computational analysis
 can be easily monitored for each running project.
 
 author: Berend Snijder
@@ -24,7 +22,71 @@ date_last_modified: 2011-08-24 14:36:07.683457953
  Installation
  ------------
 
+1. Clone the repository and point your current folder to it. At next you should run:
+
+make install
+
+This will by default install (symlink) the copy of iBRAIN files into ~/iBRAIN folder.
+Next time you update the repository, do
+
+make update
+
+2. The context of ~/iBRAIN/etc should look like
+
+config
+paths.txt -> /BIOL/sonas/biol_uzh_pelkmans_s4/Data/Code/iBRAINmaster/etc/paths.txt
+sedTransformLogWebUser.sed
+
+where a sample config is:
+
+#---start-of-config---
+#! /bin/sh
+if [ ! -d $IBRAIN_ROOT ]; then
+    echo "Error, missing ROOT folder definition.." >/dev/stderr
+    exit
+fi
+
+export IBRAIN_BIN_PATH=$IBRAIN_ROOT/bin
+export IBRAIN_ETC_PATH=$IBRAIN_ROOT/etc
+export IBRAIN_VAR_PATH=$IBRAIN_ROOT/var
+export IBRAIN_LOG_PATH=$IBRAIN_VAR_PATH/log
+export IBRAIN_DATABASE_PATH=$IBRAIN_VAR_PATH/database
+
+export IBRAIN_MATLAB_PATH=/cluster/home/biol/ibrain/code/dep
+
+export IBRAIN_USER=$(whoami)
+export IBRAIN_ADMIN_EMAIL=yauhen.yakimovich@uzh.ch
+
+
+export PATH=$PATH:$IBRAIN_BIN_PATH
+#---end-of-config---
+
+
+and a sample sedTransformLogWebUser.sed
+
+#---start-of-config---
+#!/bin/sed -f
+s|/BIOL/imsb/fs|/share-|g
+s|/cluster/home/biol/ibrain/iBRAIN/var/database|..|g
+s|/BIOL/sonas/biol_uzh_pelkmans_s|/share-|g
+s|/bio3/bio3||g
+s| -- | - |g
+s|---------------------------------------------------------------------|- |g
+s|\.xml|\.html|g
+#---end-of-config---
+
+Don't forget to set permissions for execution
+
+  chmod +x sedTransformLogWebUser.sed
+
+
+ Crontab
+ -------
+
+
+
 Please put the following into the crontab of iBRAIN cluster user:
+
 
 $ crontab -l
 SHELL=/bin/bash
@@ -41,10 +103,10 @@ MAIL=/var/spool/mail/bsnijder
 
 
 
-$ cat scripts/crontab-wrapper 
+$ cat scripts/crontab-wrapper
 #!/bin/bash
 [ $(id -gn) = nas_bio3 ] || exec sg nas_bio3 "$0 $@"
-#[ -r $HOME/.bashrc ] && . $HOME/.bashrc 
+#[ -r $HOME/.bashrc ] && . $HOME/.bashrc
 # .bash_profile can contian statements like 'load module matlab'
 [ -r $HOME/.bash_profile ] && . $HOME/.bash_profile
 [ -r $HOME/.profile ] && . $HOME/.profile
