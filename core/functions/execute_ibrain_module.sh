@@ -21,6 +21,8 @@ function execute_ibrain_module {
     MODULERR=$(echo "$MODULERR" | ${IBRAIN_BIN_PATH}/escape_xml.py )
     #MODULERR=$(echo "$MODULERR" | sed -e "s/ //g")
 
+    MODULEOUT=$(echo "$MODULEOUT" | ${IBRAIN_BIN_PATH}/escape_xml.py )
+
 	if [ "$MODULERR" ]; then
         # We can check if despite the error the module still produced valid xml. If so, just show the module xml, otherwise, revert to error-message
         MODULEXMLVALIDATION=$(echo $MODULEOUT | xmllint --noout - 2>&1)
@@ -44,5 +46,3 @@ function execute_ibrain_module {
 	    echo "${MODULEOUT}"
 	fi
 }
-
-
