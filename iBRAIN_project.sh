@@ -108,12 +108,14 @@ if [ "$INCLUDEDPATH" ] && [ -d $INCLUDEDPATH ]; then
         BATCHDIR=${PROJECTDIR}/BATCH/
         POSTANALYSISDIR=${PROJECTDIR}/POSTANALYSIS/
         JPGDIR=${PROJECTDIR}/JPG/
+        PIPESDIR=${PROJECTDIR}/PIPES/
 
         echo "     <tiff_dir>$TIFFDIR</tiff_dir>"
         echo "     <plate_dir>$PROJECTDIR</plate_dir>"
         echo "     <batch_dir>$BATCHDIR</batch_dir>"
         echo "     <postanalysis_dir>$POSTANALYSISDIR</postanalysis_dir>"
         echo "     <jpg_dir>$JPGDIR</jpg_dir>"
+        echo "     <pipes_dir>$PIPESDIR</pipes_dir>"
         echo "     <plate_name>$(basename $PROJECTDIR)</plate_name>"
 
         ### IF WARNINGFLAG=1 DISPLAY FULL DEBUG (PRINTENV) DATA PER TIFF FOLDER
@@ -212,12 +214,18 @@ if [ "$INCLUDEDPATH" ] && [ -d $INCLUDEDPATH ]; then
         ### START MAIN LOGICS: STAGE 1 ###
         if [ -e ${BATCHDIR}/ConvertAllTiff2Png.complete ] && [ -e ${BATCHDIR}/illuminationcorrection.complete ] \
             && ( [ ! -e ${BATCHDIR}/has_zstacks ] || [ -e ${BATCHDIR}/CreateMIPs.complete ]); then
-            . ./core/modules/stage_one.sh
+            # Fork the main logic of Stage 1 (mostly CP1 related) to support optional new mechanism
+            # called 'Brainy PIPES'. If we see PIPESDIR, we decide to favor and run pipes instead of stage_one.
+            if [ -d $PIPESDIR ]; then
+                . ./core/modules/run_pipes.sh
+            else
+                . ./core/modules/stage_one.sh
+                # includes the following steps:
+                # - PreCluster
+                # - cpcluster
+                # - datafusion & check & cleanup
+            fi
         fi
-        # includes the following steps:
-        # - PreCluster
-        # - cpcluster
-        # - datafusion & check & cleanup
         ##################################
 
         #####################################################################################
