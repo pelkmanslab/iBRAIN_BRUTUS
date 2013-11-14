@@ -6,4 +6,4 @@
 	url = git://github.com/amoffat/sh.git
 [submodule "lib/git/pipette"]
 	path = lib/git/pipette
-	url = https://github.com/ewiger/pipette.git
+	url = git://github.com/ewiger/pipette.git
