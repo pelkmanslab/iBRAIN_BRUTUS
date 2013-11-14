@@ -197,11 +197,11 @@ else
         %[TS] adjusted to include option for smoothing iBrain prepared correction function
         switch iDoBrainSmoothing
             case 'Yes'
-                ValueMean = imfilter(TempStats.stat_values.mean,H,'replicate');
-                ValueStd = imfilter(TempStats.stat_values.std,H,'replicate');
+                ValueMean = imfilter(double(TempStats.stat_values.mean),H,'replicate');
+                ValueStd = imfilter(double(TempStats.stat_values.std),H,'replicate');
             case 'No'
-                ValueMean = TempStats.stat_values.mean;
-                ValueStd = TempStats.stat_values.std;
+                ValueMean = double(TempStats.stat_values.mean);
+                ValueStd = double(TempStats.stat_values.std);
         end
         
         handles.Measurements.Image.([strStatFieldName,'_mean']) = ValueMean;
