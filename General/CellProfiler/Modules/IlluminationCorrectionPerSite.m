@@ -243,6 +243,13 @@ else
         TempStats = load(fullfile(strBatchDir,sprintf('Measurements_batch_illcor_channel%03d_zstack%03d.mat',intChannelNumber,intZstackNumber)));
         TempSiteStats = load(fullfile(strBatchDir,sprintf('Measurements_batch_illcor_site%d_channel%03d_zstack%03d.mat',intImagePosition,intChannelNumber,intZstackNumber)));
         
+        % Avoid potential floating type precision mixing.
+        TempStats.stat_values.mean = double(TempStats.stat_values.mean);
+        TempStats.stat_values.std = double(TempStats.stat_values.std);
+        TempSiteStats.stat_values.mean = double(TempSiteStats.stat_values.mean);
+        TempSiteStats.stat_values.std = double(TempSiteStats.stat_values.std);
+        
+        
         %[TS] adjusted to include option for smoothing iBrain prepared correction function
         switch iDoBrainSmoothing
             case 'Yes'

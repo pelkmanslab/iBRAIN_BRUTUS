@@ -351,8 +351,14 @@ while 1
     elseif strncmp(output,'% $Revision:', 12)
         try
             ModuleRevNum = str2double(output(14:17));
-        catch
-            ModuleRevNum = str2double(output(14:18));
+        catch                    
+            tokens = regexp(output, '% \$Revision:\s*(\d+).*','tokens');
+            try 
+                ModuleRevNum = str2double(tokens{1});
+            catch err
+                warning(err);
+                error(['Failed to parse revision field in module ' ModuleName]);
+            end
         end
     end
 end
