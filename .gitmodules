@@ -4,6 +4,4 @@
 [submodule "lib/git/sh"]
 	path = lib/git/sh
 	url = git://github.com/amoffat/sh.git
-[submodule "lib/git/pipette"]
-	path = lib/git/pipette
-	url = git://github.com/ewiger/pipette.git
+
