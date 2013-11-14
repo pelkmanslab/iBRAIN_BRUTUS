@@ -1,6 +1,8 @@
 import os
 import re
 import fnmatch
+from xml.sax.saxutils import escape as escape_xml
+
 from brainy.process import BrainyProcess, BrainyProcessError
 from brainy.pipes import BrainyPipe
 
@@ -73,7 +75,7 @@ class PreCluster(BrainyProcess):
             </status>
         ''' % {
             'step_name': self.step_name,
-            'submission_result': submission_result,
+            'submission_result': escape_xml(submission_result),
         })
 
         self.set_flag('submitted')
@@ -89,7 +91,7 @@ class PreCluster(BrainyProcess):
             </status>
         ''' % {
             'step_name': self.step_name,
-            'resubmission_result': resubmission_result,
+            'resubmission_result': escape_xml(resubmission_result),
         })
 
         self.set_flag('resubmitted')

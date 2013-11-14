@@ -2,6 +2,7 @@ import os
 import re
 from datetime import datetime
 from sh import ErrorReturnCode, grep, wc
+from xml.sax.saxutils import escape as escape_xml
 
 import pipette
 from brainy.flags import FlagManager
@@ -225,7 +226,7 @@ class BrainyProcess(pipette.Process, FlagManager):
         </status>
         ''' % {
             'step_name': self.step_name,
-            'message': message,
+            'message': escape_xml(message),
             'warning': warning,
         })
 
@@ -246,7 +247,7 @@ class BrainyProcess(pipette.Process, FlagManager):
             </status>
         ''' % {
             'step_name': self.step_name,
-            'check_errors': check_output,
+            'check_errors': escape_xml(check_output),
         })
         return True
 
