@@ -1,0 +1,1 @@
+../../../../bin/check_resultfiles_for_known_errors.sh

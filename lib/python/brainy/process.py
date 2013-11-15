@@ -248,17 +248,16 @@ class BrainyProcess(pipette.Process, FlagManager):
             <status action="%(step_name)s">failed
               <warning>ALERT: FOUND ERRORS</warning>
               <output>
-              %{check_errors}s
+              %(check_errors)s
               </output>
             </status>
         ''' % {
             'step_name': self.step_name,
-            'check_errors': escape_xml(check_output),
+            'check_errors': check_output,
         })
         return True
 
     def run(self):
-        self.check_logs_for_errors()
         # Do we want to submit?
         if self.want_to_submit():
             self.submit()
