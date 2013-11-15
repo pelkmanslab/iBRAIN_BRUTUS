@@ -1,6 +1,7 @@
 {
     // Define iBRAIN pipe type
     "type": "CellProfiler.Pipe",
+    "shared_project_folders": true,
     // Define chain of processes
     "chain": [
         {

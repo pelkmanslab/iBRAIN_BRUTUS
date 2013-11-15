@@ -6,8 +6,17 @@ already_extended = False
 ROOT = 'iBRAIN'
 
 
+is_inside_tests_mock = True
+try:
+    import inside_tests_mock
+except ImportError:
+    is_inside_tests_mock = False
+# is_inside_tests_mock = 'mock' in os.path.abspath(__file__)
+root_path = None
+
+
 def get_root_path(module_path, root=ROOT, readlink=False):
-    if module_path.endswith('.py'):
+    if module_path.endswith('.py') or is_inside_tests_mock:
         if readlink and os.path.islink(module_path):
             module_path = os.readlink(module_path)
         # module_path points to a symlink
@@ -28,6 +37,7 @@ def extend_sys_path(module_path, folders):
     global already_extended
     if already_extended:
         return
+    global root_path
     root_path = get_root_path(module_path)
     for folder in folders:
         # Prepend path to the modules effectively prioritizing them.

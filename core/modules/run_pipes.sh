@@ -29,6 +29,7 @@ import os
 import ext_path
 from brainy.pipes import PipesModule
 
+
 pipes_module = PipesModule('pipes', dict(
     tiff_path='$TIFFDIR',
     plate_path='$PROJECTDIR',

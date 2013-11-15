@@ -26,7 +26,7 @@ def invoke(command, _in=None):
 
 
 def get_config(root=None):
-    if not root:
+    if root is None:
         root = IBRAIN_ROOT
     if root is None:
         raise Exception('IBRAIN_ROOT is not set')
@@ -50,7 +50,7 @@ echo }
     ''' % {'IBRAIN_ROOT': root})
     #print config_json
     config = json.loads(config_json)
-    config['root'] = IBRAIN_ROOT
+    config['root'] = root
     return config
 
 
@@ -81,7 +81,6 @@ class BrainyModule(FlagManager):
                               in os.listdir(self.env['batch_dir'])
                               if results_regex.search(filename)]
         return self.__results
-
 
     def submit_job(self, script, queue=SHORT_QUEUE):
         results_file = os.path.join(self.env['batch_dir'], '%s_%s.results') % \

@@ -38,3 +38,6 @@ class FlagManager(object):
     def set_flag(self, flag='submitted'):
         flag = '.'.join((self._get_flag_prefix(), flag))
         touch(flag)
+
+    def get_flag(self, flag='submitted'):
+        return '%s.%s' % (self._get_flag_prefix(), flag)

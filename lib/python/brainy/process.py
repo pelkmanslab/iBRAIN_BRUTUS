@@ -8,7 +8,7 @@ import pipette
 from brainy.flags import FlagManager
 from brainy.modules import invoke
 from brainy.lsf import SHORT_QUEUE, NORM_QUEUE
-
+from brainy.config import config
 
 NO_ERRORS_MSG = 'Strangely, no known errors were found.'
 MATLAB_CALL = 'matlab -singleCompThread -nodisplay -nojvm'
@@ -231,9 +231,15 @@ class BrainyProcess(pipette.Process, FlagManager):
         })
 
     def check_logs_for_errors(self):
-        check_output = invoke(
-            '%(IBRAIN_BIN_PATH)s/check_resultfiles_for_known_errors.sh '
-            '%(BATCHDIR)s "CreateMIPs" $PROJECTDIR/CreateMIPs.resubmitted')
+        check_output = invoke('''
+            %(bin_path)s/check_resultfiles_for_known_errors.sh \
+            %(reports_path)s "%(reports_path)s" %(flag_path)s
+        ''' % {
+            'bin_path': config['bin_path'],
+            'step_name': self.step_name,
+            'reports_path': self.reports_path,
+            'flag_path': self.set_flag('resubmitted'),
+        })
 
         if NO_ERRORS_MSG in check_output:
             return False
@@ -252,6 +258,7 @@ class BrainyProcess(pipette.Process, FlagManager):
         return True
 
     def run(self):
+        self.check_logs_for_errors()
         # Do we want to submit?
         if self.want_to_submit():
             self.submit()
