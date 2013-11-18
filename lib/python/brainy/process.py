@@ -176,6 +176,9 @@ class BrainyProcess(pipette.Process, FlagManager):
     def job_reports_count(self):
         return len(self.get_job_reports())
 
+    def has_job_reports(self):
+        return self.job_reports_count > 0
+
     def working_jobs_count(self, needle=None):
         if needle is None:
             needle = os.path.dirname(self.reports_path)
@@ -206,7 +209,8 @@ class BrainyProcess(pipette.Process, FlagManager):
     def no_work_is_happening(self):
         if (self.is_submitted or self.is_resubmitted) \
                 and self.is_complete is False \
-                and self.working_jobs_count() == 0:
+                and self.working_jobs_count() == 0 \
+                and self.has_job_reports() is False:
             return True
         return False
 
