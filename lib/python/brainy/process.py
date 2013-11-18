@@ -1,7 +1,7 @@
 import os
 import re
 from datetime import datetime
-from sh import ErrorReturnCode, grep, wc
+from sh import ErrorReturnCode, grep, egrep, wc
 from xml.sax.saxutils import escape as escape_xml
 
 import pipette
@@ -178,9 +178,14 @@ class BrainyProcess(pipette.Process, FlagManager):
 
     def working_jobs_count(self, needle=None):
         if needle is None:
-            needle = os.path.basename(self.reports_path)
+            needle = os.path.dirname(self.reports_path)
         try:
-            return int(wc(grep(self.scheduler.bjobs('-w'), needle), '-l'))
+            return int(wc(
+                egrep(
+                    grep(self.scheduler.bjobs('-aw'), needle),
+                    '(RUN|PEND)'
+                ), '-l'
+            ))
         except ErrorReturnCode:
             return 0
 
