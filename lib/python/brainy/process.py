@@ -9,8 +9,10 @@ from brainy.flags import FlagManager
 from brainy.modules import invoke
 from brainy.lsf import SHORT_QUEUE, NORM_QUEUE
 from brainy.config import config
+from brainy.errors import (UnknownError, KnownError, TermRunLimitError,
+                           check_report_file_for_errors)
 
-NO_ERRORS_MSG = 'Strangely, no known errors were found.'
+
 MATLAB_CALL = 'matlab -singleCompThread -nodisplay -nojvm'
 PROCESS_STATUS = [
     'submitting',
@@ -33,6 +35,10 @@ def format_code(code):
 
 class BrainyProcessError(Exception):
     '''Logical error that happened while executing brainy pipe process'''
+
+    def __init__(self, warning, output=''):
+        self.warning = warning
+        self.output = output
 
 
 class BrainyProcess(pipette.Process, FlagManager):
@@ -261,36 +267,45 @@ class BrainyProcess(pipette.Process, FlagManager):
         })
 
     def check_logs_for_errors(self):
-        # TODO use a list of files as enumerated by self.get_job_reports()
-        check_output = invoke('''
-            %(bin_path)s/check_resultfiles_for_known_errors.sh \
-            %(reports_path)s "%(reports_path)s" %(flag_path)s
-        ''' % {
-            'bin_path': config['bin_path'],
-            'step_name': self.step_name,
-            'reports_path': self.reports_path,
-            'flag_path': self.set_flag('resubmitted'),
-        })
+        for report_filepath in self.get_job_reports():
+            try:
+                check_report_file_for_errors(report_filepath)
+            except TermRunLimitError as error:
+                if os.path.exists(self.get_flag('runlimit')):
+                    message = '''
+                        Job %s timed out too many times.
+                        <result_file>%s</result_file>
+                    ''' % (os.path.basename(report_filepath), report_filepath)
+                    raise BrainyProcessError(warning=message.strip(),
+                                             output=error.details)
+                else:
+                    print '[KNOWN ERROR FOUND]: Job exceeded runlimit, ' \
+                        'resetting job and placing timeout flag file'
+                    self.set_flag('runlimit')
+            except KnownError as error:
+                print '[KNOWN ERROR FOUND]: %s' % error.message
+                print 'Resetting ".submitted" flag and removing job report.'
+                self.reset_submitted()
+                self.unlink('report_filepath')
+                raise BrainyProcessError(warning=error.message,
+                                         output=error.details)
+            except UnknownError as error:
+                message = '''
+                    Unknown error found in result file %s
+                    <result_file>%s</result_file>
+                ''' % (os.path.basename(report_filepath), report_filepath)
+                raise BrainyProcessError(warning=message.strip(),
+                                         output=error.details)
+                # TODO: append error message to ~/iBRAIN_errorlog.xml
 
-        if NO_ERRORS_MSG in check_output:
-            return False
-
-        print('''
-            <status action="%(step_name)s">failed
-              <warning>ALERT: FOUND ERRORS</warning>
-              <output>
-              %(check_errors)s
-              </output>
-            </status>
-        ''' % {
-            'step_name': self.step_name,
-            'check_errors': check_output,
-        })
-        return True
+        # Finally, no errors were found.
 
     def run(self):
-        # Do we want to submit?
-        if self.want_to_submit():
+        # Skip if ".complete" flag was found.
+        if self.is_complete:
+            self.report('complete')
+        # Step is incomplete. Do we want to submit?
+        elif self.want_to_submit():
             self.submit()
         # Submitted but no work has started yet?
         elif self.no_work_is_happening():
@@ -305,9 +320,7 @@ class BrainyProcess(pipette.Process, FlagManager):
         # Check for known errors if both data output and job results are
         # present.
         else:
-            has_errors = self.check_logs_for_errors()
-            if has_errors:
-                raise BrainyProcessError()
+            self.check_logs_for_errors()
             self.results['step_status'] = 'completed'
 
     def reduce(self):

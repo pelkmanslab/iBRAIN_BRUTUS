@@ -29,11 +29,7 @@ class FlagManager(object):
         If no no jobs are found for this project, module, or step, waiting is
         senseless. Remove ".submitted" file and try again.
         '''
-        submitted_flag = '%s.submitted' % self._get_flag_prefix()
-        if not os.path.exists(submitted_flag):
-            print('Failed to reset: submission flag not found.')
-            return
-        os.remove(submitted_flag)
+        self.reset_flag()
 
     def set_flag(self, flag='submitted'):
         flag = '.'.join((self._get_flag_prefix(), flag))
@@ -41,3 +37,10 @@ class FlagManager(object):
 
     def get_flag(self, flag='submitted'):
         return '%s.%s' % (self._get_flag_prefix(), flag)
+
+    def reset_flag(self, flag='submitted'):
+        flag_path = self.get_flag(flag)
+        if not os.path.exists(flag_path):
+            print('Failed to reset: "%s" flag not found.' % flag)
+            return
+        os.remove(flag_path)
