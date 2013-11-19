@@ -100,8 +100,6 @@ class PreCluster(BrainyProcess):
 
         self.set_flag('resubmitted')
 
-    def has_data(self):
-        return os.path.exists(self.reports_path())
 
     # def has_data(self):
     #     '''Validate the integrity of precluster step'''
