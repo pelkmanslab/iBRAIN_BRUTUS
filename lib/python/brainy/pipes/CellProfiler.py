@@ -1,7 +1,9 @@
 import os
 import re
-import fnmatch
 from xml.sax.saxutils import escape as escape_xml
+#from plato.shell.findutils import (Match, find_files)
+from fnmatch import fnmatch
+from os.path import basename
 
 from brainy.process import BrainyProcess, BrainyProcessError
 from brainy.pipes import BrainyPipe
@@ -97,3 +99,23 @@ class PreCluster(BrainyProcess):
         })
 
         self.set_flag('resubmitted')
+
+    def has_data(self):
+        return os.path.exists(self.reports_path())
+
+    # def has_data(self):
+    #     '''Validate the integrity of precluster step'''
+    #     expr = re.compile('Batch_(\d+_to_\d+)')
+    #     parse_batch = lambda filename: expr.search(basename(filename)) \
+    #                                    .group(1)
+    #     output_batches = [parse_batch(filename) for filename
+    #                       in self.list_batch_dir()
+    #                       if fnmatch(basename(filename),
+    #                                  'Batch_*_OUT.mat')]
+    #     result_batches = dict(((parse_batch(filename), filename)
+    #                           for filename in self.list_batch_dir()
+    #                           if fnmatch(basename(filename),
+    #                                      'Batch_*.results')))
+    #     #print('Found %d job results logs vs. %d .MAT output files' %
+    #     #      (len(result_batches), len(output_batches)))
+    #     return len(result_batches) == len(output_batches)

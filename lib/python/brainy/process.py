@@ -41,6 +41,7 @@ class BrainyProcess(pipette.Process, FlagManager):
         super(BrainyProcess, self).__init__()
         self.pipes_module = None
         self.__reports = None
+        self.__batch_listing = None
 
     @property
     def env(self):
@@ -141,6 +142,18 @@ class BrainyProcess(pipette.Process, FlagManager):
                               if reports_regex.search(filename)]
         return self.__reports
 
+    def list_batch_dir(self):
+        if self.__batch_listing is None:
+            print('Listing batch folder. Please wait.. ')
+            self.__batch_listing = list()
+            for filename in os.listdir(self.batch_path):
+                self.__batch_listing.append(
+                    os.path.join(self.batch_path, filename))
+            #     sys.stdout.write('.')
+            # sys.stdout.write('\n')
+            # sys.stdout.flush()
+        return self.__batch_listing
+
     def submit_job(self, script, queue=None, report_file=None,
                    is_resubmitting=False):
         # Differentiate between submission and resubmission parameters.
@@ -221,6 +234,14 @@ class BrainyProcess(pipette.Process, FlagManager):
                 and self.working_jobs_count() > 0
         return False
 
+    def has_data(self):
+        '''
+        Override this method to implement step specific data existence and
+        integrity checks.
+        '''
+        #raise NotImplemented('Missing implementation for has_data() method.')
+        return True
+
     def finished_work_but_has_no_data(self):
         if (self.is_submitted or self.is_resubmitted) \
                 and self.is_complete is False:
@@ -240,6 +261,7 @@ class BrainyProcess(pipette.Process, FlagManager):
         })
 
     def check_logs_for_errors(self):
+        # TODO use a list of files as enumerated by self.get_job_reports()
         check_output = invoke('''
             %(bin_path)s/check_resultfiles_for_known_errors.sh \
             %(reports_path)s "%(reports_path)s" %(flag_path)s
