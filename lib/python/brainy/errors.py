@@ -25,7 +25,7 @@ class TermRunLimitError(KnownError):
 #         return
 #                 ERRORCAUSE="[KNOWN] Timed out too many times."
 
-UNKNOWN_ERROR = re.compile('ERROR'. re.IGNORECASE)
+UNKNOWN_ERROR = re.compile('ERROR', re.IGNORECASE)
 
 
 KNOWN_ERRORS = {
@@ -53,7 +53,7 @@ def check_for_known_error(line):
 
 
 def has_unknown_error(line):
-    if KNOWN_ERRORS.search(line):
+    if UNKNOWN_ERROR.search(line):
         return True
     return False
 

@@ -267,7 +267,8 @@ class BrainyProcess(pipette.Process, FlagManager):
         })
 
     def check_logs_for_errors(self):
-        for report_filepath in self.get_job_reports():
+        for report_filename in self.get_job_reports():
+            report_filepath = os.path.join(self.reports_path, report_filename)
             try:
                 check_report_file_for_errors(report_filepath)
             except TermRunLimitError as error:
@@ -275,7 +276,7 @@ class BrainyProcess(pipette.Process, FlagManager):
                     message = '''
                         Job %s timed out too many times.
                         <result_file>%s</result_file>
-                    ''' % (os.path.basename(report_filepath), report_filepath)
+                    ''' % (report_filename, report_filepath)
                     raise BrainyProcessError(warning=message.strip(),
                                              output=error.details)
                 else:
@@ -293,7 +294,7 @@ class BrainyProcess(pipette.Process, FlagManager):
                 message = '''
                     Unknown error found in result file %s
                     <result_file>%s</result_file>
-                ''' % (os.path.basename(report_filepath), report_filepath)
+                ''' % (report_filename, report_filepath)
                 raise BrainyProcessError(warning=message.strip(),
                                          output=error.details)
                 # TODO: append error message to ~/iBRAIN_errorlog.xml
