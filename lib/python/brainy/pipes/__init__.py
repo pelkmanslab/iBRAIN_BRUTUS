@@ -51,7 +51,7 @@ class BrainyPipe(pipette.Pipe):
             </status>
             ''' % {
                 'step_name': step_name,
-                'warning_message': '<warning>%s %s</warning>' % error.warning,
+                'warning_message': '<warning>%s</warning>' % error.warning,
                 'output_message': '<output>%s</output>' % error.output,
             })
 
