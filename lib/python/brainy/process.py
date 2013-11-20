@@ -328,5 +328,5 @@ class BrainyProcess(pipette.Process, FlagManager):
     def reduce(self):
         if self.results['step_status'] == 'completed':
             print('''
-                <status action="%(step_name)s">completed</status>
+        <status action="%(step_name)s">completed</status>
             ''' % {'step_name': self.step_name})

@@ -112,7 +112,7 @@ class CPCluster(BrainyProcess):
     def batch_files(self):
         '''Get batch files for submission with CPCluster'''
         if self.__batch_files is None:
-            batch_expr = re.compile('Batch_\d+_\d+.mat')
+            batch_expr = re.compile('Batch_\d+_to_\d+.mat')
             self.__batch_files = [filename for filename
                                   in self.list_batch_dir()
                                   if batch_expr.search(basename(filename))]
