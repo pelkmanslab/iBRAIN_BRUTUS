@@ -304,7 +304,7 @@ class BrainyProcess(pipette.Process, FlagManager):
     def run(self):
         # Skip if ".complete" flag was found.
         if self.is_complete:
-            self.report('complete')
+            self.results['step_status'] = 'completed'
         # Step is incomplete. Do we want to submit?
         elif self.want_to_submit():
             self.submit()

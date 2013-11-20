@@ -52,10 +52,10 @@ class BrainyPipe(pipette.Pipe):
                 warning = '<warning>%s</warning>' % error.warning
 
             print('''
-            <status action="%(step_name)s">failed
-                %(warning_message)s
-                %(output_message)s
-            </status>
+        <status action="%(step_name)s">failed
+            %(warning_message)s
+            %(output_message)s
+        </status>
             ''' % {
                 'step_name': step_name,
                 'warning_message': warning,
