@@ -44,6 +44,13 @@ class BrainyPipe(pipette.Pipe):
             #     'step_name': step_name,
             # })
         except BrainyProcessError as error:
+            output = ''
+            if error.output:
+                output = '<output>%s</output>' % error.output
+            warning = ''
+            if error.warning:
+                warning = '<warning>%s</warning>' % error.warning
+
             print('''
             <status action="%(step_name)s">failed
                 %(warning_message)s
@@ -51,8 +58,8 @@ class BrainyPipe(pipette.Pipe):
             </status>
             ''' % {
                 'step_name': step_name,
-                'warning_message': '<warning>%s</warning>' % error.warning,
-                'output_message': '<output>%s</output>' % error.output,
+                'warning_message': warning,
+                'output_message': output,
             })
 
 
