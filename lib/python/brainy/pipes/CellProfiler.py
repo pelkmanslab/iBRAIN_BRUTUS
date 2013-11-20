@@ -141,6 +141,10 @@ class CPCluster(BrainyProcess):
             )
             results.append(submission_result)
 
+        if not results:
+            raise BrainyProcessError(warning='Failed to find any batches.. '
+                                     'check or restart previous step')
+
         print('''
             <status action="%(step_name)s">submitting (%(batch_count)d) batches..
             <output>%(submission_result)s</output>
@@ -167,6 +171,10 @@ class CPCluster(BrainyProcess):
                 is_resubmitting=True,
             )
             results.append(resubmission_result)
+
+        if not results:
+            raise BrainyProcessError(warning='Failed to find any batches.. '
+                                     'check or restart previous step')
 
         print('''
             <status action="%(step_name)s">resubmitting (%(batch_count)d) batches..
