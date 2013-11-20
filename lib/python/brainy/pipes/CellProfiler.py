@@ -142,12 +142,12 @@ class CPCluster(BrainyProcess):
             results.append(submission_result)
 
         print('''
-            <status action="%(step_name)s">submitting (%(batch_count)d) batches.
+            <status action="%(step_name)s">submitting (%(batch_count)d) batches..
             <output>%(submission_result)s</output>
             </status>
         ''' % {
             'step_name': self.step_name,
-            'batch_count': self.batch_count,
+            'batch_count': len(results),
             'submission_result': escape_xml(str(results)),
         })
 
@@ -169,11 +169,12 @@ class CPCluster(BrainyProcess):
             results.append(resubmission_result)
 
         print('''
-            <status action="%(step_name)s">resubmitting
+            <status action="%(step_name)s">resubmitting (%(batch_count)d) batches..
             <output>%(resubmission_result)s</output>
             </status>
         ''' % {
             'step_name': self.step_name,
+            'batch_count': len(results),
             'resubmission_result': escape_xml(str(results)),
         })
 
