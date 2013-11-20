@@ -323,11 +323,10 @@ class BrainyProcess(pipette.Process, FlagManager):
         else:
             self.check_logs_for_errors()
             self.results['step_status'] = 'completed'
-            self.report('complete')
+            self.set_flag('complete')
 
     def reduce(self):
         if self.results['step_status'] == 'completed':
             print('''
                 <status action="%(step_name)s">completed</status>
             ''' % {'step_name': self.step_name})
-            self.set_flag('complete')
