@@ -9,7 +9,7 @@ class KnownError(Exception):
     '''Known error found in iBRAIN job report'''
 
     def __init__(self, message, details=None):
-        super(Exception, self).message = message
+        super(KnownError, self).message = message
         self.details = details
 
 

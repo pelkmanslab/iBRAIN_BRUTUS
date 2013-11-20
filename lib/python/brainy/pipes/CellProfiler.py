@@ -101,19 +101,97 @@ class PreCluster(BrainyProcess):
         self.set_flag('resubmitted')
 
 
-    # def has_data(self):
-    #     '''Validate the integrity of precluster step'''
-    #     expr = re.compile('Batch_(\d+_to_\d+)')
-    #     parse_batch = lambda filename: expr.search(basename(filename)) \
-    #                                    .group(1)
-    #     output_batches = [parse_batch(filename) for filename
-    #                       in self.list_batch_dir()
-    #                       if fnmatch(basename(filename),
-    #                                  'Batch_*_OUT.mat')]
-    #     result_batches = dict(((parse_batch(filename), filename)
-    #                           for filename in self.list_batch_dir()
-    #                           if fnmatch(basename(filename),
-    #                                      'Batch_*.results')))
-    #     #print('Found %d job results logs vs. %d .MAT output files' %
-    #     #      (len(result_batches), len(output_batches)))
-    #     return len(result_batches) == len(output_batches)
+class CPCluster(BrainyProcess):
+    '''Submit individual batches of CellProfiller as jobs and check results'''
+
+    def __init__(self):
+        super(CPCluster, self).__init__()
+        self.__batch_files = None
+
+    @property
+    def batch_files(self):
+        '''Get batch files for submission with CPCluster'''
+        if self.__batch_files is None:
+            batch_expr = re.compile('Batch_\d+_\d+.mat')
+            self.__batch_files = [filename for filename
+                                  in self.list_batch_dir()
+                                  if batch_expr.search(basename(filename))]
+        return self.__batch_files
+
+    def put_on(self):
+        super(CPCluster, self).put_on()
+
+    def get_matlab_code(self, batch_filename):
+        matlab_code = '''
+            CPCluster('%(batchfile)s', '%(clusterfile)s')
+        ''' % {
+            'batchfile': os.path.join(self.batch_path, 'Batch_data.mat'),
+            'clusterfile': batch_filename,
+        }
+        return matlab_code
+
+    def submit(self):
+        results = list()
+        for batch_filename in self.batch_files:
+            matlab_code = self.get_matlab_code(batch_filename)
+            batch_report = batch_filename.replace('.mat', '.results')
+            submission_result = self.submit_matlab_job(
+                matlab_code,
+                report_file=batch_report,
+            )
+            results.append(submission_result)
+
+        print('''
+            <status action="%(step_name)s">submitting (%(batch_count)d) batches.
+            <output>%(submission_result)s</output>
+            </status>
+        ''' % {
+            'step_name': self.step_name,
+            'batch_count': self.batch_count,
+            'submission_result': escape_xml(str(results)),
+        })
+
+        self.set_flag('submitted')
+
+    def resubmit(self):
+
+        results = list()
+        for batch_filename in self.batch_files:
+            # TODO: resubmit only those files that have no data, i.e. failed
+            # with no output.
+            matlab_code = self.get_matlab_code(batch_filename)
+            batch_report = batch_filename.replace('.mat', '.results')
+            resubmission_result = self.submit_matlab_job(
+                matlab_code,
+                report_file=batch_report,
+                is_resubmitting=True,
+            )
+            results.append(resubmission_result)
+
+        print('''
+            <status action="%(step_name)s">resubmitting
+            <output>%(resubmission_result)s</output>
+            </status>
+        ''' % {
+            'step_name': self.step_name,
+            'resubmission_result': escape_xml(str(results)),
+        })
+
+        self.set_flag('resubmitted')
+
+    def has_data(self):
+        '''Validate the integrity of precluster step'''
+        expr = re.compile('Batch_(\d+_to_\d+)')
+        parse_batch = lambda filename: expr.search(basename(filename)) \
+            .group(1)
+        output_batches = [parse_batch(filename) for filename
+                          in self.list_batch_dir()
+                          if fnmatch(basename(filename),
+                                     'Batch_*_OUT.mat')]
+        result_batches = dict(((parse_batch(filename), filename)
+                              for filename in self.list_batch_dir()
+                              if fnmatch(basename(filename),
+                                         'Batch_*.results')))
+        #print('Found %d job results logs vs. %d .MAT output files' %
+        #      (len(result_batches), len(output_batches)))
+        return len(result_batches) == len(output_batches)
