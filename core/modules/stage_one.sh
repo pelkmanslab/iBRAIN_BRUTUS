@@ -419,7 +419,8 @@ M_PROG"
         #echo "      </message>"
         echo "      <output>"
 
-           $IBRAIN_BIN_PATH/submitdatafusioncheckandcleanup.sh $BATCHDIR
+            bsub -W 8:00 -o $BATCHDIR/DataFusionCheckAndCleanup_$(date +"%y%m%d%H%M%S").results $IBRAIN_BIN_PATH/datafusioncheckandcleanup.sh $BATCHDIR
+            touch $(dirname $BATCHDIR)/DataFusionCheckAndCleanup.submitted
 
         echo "      </output>"
         echo "     </status>"
