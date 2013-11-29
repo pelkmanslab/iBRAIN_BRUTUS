@@ -158,7 +158,6 @@ class CPCluster(BrainyProcess):
         self.set_flag('submitted')
 
     def resubmit(self):
-
         results = list()
         for batch_filename in self.batch_files:
             # TODO: resubmit only those files that have no data, i.e. failed
