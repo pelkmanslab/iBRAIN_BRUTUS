@@ -5,8 +5,8 @@ function handles = LoadSegmentedObjects_MPcycle(handles)
 %
 % SHORT DESCRIPTION:
 % Loads object segmentations from a user defined SEGMENTATION directory. To
-% provide path to SEGMENTATION directory use PathToSegmentation_MPcycle.m
-% module.
+% provide path to SEGMENTATION directory use shiftDescriptor.json file (see
+% aligncycles.calculateCycleShift.m).
 % *************************************************************************
 %
 % Author:
@@ -68,20 +68,36 @@ matDotIndices = strfind(strOrigImageName,'.');
 if ~isempty(matDotIndices)
     strOrigImageName = strOrigImageName(1,1:matDotIndices(end)-1);
 end
-% get filename trunk from handles and modify filename accordingly
-strSegmentationFileNameTrunk = handles.Pipeline.SegmentationFilenameTrunk;
 
-% 
+% load shift descriptors file only once and store to handles
+if ~isfield(handles,'shiftDescriptor')
+    % define path to json file
+    % If output dir is BATCH directory, assume ALIGNCYCLES directory
+    strAlignCyclesDir = handles.Current.DefaultOutputDirectory;
+    if strcmp(getlastdir(strAlignCyclesDir),'BATCH')
+        strAlignCyclesDir = strrep(strAlignCyclesDir, [filesep,'BATCH'],[filesep,'ALIGNCYCLES']);
+    end
+    jsonDescriptorFile = fullfile(strAlignCyclesDir,'shiftDescriptor.json');
+    % load json file
+    handles.shiftDescriptor = loadjson(jsonDescriptorFile);
+end
+
+% get filename trunk from handles and modify filename accordingly
+strSegmentationFileNameTrunk = handles.shiftDescriptor.SegmentationFileNameTrunk;
+
+% obtain filename and load segmented image
 SegmentationImages = cell(1,length(ObjectNameList));
 for i = 1:length(ObjectNameList)
     ObjectName = ObjectNameList{i};
     if strcmpi(ObjectName,'Do not use')
         continue
     end
-    strSegmentationFileName = [regexprep(strOrigImageName,'.+(_\w{1}\d{2}_)',sprintf('%s$1',strSegmentationFileNameTrunk)),'_Segmented',ObjectName,'.png'];
     
-    % get the SEGMENTATION directory as provided by PathToSegmentation_MPcycle.m module
-    strSegmentationDir = handles.Pipeline.SegmentationDirectory;
+    % built absolute SEGMENTATION path from relative path stored in handles
+    strSegmentationDir = [strrep(handles.Current.DefaultOutputDirectory, [filesep,'BATCH'], filesep), handles.shiftDescriptor.SegmentationDirectory];
+    
+    % built full segmentation image filename from filename trunk stored in handles
+    strSegmentationFileName = [regexprep(strOrigImageName,'.+(_\w{1}\d{2}_)',sprintf('%s$1',strSegmentationFileNameTrunk)),'_Segmented',ObjectName,'.png'];
     
     % load segmentation image
     strFilePath = fullfile(strSegmentationDir,strSegmentationFileName);

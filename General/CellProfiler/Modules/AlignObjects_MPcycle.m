@@ -75,23 +75,7 @@ IntImOutputName = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %%% PROCESSING %%%
 %%%%%%%%%%%%%%%%%%
 
-
-%%% load shift descriptors from json file
-
-% load shift descriptors file only once and store to handles
-if ~isfield(handles,'shiftDescriptor')
-    % define path to json file
-    % If output dir is BATCH directory, assume ALIGNCYCLES directory
-    strAlignCyclesDir = handles.Current.DefaultOutputDirectory;
-    if strcmp(getlastdir(strAlignCyclesDir),'BATCH')
-        strAlignCyclesDir = strrep(strAlignCyclesDir, [filesep,'BATCH'],[filesep,'ALIGNCYCLES']);
-    end
-    jsonDescriptorFile = fullfile(strAlignCyclesDir,'shiftDescriptor.json');
-    % load json file
-    handles.shiftDescriptor = loadjson(jsonDescriptorFile);
-end
-
-% retrieve shift descriptors from handles
+%%% retrieve shift descriptors from handles
 shift = handles.shiftDescriptor;
 
 
