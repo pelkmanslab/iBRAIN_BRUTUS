@@ -80,6 +80,8 @@ M_PROG
             ILLCOROVERVIEWPDFFILE="${POSTANALYSISDIR}Measurements_$(basename $ILLCORSETTINGSFILE .mat).pdf"
             ILLCORRESULTFILEBASE="IllumCorrection_$(basename $ILLCORSETTINGSFILE .mat)_"
             ILLCORSUBMITTEDFILE="${PROJECTDIR}/IllumCorrection_$(basename $ILLCORSETTINGSFILE .mat).submitted"
+            ILLCORRUNLIMITFILE="${PROJECTDIR}/IllumCorrection_$(basename $ILLCORSETTINGSFILE .mat).runlimit"
+            ILLCORRESULTFILES=$(find $BATCHDIR -maxdepth 1 -type f -name "$ILLCORRESULTFILEBASE*.results")
             ILLCORRESULTFILECOUNT=$(find $BATCHDIR -maxdepth 1 -type f -name "$ILLCORRESULTFILEBASE*.results" | wc -l)
             ILLCORJOBCOUNT=$(grep $ILLCORSETTINGSFILE $JOBSFILE -c)
             if [ ! -d $POSTANALYSISDIR ]; then
@@ -96,10 +98,19 @@ M_PROG
                     #echo "      SUBMITTING: $(basename $ILLCORSETTINGSFILE)"
                     #echo "      </message>"
                     echo "      <output>"
-                    ILLCORRESULTFILE="$ILLCORRESULTFILEBASE$(date +"%y%m%d%H%M%S").results"
-bsub -W 8:00 -o "${BATCHDIR}$ILLCORRESULTFILE" "matlab -singleCompThread -nodisplay << M_PROG
+                    if [ ! -e ${ILLCORRUNLIMITFILE} ]; then
+                        # Submit for the first time.
+                        ILLCORRESULTFILE="$ILLCORRESULTFILEBASE$(date +"%y%m%d%H%M%S").results"
+bsub -W 8:00 -o "${BATCHDIR}$ILLCORRESULTFILE" -R 'rusage[mem=4096]' "matlab -singleCompThread -nodisplay << M_PROG
 batch_measure_illcor_stats('${TIFFDIR}','${ILLCORSETTINGSFILE}');
 M_PROG"
+                    else
+                        # Resubmit if runlimit flag was found.
+                        ILLCORRESULTFILE="$ILLCORRESULTFILEBASE$(date +"%y%m%d%H%M%S").results"
+bsub -W 36:00 -o "${BATCHDIR}$ILLCORRESULTFILE" -R 'rusage[mem=8192]' "matlab -singleCompThread -nodisplay << M_PROG
+batch_measure_illcor_stats('${TIFFDIR}','${ILLCORSETTINGSFILE}');
+M_PROG"
+                    fi
                     touch $ILLCORSUBMITTEDFILE
                     echo "      </output>"
                     echo "     </status>"
@@ -161,16 +172,34 @@ M_PROG"
 
 
             # output present
-            elif [ -e $ILLCOROUTPUTFILE ] ; then
+            elif [ -e $ILLCOROUTPUTFILE ]; then
 
-                echo "     <status action=\"$(basename $ILLCORSETTINGSFILE)\">completed"
-                #echo "      <message>"
-                #echo "      COMPLETED: $(basename $ILLCORSETTINGSFILE)"
-                #echo "      </message>"
-                if [ -e $ILLCOROVERVIEWPDFFILE ]; then
-                    echo "     <file type=\"pdf\">$ILLCOROVERVIEWPDFFILE</file>"
+                for ILLCORRESULTFILE in ILLCORRESULTFILES; do
+                    DONE_LEARNING=$(grep 'statistics for all images was successfully learned. We are done.' ILLCORRESULTFILE -c)
+                    if [ $DONE_LEARNING -eq 0 ]; then
+                        COMPLETEDILLCORMEASUREMENTCHECK=0;
+                    fi
+                done
+
+                if  [ $COMPLETEDILLCORMEASUREMENTCHECK -eq 1 ]; then
+                    echo "     <status action=\"$(basename $ILLCORSETTINGSFILE)\">completed"
+                    #echo "      <message>"
+                    #echo "      COMPLETED: $(basename $ILLCORSETTINGSFILE)"
+                    #echo "      </message>"
+                    if [ -e $ILLCOROVERVIEWPDFFILE ]; then
+                        echo "     <file type=\"pdf\">$ILLCOROVERVIEWPDFFILE</file>"
+                    fi
+                    echo "     </status>"
+                else
+                    echo "     <status action=\"$(basename $ILLCORSETTINGSFILE)\">in progress"
+                    echo "      <warning>"
+                    echo "      Learning image statistics is still in progress: $(basename $ILLCORSETTINGSFILE)"
+                    echo "      </warning>"
+                    if [ -e $ILLCOROVERVIEWPDFFILE ]; then
+                        echo "     <file type=\"pdf\">$ILLCOROVERVIEWPDFFILE</file>"
+                    fi
+                    echo "     </status>"
                 fi
-                echo "     </status>"
 
             else
 
@@ -211,7 +240,7 @@ M_PROG"
 
     fi # end of illumination correction
 
-    # Report module is finished
+    # Report module is finished. Complete the module if results logs report in last line that statistics were fully learned.
     if [ $COMPLETEDILLCORMEASUREMENTCHECK -eq 1 ] && [ ! -e ${BATCHDIR}/illuminationcorrection.complete ]; then
         touch ${BATCHDIR}/illuminationcorrection.complete
     fi
