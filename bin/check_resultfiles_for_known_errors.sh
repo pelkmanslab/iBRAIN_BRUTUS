@@ -3,7 +3,7 @@
 ####################################
 ### RESULT FILE ERROR MANAGEMENT ###
 ####################################
-### Loop over all result files, check for errors that should be retried. 
+### Loop over all result files, check for errors that should be retried.
 ### If found, also remove .submitted file to allow for retry
 ###
 ### If no result files are found, remove submitted file and retry (Is this safe?)
@@ -29,7 +29,7 @@ fi
 #  echo "    RESULTFILESUFFIX=$RESULTFILESUFFIX"
 #  echo "    SUBMITTEDFILE=$SUBMITTEDFILE"
 # echo $(find $BATCHDIR -maxdepth 1 -name "${RESULTFILESUFFIX}*.results")
-### 
+###
 
 ERRORCAUSE="[UNKNOWN]"
 ERRORGREP=""
@@ -45,7 +45,8 @@ for resultFile in $(ls $BATCHDIR/${RESULTFILESUFFIX}*.results -tr 2>/dev/null | 
       [ $(cat $resultFile | grep "Undefined function or method " | wc -l ) -gt 0 ] ||
       [ $(cat $resultFile | grep "License Manager Error" | wc -l ) -gt 0 ]);
   then
-    if [ $(cat $resultFile | grep "TERM_RUNLIMIT" | wc -l ) -gt 0 ]; then
+    if ([ $(cat $resultFile | grep "TERM_RUNLIMIT" | wc -l ) -gt 0 ] ||
+      [ $(cat $resultFile | grep "Out of memory. Type HELP MEMORY for your options" | wc -l ) -gt 0 ]); then
 	if [ -e $(dirname $SUBMITTEDFILE)/$(basename $SUBMITTEDFILE .submitted).runlimit ]; then
 		echo "<warning>"
     		echo " Error: Job  $(basename $resultFile) timed out too many times."
