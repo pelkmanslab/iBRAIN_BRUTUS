@@ -1,5 +1,6 @@
 import os
 import re
+import datetime
 from xml.sax.saxutils import escape as escape_xml
 #from plato.shell.findutils import (Match, find_files)
 from fnmatch import fnmatch
@@ -107,6 +108,12 @@ class CPCluster(BrainyProcess):
     def __init__(self):
         super(CPCluster, self).__init__()
         self.__batch_files = None
+        self.job_report_exp = 'Batch_\d+_to_\d+.results_\d+'
+
+    @property
+    def reports_path(self):
+        # Support old mode
+        return self.batch_path
 
     @property
     def batch_files(self):
@@ -134,7 +141,9 @@ class CPCluster(BrainyProcess):
         results = list()
         for batch_filename in self.batch_files:
             matlab_code = self.get_matlab_code(batch_filename)
-            batch_report = batch_filename.replace('.mat', '.results')
+            timestamp_str = datetime.strftime('%Y%m%d%H%M%S')
+            batch_report = batch_filename.replace(
+                '.mat', '.results_%s' % timestamp_str)
             submission_result = self.submit_matlab_job(
                 matlab_code,
                 report_file=batch_report,
@@ -163,7 +172,9 @@ class CPCluster(BrainyProcess):
             # TODO: resubmit only those files that have no data, i.e. failed
             # with no output.
             matlab_code = self.get_matlab_code(batch_filename)
-            batch_report = batch_filename.replace('.mat', '.results')
+            timestamp_str = datetime.strftime('%Y%m%d%H%M%S')
+            batch_report = batch_filename.replace(
+                '.mat', '.results_%s' % timestamp_str)
             resubmission_result = self.submit_matlab_job(
                 matlab_code,
                 report_file=batch_report,
@@ -199,7 +210,7 @@ class CPCluster(BrainyProcess):
         result_batches = dict(((parse_batch(filename), filename)
                               for filename in self.list_batch_dir()
                               if fnmatch(basename(filename),
-                                         'Batch_*.results')))
+                                         'Batch_*.results_*')))
         #print('Found %d job results logs vs. %d .MAT output files' %
         #      (len(result_batches), len(output_batches)))
         return len(result_batches) == len(output_batches)

@@ -48,6 +48,7 @@ class BrainyProcess(pipette.Process, FlagManager):
         self.pipes_module = None
         self.__reports = None
         self.__batch_listing = None
+        self.job_report_exp = '%s_\d+.job_report' % self.step_name
 
     @property
     def env(self):
@@ -142,7 +143,7 @@ class BrainyProcess(pipette.Process, FlagManager):
     def get_job_reports(self):
         if self.__reports is None:
             # Find result files only once.
-            reports_regex = re.compile('%s_\d+.job_report' % self.name)
+            reports_regex = re.compile(self.job_report_exp)
             self.__reports = [filename for filename
                               in os.listdir(self.reports_path)
                               if reports_regex.search(filename)]
@@ -268,6 +269,7 @@ class BrainyProcess(pipette.Process, FlagManager):
 
     def check_logs_for_errors(self):
         for report_filename in self.get_job_reports():
+            ## print report_filename
             report_filepath = os.path.join(self.reports_path, report_filename)
             try:
                 check_report_file_for_errors(report_filepath)
@@ -302,6 +304,7 @@ class BrainyProcess(pipette.Process, FlagManager):
         # Finally, no errors were found.
 
     def run(self):
+        ## print self.working_jobs_count()
         # Skip if ".complete" flag was found.
         if self.is_complete:
             self.results['step_status'] = 'completed'

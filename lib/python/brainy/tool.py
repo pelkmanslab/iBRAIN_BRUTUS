@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python2.7
 '''
 iBRAINTool is helper command line utility class for simplifying handling of
 iBRAIN project flags, files, etc. This includes basic operations like refresh
