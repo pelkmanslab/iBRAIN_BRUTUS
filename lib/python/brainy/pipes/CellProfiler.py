@@ -3,7 +3,7 @@ import re
 from datetime import datetime
 from xml.sax.saxutils import escape as escape_xml
 #from plato.shell.findutils import (Match, find_files)
-from fnmatch import fnmatch
+from fnmatch import fnmatch, translate as fntranslate
 from os.path import basename
 
 from brainy.process import BrainyProcess, BrainyProcessError
@@ -30,7 +30,7 @@ class PreCluster(BrainyProcess):
         )
 
     def get_cp_pipeline_path(self):
-        filename_regex_obj = re.compile(fnmatch.translate(
+        filename_regex_obj = re.compile(fntranslate(
                                         self.cp_pipeline_fnpattern))
         cp_pipeline_files = [
             filename for filename in os.listdir(self.process_path)
