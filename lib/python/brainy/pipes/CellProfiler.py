@@ -100,6 +100,7 @@ class PreCluster(BrainyProcess):
         })
 
         self.set_flag('resubmitted')
+        super(PreCluster, self).resubmit()
 
 
 class CPCluster(BrainyProcess):
@@ -108,7 +109,7 @@ class CPCluster(BrainyProcess):
     def __init__(self):
         super(CPCluster, self).__init__()
         self.__batch_files = None
-        self.job_report_exp = 'Batch_\d+_to_\d+.results_\d+'
+        self._job_report_exp = 'Batch_\d+_to_\d+.results_\d+'
 
     @property
     def reports_path(self):
@@ -197,6 +198,7 @@ class CPCluster(BrainyProcess):
         })
 
         self.set_flag('resubmitted')
+        super(PreCluster, self).resubmit()
 
     def has_data(self):
         '''Validate the integrity of precluster step'''

@@ -7,6 +7,10 @@ from brainy.process import BrainyProcessError
 from brainy.modules import BrainyModule
 
 
+class BrainyPipeFailure(Exception):
+    '''Thrown when pipeline execution has to be interruptted.'''
+
+
 class BrainyPipe(pipette.Pipe):
 
     def __init__(self, pipes_module, definition):
@@ -61,6 +65,8 @@ class BrainyPipe(pipette.Pipe):
                 'warning_message': warning,
                 'output_message': output,
             })
+            # Finally, interrupt execution
+            raise BrainyPipeFailure('Execution failed')
 
 
 class PipesModule(BrainyModule):
@@ -185,4 +191,9 @@ class PipesModule(BrainyModule):
         Execute passed pipeline process within the context of this
         PipesModule.
         '''
-        pipeline.communicate()
+        try:
+           pipeline.communicate()
+        except BrainyPipeFailure:
+            # Errors are reported inside individual
+            print '<!-- A pipeline has failed. Continue with the next one -->'
+

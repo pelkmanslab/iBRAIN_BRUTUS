@@ -48,7 +48,7 @@ class BrainyProcess(pipette.Process, FlagManager):
         self.pipes_module = None
         self.__reports = None
         self.__batch_listing = None
-        self.job_report_exp = '%s_\d+.job_report'
+        self._job_report_exp = None
 
     @property
     def env(self):
@@ -73,6 +73,14 @@ class BrainyProcess(pipette.Process, FlagManager):
     @property
     def process_path(self):
         return self.parameters['process_path']
+
+    @property
+    def job_report_exp(self):
+        return self.parameters.get(
+            'job_report_exp',
+            '%s_\d+.job_report' % self.name if self._job_report_exp is None \
+            else self._job_report_exp,
+        )
 
     @property
     def reports_path(self):
@@ -230,7 +238,8 @@ class BrainyProcess(pipette.Process, FlagManager):
         if (self.is_submitted or self.is_resubmitted) \
                 and self.is_complete is False \
                 and self.working_jobs_count() == 0 \
-                and self.has_job_reports() is False:
+                and self.has_job_reports() is False \
+                and self.has_runlimit is False:
             return True
         return False
 
@@ -267,6 +276,9 @@ class BrainyProcess(pipette.Process, FlagManager):
             'warning': warning,
         })
 
+    def has_runlimit(self):
+        return os.path.exists(self.get_flag('runlimit'))
+
     def check_logs_for_errors(self):
         for report_filename in self.get_job_reports():
             ## print report_filename
@@ -274,7 +286,7 @@ class BrainyProcess(pipette.Process, FlagManager):
             try:
                 check_report_file_for_errors(report_filepath)
             except TermRunLimitError as error:
-                if os.path.exists(self.get_flag('runlimit')):
+                if self.has_runlimit():
                     message = '''
                         Job %s timed out too many times.
                         <result_file>%s</result_file>
@@ -302,6 +314,9 @@ class BrainyProcess(pipette.Process, FlagManager):
                 # TODO: append error message to ~/iBRAIN_errorlog.xml
 
         # Finally, no errors were found.
+
+    def resubmit(self):
+        self.set_flag('runlimit')
 
     def run(self):
         ## print self.working_jobs_count()
