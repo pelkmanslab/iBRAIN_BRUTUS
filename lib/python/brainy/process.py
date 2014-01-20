@@ -48,7 +48,7 @@ class BrainyProcess(pipette.Process, FlagManager):
         self.pipes_module = None
         self.__reports = None
         self.__batch_listing = None
-        self.job_report_exp = '%s_\d+.job_report' % self.step_name
+        self.job_report_exp = '%s_\d+.job_report'
 
     @property
     def env(self):

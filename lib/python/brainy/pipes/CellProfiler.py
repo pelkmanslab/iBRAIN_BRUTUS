@@ -1,6 +1,6 @@
 import os
 import re
-import datetime
+from datetime import datetime
 from xml.sax.saxutils import escape as escape_xml
 #from plato.shell.findutils import (Match, find_files)
 from fnmatch import fnmatch
@@ -141,7 +141,7 @@ class CPCluster(BrainyProcess):
         results = list()
         for batch_filename in self.batch_files:
             matlab_code = self.get_matlab_code(batch_filename)
-            timestamp_str = datetime.strftime('%Y%m%d%H%M%S')
+            timestamp_str = datetime.now().strftime('%Y%m%d%H%M%S')
             batch_report = batch_filename.replace(
                 '.mat', '.results_%s' % timestamp_str)
             submission_result = self.submit_matlab_job(
@@ -172,7 +172,7 @@ class CPCluster(BrainyProcess):
             # TODO: resubmit only those files that have no data, i.e. failed
             # with no output.
             matlab_code = self.get_matlab_code(batch_filename)
-            timestamp_str = datetime.strftime('%Y%m%d%H%M%S')
+            timestamp_str = datetime.now().strftime('%Y%m%d%H%M%S')
             batch_report = batch_filename.replace(
                 '.mat', '.results_%s' % timestamp_str)
             resubmission_result = self.submit_matlab_job(
