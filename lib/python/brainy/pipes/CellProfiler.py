@@ -10,6 +10,10 @@ from brainy.process import BrainyProcess, BrainyProcessError
 from brainy.pipes import BrainyPipe
 
 
+def get_timestamp_str():
+    return datetime.now().strftime('%Y%m%d%H%M%S')
+
+
 class Pipe(BrainyPipe):
     '''
     CellProfiller pipe includes steps like:
@@ -142,9 +146,8 @@ class CPCluster(BrainyProcess):
         results = list()
         for batch_filename in self.batch_files:
             matlab_code = self.get_matlab_code(batch_filename)
-            timestamp_str = datetime.now().strftime('%Y%m%d%H%M%S')
             batch_report = batch_filename.replace(
-                '.mat', '.results_%s' % timestamp_str)
+                '.mat', '.results_%s' % get_timestamp_str())
             submission_result = self.submit_matlab_job(
                 matlab_code,
                 report_file=batch_report,
@@ -173,9 +176,8 @@ class CPCluster(BrainyProcess):
             # TODO: resubmit only those files that have no data, i.e. failed
             # with no output.
             matlab_code = self.get_matlab_code(batch_filename)
-            timestamp_str = datetime.now().strftime('%Y%m%d%H%M%S')
             batch_report = batch_filename.replace(
-                '.mat', '.results_%s' % timestamp_str)
+                '.mat', '.results_%s' % get_timestamp_str())
             resubmission_result = self.submit_matlab_job(
                 matlab_code,
                 report_file=batch_report,
@@ -201,7 +203,7 @@ class CPCluster(BrainyProcess):
         super(PreCluster, self).resubmit()
 
     def has_data(self):
-        '''Validate the integrity of precluster step'''
+        '''Validate the integrity of cpcluster step'''
         expr = re.compile('Batch_(\d+_to_\d+)')
         parse_batch = lambda filename: expr.search(basename(filename)) \
             .group(1)
@@ -216,3 +218,117 @@ class CPCluster(BrainyProcess):
         #print('Found %d job results logs vs. %d .MAT output files' %
         #      (len(result_batches), len(output_batches)))
         return len(result_batches) == len(output_batches)
+
+
+class CPDataFusion(BrainyProcess):
+    '''
+    Submit fusion jobs of measurements obtained from results of CellProfiller
+    individual jobs. Fusion results themselves should be validated as well.
+    '''
+
+    def __init__(self):
+        super(CPCluster, self).__init__()
+        self.__fused_files = None
+        self._job_report_exp = 'DataFusion_.*\.results_\d+'
+
+    @property
+    def fused_files(self):
+        '''Get fused files that were submitted by CPCluster'''
+        if self.__fused_files is None:
+            self.__fused_files = list()
+            batch_expr = re.compile('^Batch_\d+_to_\d+_(.*)\.mat$')
+            for filename in self.list_batch_dir():
+                match = batch_expr.search(basename(filename))
+                if not match:
+                    continue
+                fused_filename = match.group(1)
+                if not fused_filename in self.__fused_files:
+                    self.__fused_files.append(fused_filename)
+        return self.__fused_files
+
+    def get_matlab_code(self, fused_filename):
+        matlab_code = '''
+        RunDataFusion( ...
+            '%(batch_path)s', '%(fused_filename)s');
+        ''' % {
+            'batch_path': self.batch_path,
+            'fused_filename': fused_filename,
+        }
+        return matlab_code
+
+    def submit(self):
+        results = list()
+        for fused_filename in self.fused_files:
+            matlab_code = self.get_matlab_code(fused_filename)
+            fused_report = fused_filename.replace(
+                '.mat', '.results_%s' % get_timestamp_str())
+            submission_result = self.submit_matlab_job(
+                matlab_code,
+                report_file=fused_report,
+            )
+            results.append(submission_result)
+
+        if not results:
+            raise BrainyProcessError(warning='Failed to find complete '
+                                     'measurements.. check or restart previous'
+                                     ' step')
+
+        print('''
+            <status action="%(step_name)s">submitting (%(results_count)d) fusion jobs..
+            <output>%(submission_result)s</output>
+            </status>
+        ''' % {
+            'step_name': self.step_name,
+            'results_count': len(results),
+            'submission_result': escape_xml(str(results)),
+        })
+
+        self.set_flag('submitted')
+
+    def resubmit(self):
+        results = list()
+        for fused_filename in self.fused_files:
+            matlab_code = self.get_matlab_code(fused_filename)
+            fused_report = 'DataFusion_' + fused_filename.replace(
+                '.mat', '.results_%s' % get_timestamp_str())
+            resubmission_result = self.submit_matlab_job(
+                matlab_code,
+                report_file=fused_report,
+                is_resubmitting=True,
+            )
+            results.append(resubmission_result)
+
+        if not results:
+            raise BrainyProcessError(warning='Failed to resubmit data fusion')
+
+        print('''
+            <status action="%(step_name)s">resubmitting (%(results_count)d) fusion jobs..
+            <output>%(resubmission_result)s</output>
+            </status>
+        ''' % {
+            'step_name': self.step_name,
+            'results_count': len(results),
+            'resubmission_result': escape_xml(str(results)),
+        })
+
+        self.set_flag('resubmitted')
+        super(PreCluster, self).resubmit()
+
+    def has_data(self):
+        '''Validate the integrity of cpfusion step'''
+        print self.get_job_reports()
+        # expr = re.compile('Batch_(\d+_to_\d+)')
+        # parse_batch = lambda filename: expr.search(basename(filename)) \
+        #     .group(1)
+        # output_batches = [parse_batch(filename) for filename
+        #                   in self.list_batch_dir()
+        #                   if fnmatch(basename(filename),
+        #                              'Batch_*_OUT.mat')]
+        # result_batches = dict(((parse_batch(filename), filename)
+        #                       for filename in self.list_batch_dir()
+        #                       if fnmatch(basename(filename),
+        #                                  'Batch_*.results_*')))
+        # #print('Found %d job results logs vs. %d .MAT output files' %
+        # #      (len(result_batches), len(output_batches)))
+        # return len(result_batches) == len(output_batches)
+
