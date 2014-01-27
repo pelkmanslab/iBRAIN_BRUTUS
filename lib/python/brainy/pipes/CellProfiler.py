@@ -236,7 +236,7 @@ class CPDataFusion(BrainyProcess):
         '''Get fused files that were submitted by CPCluster'''
         if self.__fused_files is None:
             self.__fused_files = list()
-            batch_expr = re.compile('^Batch_\d+_to_\d+_(.*)\.mat$')
+            batch_expr = re.compile('^Batch_\d+_to_\d+_(.*\.mat)$')
             for filename in self.list_batch_dir():
                 match = batch_expr.search(basename(filename))
                 if not match:
