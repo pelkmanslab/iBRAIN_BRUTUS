@@ -227,7 +227,7 @@ class CPDataFusion(BrainyProcess):
     '''
 
     def __init__(self):
-        super(CPCluster, self).__init__()
+        super(CPDataFusion, self).__init__()
         self.__fused_files = None
         self._job_report_exp = 'DataFusion_.*\.results_\d+'
 
@@ -312,7 +312,7 @@ class CPDataFusion(BrainyProcess):
         })
 
         self.set_flag('resubmitted')
-        super(PreCluster, self).resubmit()
+        super(CPDataFusion, self).resubmit()
 
     def has_data(self):
         '''Validate the integrity of cpfusion step'''
