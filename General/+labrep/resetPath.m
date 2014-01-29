@@ -1,10 +1,10 @@
-function resetPath()
+function resetPath(dontSave)
 %RESET_PATH The *only* proper way to reset MATLAB path while using Pelkmans
 % lab repository.
 %
 % This function will:
 %
-%  - Change current directory to point to the repository root. 
+%  - Change current directory to point to the repository root.
 %
 %  - Reset MATLAB path to include only native Mathworks toolboxes.
 %
@@ -20,7 +20,7 @@ restoredefaultpath();
 path([
     labrepPath pathsep ...
     fullfile(labrepPath, 'Upsilon')], path);
-updatePath();
 appendExternalFolders();
+updatePath(dontSave);
 
 end

@@ -37,7 +37,7 @@
             strSegmentationFileName = strrep(strFileName,'.tif','_SegmentedCells.png');
         end
         % load image segmentation for current object Cells
-        matImageSegmentation = imread(fullfile(strImagePath,strSegmentationFileName{1,:}));
+        matImageSegmentation = loadSegmentation(strImagePath,strSegmentationFileName);
 
         matBorderCellsIx = unique(cat(1,unique(matImageSegmentation(:,1)),unique(matImageSegmentation(:,end)),unique(matImageSegmentation(1,:))',unique(matImageSegmentation(end,:))'));
 
