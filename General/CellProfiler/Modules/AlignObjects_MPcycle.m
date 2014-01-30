@@ -78,6 +78,8 @@ IntImOutputName = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %%% retrieve shift descriptors from handles
 shift = handles.shiftDescriptor;
 
+%%% retrieve intensity image
+IntensityImage = CPretrieveimage(handles,IntImName,ModuleName,'MustBeGray','CheckScale');
 
 %%% load and shift/crop images
 
@@ -86,10 +88,12 @@ strOrigImageName = char(handles.Measurements.Image.FileNames{handles.Current.Set
 strLookup = regexprep(strOrigImageName,'A\d{2}Z\d{2}C\d{2}','A\\d{2}Z\\d{2}C\\d{2}');
 index = find(cell2mat(regexp(cellstr(shift.fileName),strLookup)));
 
-% load intensity image
-IntensityImage = CPretrieveimage(handles,IntImName,ModuleName);
-% align and crop intensity image according to shift descriptor            
-IntensityOutputImage = IntensityImage(1+shift.lowerOverlap-shift.yShift(index) : end-(shift.upperOverlap+shift.yShift(index)), 1+shift.rightOverlap-shift.xShift(index) : end-(shift.leftOverlap+shift.xShift(index)));
+% align and crop intensity image according to shift descriptor
+if abs(shift.yShift(index))>shift.maxShift || abs(shift.xShift(index))>shift.maxShift % don't shift images if shift values are very high (reflects empty images)
+    IntensityOutputImage = IntensityImage(1+shift.lowerOverlap : end-shift.upperOverlap, 1+shift.rightOverlap : end-shift.leftOverlap);
+else
+    IntensityOutputImage = IntensityImage(1+shift.lowerOverlap-shift.yShift(index) : end-(shift.upperOverlap+shift.yShift(index)), 1+shift.rightOverlap-shift.xShift(index) : end-(shift.leftOverlap+shift.xShift(index)));
+end
 % do the same for segmentation images
 SegmentationImages = cell(1,length(ObjectNameList));
 SegmentationOutputImages = cell(1,length(ObjectNameList));
@@ -101,11 +105,8 @@ for i = 1:length(ObjectNameList)
     % load segmentation image
     SegmentationImages{i} = CPretrieveimage(handles,['Segmented', ObjectName],ModuleName,'MustBeGray','DontCheckScale');
     % shift/crop segmenation image
-    if abs(shift.yShift(index))>100 || abs(shift.xShift(index))>100 % don't shift images if shift values are very high (reflects empty images)
-        SegmentationOutputImages{i} = SegmentationImages{i}(1+shift.lowerOverlap : end-shift.upperOverlap, 1+shift.rightOverlap : end-shift.leftOverlap);
-    else
-        SegmentationOutputImages{i} = SegmentationImages{i}(1+shift.lowerOverlap-shift.yShift(index) : end-(shift.upperOverlap+shift.yShift(index)), 1+shift.rightOverlap-shift.xShift(index) : end-(shift.leftOverlap+shift.xShift(index)));
-    end
+    SegmentationOutputImages{i} = SegmentationImages{i}(1+shift.lowerOverlap : end-shift.upperOverlap, 1+shift.rightOverlap : end-shift.leftOverlap);
+
 end
 
 
@@ -146,22 +147,22 @@ if any(findobj == ThisModuleFigureNumber)
     %%% Calculates the object outlines, which are overlaid on the intensity
     %%% image.
     %%% Creates the structuring element that will be used for dilation.
-    StructuringElement = strel('square',3);
+    StructuringElement2 = strel('square',3);
     %%% Converts the FinalLabelMatrixImage to binary.
-    FinalBinaryImage = im2bw(SegmentationOutputImages{1},.5);
+    FinalBinaryImage2 = im2bw(SegmentationOutputImages{1},.5);
     %%% Dilates the FinalBinaryImage by one pixel (8 neighborhood).
-    DilatedBinaryImage = imdilate(FinalBinaryImage, StructuringElement);
+    DilatedBinaryImage2 = imdilate(FinalBinaryImage2, StructuringElement2);
     %%% Subtracts the FinalBinaryImage from the DilatedBinaryImage,
     %%% which leaves the PrimaryObjectOutlines.
-    PrimaryObjectOutlines = DilatedBinaryImage - FinalBinaryImage;
+    PrimaryObjectOutlines2 = DilatedBinaryImage2 - FinalBinaryImage2;
     %%% Overlays the object outlines on the original image.
-    ObjectOutlinesOnIntImage = IntensityOutputImage;
+    ObjectOutlinesOnIntImage2 = IntensityOutputImage;
     %%% Determines the grayscale intensity to use for the cell outlines.
-    LineIntensity = max(IntensityOutputImage(:));
-    ObjectOutlinesOnIntImage(PrimaryObjectOutlines == 1) = LineIntensity;
+    LineIntensity2 = max(IntensityOutputImage(:));
+    ObjectOutlinesOnIntImage2(PrimaryObjectOutlines2 == 1) = LineIntensity2;
     %%% display aligned images
     subplot(1,2,2); 
-    CPimagesc(ObjectOutlinesOnIntImage,handles);
+    CPimagesc(ObjectOutlinesOnIntImage2,handles);
     title([ObjectNameList{1}, ' Outlines on Aligned Intensity Image']);     
     
     drawnow
