@@ -71,7 +71,9 @@ IntensityImage = CPretrieveimage(handles,ImageName,ModuleName,'MustBeGray','Chec
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-ThresOtsu = multithresh(IntensityImage); %ultimately, one may use CPthreshold !!!
+%ThresOtsu = multithresh(IntensityImage); %ultimately, one may use CPthreshold !!!
+[~,ThresOtsu] = CPthreshold(handles,'Otsu Global','10%','Do not use','Do not use',correctionFactor,IntensityImage,ImageName,ModuleName);
+
 ThresCorrected = ThresOtsu * correctionFactor;
 IntensityImageThres = IntensityImage > ThresCorrected;
 
@@ -84,8 +86,6 @@ if ~max(max(PropagatedImage))==0
 else
     DilatedImage = PropagatedImage;
 end
-
-% % % merging objects?????
 
 
 %%%%%%%%%%%%%%%%%%%%%%%
