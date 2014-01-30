@@ -183,6 +183,9 @@ class BrainyProcess(pipette.Process, FlagManager):
             report_file = os.path.join(
                 self.reports_path, '%s_%s.job_report' %
                 (self.name, datetime.now().strftime('%y%m%d%H%M%S')))
+        elif not report_file.startswith('/'):
+            report_file = os.path.join(self.reports_path, report_file)
+        assert os.path.exists(os.path.dirname(report_file))
         return self.scheduler.bsub(
             '-W', queue,
             '-o', report_file,
@@ -260,8 +263,11 @@ class BrainyProcess(pipette.Process, FlagManager):
 
     def finished_work_but_has_no_data(self):
         if (self.is_submitted or self.is_resubmitted) \
-                and self.is_complete is False:
-            return self.has_job_reports() and not self.has_data()
+                and self.is_complete is False \
+                and self.has_runlimit() is False:
+            # Independent of the fact if we have reports or not, not having any
+            # data or jobs running is good enough to attempt resubmission.
+            return bool(self.has_data()) is False
         return False
 
     def report(self, message, warning=''):
@@ -319,6 +325,7 @@ class BrainyProcess(pipette.Process, FlagManager):
         self.set_flag('runlimit')
 
     def run(self):
+        ## print self.get_job_reports()
         ## print self.working_jobs_count()
         # Skip if ".complete" flag was found.
         if self.is_complete:
