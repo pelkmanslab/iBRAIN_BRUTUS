@@ -10,6 +10,9 @@ function CPCluster(batchfile,clusterfile)
     batchfile = npc(batchfile);
     clusterfile = npc(clusterfile);
     
+    % Add custom project code support.
+    brainy.libpath.checkAndAppendLibPath(os.path.dirname(batchfile));
+        
     warning off all
 
     load(batchfile);
