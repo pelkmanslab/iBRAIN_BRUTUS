@@ -20,7 +20,11 @@ restoredefaultpath();
 path([
     labrepPath pathsep ...
     fullfile(labrepPath, 'Upsilon')], path);
+updatePath();
 appendExternalFolders();
-updatePath(dontSave);
+
+if ~dontSave
+    savepath();
+end
 
 end
