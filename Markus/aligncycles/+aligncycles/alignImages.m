@@ -1,4 +1,4 @@
-function alignImage( TiffPaths, TiffFiles, varargin )
+function alignedImage = alignImages( TiffPaths, TiffFiles, varargin )
 
 % ALIGNIMAGE aligns images from different multiplexing cycles relative to
 % each other and saves them to disk.
@@ -12,6 +12,10 @@ function alignImage( TiffPaths, TiffFiles, varargin )
 % Input:
 %   TiffPaths       cell array of strings with the absolute path names
 %   TiffFiles       cell array of strings specifying image file names
+%
+% Variable input:
+%   Illumcorr       command to perform illumination correction
+%   saveImage       command to save aligned image
 %   
 % A full file specification would be: fullfile(TiffPaths{n},TiffFiles{n})
 %
@@ -80,14 +84,16 @@ for site = 1:length(shiftDescriptors{1}.siteNum)
             end
             % align (and crop) selected image according to pre-calculated shift and overlap
             shift = shiftDescriptors{cycle};
-            if abs(shift.yShift(site))>100 || abs(shift.xShift(site))>100 % don't shift images if shift values are very high (reflects empty images)
+            if abs(shift.yShift(site))>shift.maxShift || abs(shift.xShift(site))>shift.maxShift % don't shift images if shift values are very high (reflects empty images)
                 alignedImage = correctedImage(1+shift.lowerOverlap : end-shift.upperOverlap, 1+shift.rightOverlap : end-shift.leftOverlap);
             else
                 alignedImage = correctedImage(1+shift.lowerOverlap-shift.yShift(site) : end-(shift.upperOverlap+shift.yShift(site)), 1+shift.rightOverlap-shift.xShift(site) : end-(shift.leftOverlap+shift.xShift(site)));            
             end
-            % save aligned image
-            AlignedFilename = strrep(SelectTiffFile,'.png','_aligned.png');
-            imwrite(uint16(alignedImage),fullfile(AlignCyclesPaths{cycle},AlignedFilename))
+            % optional: save aligned image
+            if strcmpi(varargin,'saveImage')
+                AlignedFilename = strrep(SelectTiffFile,'.png','_aligned.png');
+                imwrite(uint16(alignedImage),fullfile(AlignCyclesPaths{cycle},AlignedFilename))
+            end
         end
     end
 end

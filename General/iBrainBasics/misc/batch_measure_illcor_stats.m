@@ -1,4 +1,5 @@
 function batch_measure_illcor_stats(strPathName, strBatchFile)
+cmt.loadPackages();
 %BATCH_MEASURE_ILLCOR_STATS learn statistics used for the illumination correction
 % method.
 %
@@ -91,8 +92,7 @@ function batch_measure_illcor_stats(strPathName, strBatchFile)
     for i = 1:min(numOfImages,numMaxImagesPerChannelProcessed)
         iCounter = iCounter + 1;
         
-        log_msg('%s: parsing image set %d of %d (in stat #%d) (average %.2f sec)\n',...
-            mfilename, i, numOfImages,matInstanceIX(i),toc(timePoint)/i);
+        log_msg('%s: parsing image set %d of %d (in stat #%d) (average %.2f sec)\n',            mfilename, i, numOfImages,matInstanceIX(i),toc(timePoint)/i);
 
         if numOfImages < i
             continue
@@ -117,15 +117,16 @@ function batch_measure_illcor_stats(strPathName, strBatchFile)
         
         % Check if we should intermittently save the output (PDF and MAT
         % file) per channel: either every 500 steps or at last step
-        if iCounter > 500 | i == min(numOfImages,numMaxImagesPerChannelProcessed) %#ok<OR2>
+        if mod(iCounter, 500) == 0 | i == min(numOfImages,numMaxImagesPerChannelProcessed) %#ok<OR2>
             saveStats(strBatchDir, stats, intTargetChannelNumber, intTargetZStackNumber, strBatchPrefix);
             saveFigure(strPathName, strFigureDir, stats, intTargetChannelNumber, intTargetZStackNumber, strBatchPrefix);
-            iCounter = 0;
+	    log_msg('%s: saved measured statistics for %d  out of %d images.. ',mfilename, iCounter, numOfImages);
         end
         
     end
     elapsedTime = toc(timePoint);
     log_msg('%s: learning %d images took %g seconds.\n',mfilename, numOfImages, elapsedTime);
+    log_msg('%s: statistics for all images was successfully learned. We are done.\n',mfilename);
 
 end
 
@@ -133,37 +134,25 @@ end
 %--------------------------------------------------------------------------
 % Save learned results into files.  
 function saveStats(strBatchDir, stats, channelNum, zNum, strBatchPrefix)
-    % assemble filename so that the naming pattern is include.
-    filename = fullfile(strBatchDir,sprintf(...
-        'Measurements_%s%03d_zstack%03d.mat',... 
+cmt.loadPackages();
+% assemble filename so that the naming pattern is include.
+    filename = fullfile(strBatchDir,sprintf(        'Measurements_%s%03d_zstack%03d.mat',... 
         strBatchPrefix, channelNum,zNum));
-    log_msg('%s: stored stats of channel %d zstack %d: %s.\n',...
-        mfilename, channelNum, zNum, filename);
+    log_msg('%s: stored stats of channel %d zstack %d: %s.\n',        mfilename, channelNum, zNum, filename);
     %illunimator.save_stat(filename, stats);
     % smart aggregate distributed statistics
-    stat_values = struct(...
-        'mean', aggregate_stats(stats,'mean'),...        
-        'std', aggregate_stats(stats,'std')...
-        ); %#ok<NASGU>
+    stat_values = struct(        'mean', aggregate_stats(stats,'mean'),...        
+        'std', aggregate_stats(stats,'std')        ); %#ok<NASGU>
         % If nesessary consider adding more statistics
-        %'var', aggregate_stats(stats,'var'),...
-        %'count', aggregate_stats(stats,'count'),...
-        %'min', aggregate_stats(stats,'min'),...
-        %'max', aggregate_stats(stats,'max')...    
+        %'var', aggregate_stats(stats,'var'),        %'count', aggregate_stats(stats,'count'),        %'min', aggregate_stats(stats,'min'),        %'max', aggregate_stats(stats,'max')...    
     save(filename, 'stat_values');
 end
 
 %--------------------------------------------------------------------------
 function saveFigure(strPathName, strFigureDir, stats, channelNum, zNum, strBatchPrefix)
-    % smart aggregate distributed statistics
-    stat_values = struct(...
-        'mean', aggregate_stats(stats,'mean'),...
-        'var', aggregate_stats(stats,'var'),...
-        'std', aggregate_stats(stats,'std'),...
-        'count', aggregate_stats(stats,'count'),...
-        'min', aggregate_stats(stats,'min'),...
-        'max', aggregate_stats(stats,'max')...
-    );
+cmt.loadPackages();
+% smart aggregate distributed statistics
+    stat_values = struct(        'mean', aggregate_stats(stats,'mean'),        'var', aggregate_stats(stats,'var'),        'std', aggregate_stats(stats,'std'),        'count', aggregate_stats(stats,'count'),        'min', aggregate_stats(stats,'min'),        'max', aggregate_stats(stats,'max')    );
 
     h = figure;
     subplot(2,2,1)
@@ -196,15 +185,15 @@ function saveFigure(strPathName, strFigureDir, stats, channelNum, zNum, strBatch
     try
         gcf2pdf(strFigureDir,sprintf('Measurements_%s%03d_zstack%03d.pdf', strBatchPrefix, channelNum, zNum), 'overwrite');
     catch objError
-        log_msg('%s: failed to store PDF file: ''%s''.\n',...
-        mfilename,objError.message);
+        log_msg('%s: failed to store PDF file: ''%s''.\n',        mfilename,objError.message);
     end
     close(h)
 end
 %--------------------------------------------------------------------------
 % Look for file image .PNG or .TIFF.
 function strFoundFilename = lookForFile(strImageFilename)
-    if fileattrib(strImageFilename)
+cmt.loadPackages();
+if fileattrib(strImageFilename)
         strFoundFilename = strImageFilename;
         return
     end
@@ -217,19 +206,20 @@ function strFoundFilename = lookForFile(strImageFilename)
     if fileattrib(strFoundFilename)
         return
     end
-    log_msg(['%s: skipping apparently not existing and/or ',...
-        'disappeared file: %s.'], mfilename, strImageFilename);
+    log_msg(['%s: skipping apparently not existing and/or ',        'disappeared file: %s.'], mfilename, strImageFilename);
     strFoundFilename = [];
 end
 
 %--------------------------------------------------------------------------
 function log_msg(varargin)
-    fprintf(varargin{:});
+cmt.loadPackages();
+fprintf(varargin{:});
 end
 
 %--------------------------------------------------------------------------
 function matAggregate = aggregate_stats(stats, strFuncHandle)
-    switch lower(strFuncHandle)
+cmt.loadPackages();
+switch lower(strFuncHandle)
         case 'mean'
             cellfield = cellfun(@(x) x.mean, stats,'UniformOutput',false);
             matAggregate = median(cat(3,cellfield{:}),3);
