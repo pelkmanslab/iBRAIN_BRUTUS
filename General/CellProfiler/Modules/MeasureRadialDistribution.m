@@ -261,9 +261,12 @@ RadialCV(isnan(RadialCV)) = 0;
 
 %%% Store Measurements
 for k = 1:BinCount,
-    handles = CPaddmeasurements(handles, MainObjects, CPjoinstrings('RadialDistribution', 'FracAtD', ImageName, num2str(k)), FractionAtDistance(:, k));
-    handles = CPaddmeasurements(handles, MainObjects, CPjoinstrings('RadialDistribution', 'MeanFrac', ImageName, num2str(k)), MeanPixelFraction(:, k));
-    handles = CPaddmeasurements(handles, MainObjects, CPjoinstrings('RadialDistribution', 'RadialCV', ImageName, num2str(k)), RadialCV(:, k));
+    handles = CPaddmeasurements(handles, MainObjects, CPjoinstrings('RadialDistribution', ImageName, num2str(k)), 'FracAtD', FractionAtDistance(:, k));
+    handles = CPaddmeasurements(handles, MainObjects, CPjoinstrings('RadialDistribution', ImageName, num2str(k)), 'MeanFrac', MeanPixelFraction(:, k));
+    handles = CPaddmeasurements(handles, MainObjects, CPjoinstrings('RadialDistribution', ImageName, num2str(k)), 'RadialCV', RadialCV(:, k));
+%     handles = CPaddmeasurements(handles, MainObjects, CPjoinstrings('RadialDistribution', 'FracAtD', ImageName, num2str(k)), FractionAtDistance(:, k));
+%     handles = CPaddmeasurements(handles, MainObjects, CPjoinstrings('RadialDistribution', 'MeanFrac', ImageName, num2str(k)), MeanPixelFraction(:, k));
+%     handles = CPaddmeasurements(handles, MainObjects, CPjoinstrings('RadialDistribution', 'RadialCV', ImageName, num2str(k)), RadialCV(:, k));
 end
 
 
@@ -280,17 +283,17 @@ if any(findobj == ThisModuleFigureNumber)
         CPresizefigure(Image,'TwoByTwo',ThisModuleFigureNumber);
     end
     %%% A subplot of the figure window is set to display the distance image.
-    hAx=subplot(2,2,1,'Parent',ThisModuleFigureNumber);
-    CPimagesc(NormalizedDistance, handles,hAx);
-    title(hAx,['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    subplot(2,2,1,'Parent',ThisModuleFigureNumber);
+    CPimagesc(NormalizedDistance, handles);
+    title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% subplot to display distance/intensity histogram
-    hAx=subplot(2,2,2,'Parent',ThisModuleFigureNumber);
-    CPimagesc(FractionAtDistance, handles,hAx);
-    title(hAx,'FractionAtDistance');
-    hAx=subplot(2,2,3,'Parent',ThisModuleFigureNumber);
-    CPimagesc(MeanPixelFraction, handles,hAx);
-    title(hAx,'MeanPixelFraction');
-    hAx=subplot(2,2,4,'Parent',ThisModuleFigureNumber);
-    CPimagesc(RadialCV, handles,hAx);
-    title(hAx,'RadialCV');
+    subplot(2,2,2,'Parent',ThisModuleFigureNumber);
+    CPimagesc(FractionAtDistance, handles);
+    title('FractionAtDistance');
+    subplot(2,2,3,'Parent',ThisModuleFigureNumber);
+    CPimagesc(MeanPixelFraction, handles);
+    title('MeanPixelFraction');
+    subplot(2,2,4,'Parent',ThisModuleFigureNumber);
+    CPimagesc(RadialCV, handles);
+    title('RadialCV');
 end
