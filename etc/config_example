@@ -14,5 +14,7 @@ export IBRAIN_USER=$(whoami)
 export IBRAIN_ADMIN_EMAIL=yauhen.yakimovich@uzh.ch
 
 
+export CELLPROFILER2_PATH=~/CellProfiler2
+
 export PATH=$IBRAIN_BIN_PATH:$PATH
 

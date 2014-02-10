@@ -29,12 +29,12 @@ function main {
 
         # PNG CONVERSION (ConvertAllTiff2Png)
         if [ $COMPLETEFILECHECK -eq 0 ]; then
-            TIFFCOUNT=$(find $TIFFDIR -maxdepth 1 -type f -iname "*.tif" -o -maxdepth 1 -type f -name "*.png" | wc -l)
+            TIFFCOUNT=$(find $TIFFDIR -maxdepth 1 -type f -iname "*.tif" -o -type f -name "*.png" | wc -l)
             echo "<!-- TIFFCOUNT=$TIFFCOUNT -->"
         else
             # Ensure backward compatibility
-            if [ ! -e ${BATCHDIR}/checkimageset.complete ]; then            
-                echo "      <!--"                
+            if [ ! -e ${BATCHDIR}/checkimageset.complete ]; then
+                echo "      <!--"
                 touch ${BATCHDIR}/checkimageset.complete
                 echo "      -->"
             fi
@@ -116,10 +116,10 @@ function main {
                 touch ${BATCHDIR}/checkimageset.complete
             fi
             echo "     <status action=\"${MODULENAME}\">completed</status>"
-       
+
 fi
 
-} 
+}
 
 # run standardized bash-error handling of iBRAIN
 execute_ibrain_module
