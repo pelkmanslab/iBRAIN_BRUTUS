@@ -32,7 +32,7 @@ function main {
             	if [ -e $PROJECTDIR/GetLocalCellDensityPerWell_Auto.runlimit ]; then
 bsub -W 34:00 -o "${BATCHDIR}$LCDRESULTFILE" "matlab -singleCompThread -nodisplay << M_PROG
 % Add custom project code support.
-brainy.libpath.checkAndAppendLibPath(OutputPath);
+brainy.libpath.checkAndAppendLibPath('${BATCHDIR}');
 % Run routines
 getLocalCellDensityPerWell_auto('${BATCHDIR}');
 Detect_BorderCells('${BATCHDIR}');
@@ -40,7 +40,7 @@ M_PROG" 2> /dev/null
                 	else
 bsub -W 8:00 -o "${BATCHDIR}$LCDRESULTFILE" "matlab -singleCompThread -nodisplay << M_PROG
 % Add custom project code support.
-brainy.libpath.checkAndAppendLibPath(OutputPath);
+brainy.libpath.checkAndAppendLibPath('${BATCHDIR}');
 % Run routines
 getLocalCellDensityPerWell_auto('${BATCHDIR}');
 Detect_BorderCells('${BATCHDIR}');
