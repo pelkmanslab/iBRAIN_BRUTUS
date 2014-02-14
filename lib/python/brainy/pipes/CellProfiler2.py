@@ -21,23 +21,23 @@ def get_cellprofiler2_path():
 class Pipe(BrainyPipe):
     '''
     CellProfiller 2.1 pipe includes steps like:
-     - PreCluster
-     - CPCluster
-     - CPDataFusion
+     - CreateJobBatches
+     - SubmitJobs
+     - MergeJobData
     '''
 
 
-class PreCluster(BrainyProcess):
+class CreateJobBatches(BrainyProcess):
     '''
-    Run CellProfiller2 with CreateBatchFiles module. Expecting to create 
-    BATCH/Batch_data.h5 file.
+    Run CellProfiller2 project (pipeline) with CreateBatchFiles module.
+    Expecting to create BATCH/Batch_data.h5 file.
     '''
 
     @property
     def cp_pipeline_fnpattern(self):
         return self.description.get(
             'filename',
-            'precluster_*.cpproj',
+            'run_*.cppipe',
         )
 
     def get_cp_pipeline_path(self):
@@ -69,15 +69,14 @@ class PreCluster(BrainyProcess):
         if not os.path.exists(self.reports_path):
             os.makedirs(self.reports_path)
 
-    def get_python_code(self):
+    def get_bash_code(self):
         '''
-        Note that the hash-interpreter comment is included by 
-        self.submit_python_code()
+        Note that the interpreter call is included by
+        self.submit_bash_code()
         '''
         python_code = '''
-        check_missing_images_in_folder('%(tiff_path)s');
-        PreCluster_with_pipeline( ...
-            '%(cp_pipeline_file)s','%(tiff_path)s','%(batch_path)s');
+
+            '%(cp_pipeline_file)s'
         ''' % {
             'cp_pipeline_file': self.get_cp_pipeline_path(),
             'batch_path': self.batch_path,
@@ -86,8 +85,7 @@ class PreCluster(BrainyProcess):
         return python_code
 
     def submit(self):
-        python_code = self.get_python_code()
-        submission_result = self.submit_python_job(python_code)
+        submission_result = self.submit_bash_job(self.get_bash_code())
 
         print('''
             <status action="%(step_name)s">submitting
@@ -101,9 +99,8 @@ class PreCluster(BrainyProcess):
         self.set_flag('submitted')
 
     def resubmit(self):
-        python_code = self.get_python_code()
-        resubmission_result = self.submit_python_job(python_code,
-                                                     is_resubmitting=True)
+        submission_result = self.submit_bash_job(self.get_bash_code(),
+                                                 is_resubmitting=True)
 
         print('''
             <status action="%(step_name)s">resubmitting
@@ -115,4 +112,4 @@ class PreCluster(BrainyProcess):
         })
 
         self.set_flag('resubmitted')
-        super(PreCluster, self).resubmit()
+        super(CreateJobBatches, self).resubmit()

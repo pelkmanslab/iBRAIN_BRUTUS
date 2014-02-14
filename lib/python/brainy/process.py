@@ -13,7 +13,9 @@ from brainy.errors import (UnknownError, KnownError, TermRunLimitError,
                            check_report_file_for_errors)
 
 
+BASH_CALL = '/bin/bash'
 MATLAB_CALL = 'matlab -singleCompThread -nodisplay -nojvm'
+PYTHON_CALL = '/usr/bin/env python2.7'
 PROCESS_STATUS = [
     'submitting',
     'waiting',
@@ -139,10 +141,24 @@ class BrainyProcess(pipette.Process, FlagManager):
         )
 
     @property
+    def bash_call(self):
+        return self.parameters.get(
+            'bash_call',
+            BASH_CALL,
+        )
+
+    @property
     def matlab_call(self):
         return self.parameters.get(
             'matlab_call',
             MATLAB_CALL,
+        )
+
+    @property
+    def python_call(self):
+        return self.parameters.get(
+            'python_call',
+            PYTHON_CALL,
         )
 
     def _get_flag_prefix(self):
@@ -192,6 +208,17 @@ class BrainyProcess(pipette.Process, FlagManager):
             script,
         )
 
+    def submit_bash_job(self, bash_code, queue=None, report_file=None,
+                          is_resubmitting=False):
+        script = '''
+        %(bash_call)s << BASH_CODE;
+        %(bash_code)s
+        BASH_CODE''' % {
+            'bash_call': self.bash_call,
+            'bash_code': bash_code,
+        }
+        return self.submit_job(format_code(script), queue, report_file)
+
     def submit_matlab_job(self, matlab_code, queue=None, report_file=None,
                           is_resubmitting=False):
         script = '''
@@ -200,6 +227,17 @@ class BrainyProcess(pipette.Process, FlagManager):
         MATLAB_CODE''' % {
             'matlab_call': self.matlab_call,
             'matlab_code': matlab_code,
+        }
+        return self.submit_job(format_code(script), queue, report_file)
+
+    def submit_python_job(self, python_code, queue=None, report_file=None,
+                          is_resubmitting=False):
+        script = '''
+        %(python_call)s << PYTHON_CODE;
+        %(python_code)s
+        PYTHON_CODE''' % {
+            'python_call': self.python_call,
+            'python_code': python_code,
         }
         return self.submit_job(format_code(script), queue, report_file)
 
