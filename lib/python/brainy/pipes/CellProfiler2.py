@@ -74,15 +74,16 @@ class CreateJobBatches(BrainyProcess):
         Note that the interpreter call is included by
         self.submit_bash_code()
         '''
-        python_code = '''
-
-            '%(cp_pipeline_file)s'
+        code = '''
+        python CellProfiler.py -b -i %(tiff_path)s -o %(batch_path)s \
+            --do-not-fetch --pipeline=%(cp_pipeline_file)s  -L INFO
+            ''
         ''' % {
             'cp_pipeline_file': self.get_cp_pipeline_path(),
             'batch_path': self.batch_path,
             'tiff_path': self.tiff_path,
         }
-        return python_code
+        return code
 
     def submit(self):
         submission_result = self.submit_bash_job(self.get_bash_code())

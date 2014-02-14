@@ -85,6 +85,15 @@ class BrainyProcess(pipette.Process, FlagManager):
         )
 
     @property
+    def pipes_path(self):
+        '''PIPES folder inside the plate path'''
+        return self.parameters.get(
+            'pipes_path',
+            # can this be guaranteed to always point to PIPES?
+            os.path.dirname(self.process_path),
+        )
+
+    @property
     def reports_path(self):
         return self.parameters.get(
             'reports_path',
