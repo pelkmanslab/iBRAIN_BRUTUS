@@ -100,7 +100,7 @@ class CreateJobBatches(BrainyProcess):
         num_of_image_sets = cpimages.set_num
 
         if cpimages.set_num == 0:
-            print 'Error, splitting of images failed. No image set were '
+            print 'Error, splitting of images failed. No image set were '\
                   'generated.'
             exit(1)
 
