@@ -34,7 +34,14 @@ def format_code(code, lang='bash'):
             if len(line.strip()) == 0:
                 continue
             if left_strip_width is None:
-                left_strip_width = line.rfind(' ') + 1
+                # Strip only first left.
+                j = 0
+                while j < len(line):
+                    if line[j] == ' ':
+                        left_strip_width += 1
+                        j += 1
+                    else:
+                        break
             result += line.rstrip()[left_strip_width:] + '\n'
         else:
             if len(line.strip()) == 0:
@@ -250,7 +257,7 @@ class BrainyProcess(pipette.Process, FlagManager):
     def submit_python_job(self, python_code, queue=None, report_file=None,
                           is_resubmitting=False):
         script = '''
-        %(python_call)s << PYTHON_CODE;
+        %(python_call)s - << PYTHON_CODE;
         %(python_code)s
         PYTHON_CODE''' % {
             'python_call': self.python_call,
