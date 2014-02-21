@@ -15,7 +15,7 @@ from brainy.errors import (UnknownError, KnownError, TermRunLimitError,
 
 BASH_CALL = '/bin/bash'
 MATLAB_CALL = 'matlab -singleCompThread -nodisplay -nojvm'
-PYTHON_CALL = '/usr/bin/env python2.7'
+PYTHON_CALL = config['python_cmd']
 PROCESS_STATUS = [
     'submitting',
     'waiting',
@@ -26,12 +26,20 @@ PROCESS_STATUS = [
 ]
 
 
-def format_code(code):
+def format_code(code, lang='bash'):
     result = ''
+    left_strip_width = None
     for line in code.split('\n'):
-        if len(line.strip()) == 0:
-            continue
-        result += line.strip() + '\n'
+        if lang == 'python':
+            if len(line.strip()) == 0:
+                continue
+            if left_strip_width is None:
+                left_strip_width = line.rfind(' ') + 1
+            result += line.rstrip()[left_strip_width:] + '\n'
+        else:
+            if len(line.strip()) == 0:
+                continue
+            result += line.strip() + '\n'
     return result
 
 
@@ -248,7 +256,8 @@ class BrainyProcess(pipette.Process, FlagManager):
             'python_call': self.python_call,
             'python_code': python_code,
         }
-        return self.submit_job(format_code(script), queue, report_file)
+        return self.submit_job(format_code(script, lang='python'), queue,
+                               report_file)
 
     @property
     def job_reports_count(self):

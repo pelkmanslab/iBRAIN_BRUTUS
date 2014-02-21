@@ -74,14 +74,13 @@ class CreateJobBatches(BrainyProcess):
         if not os.path.exists(self.reports_path):
             os.makedirs(self.reports_path)
 
-    def get_bash_code(self):
+    def get_python_code(self):
         '''
         Note that the interpreter call is included by
-        self.submit_bash_code()
+        self.submit_python_code()
         '''
         code = '''
         # Create CSV input image lists
-        %(python_cmd)s - <<END_OF_PYTHON
         import sys
         import os
         # Import iBRAIN environment.
@@ -109,13 +108,10 @@ class CreateJobBatches(BrainyProcess):
         # output = brainy.invoke(command)
         # print output
 
-        END_OF_PYTHON
-
         # # Generate
         # %(cp2_call)s -b -i %(tiff_path)s -o %(batch_path)s \
         #     --do-not-fetch --pipeline=%(cp_pipeline_file)s  -L INFO
         ''' % {
-            'python_cmd': config['python_cmd'],
             'cp2_call': get_cp2_call(),
             'image_list_settings_filename': self.description.get(
                 'image_list_settings_filename',
@@ -128,7 +124,7 @@ class CreateJobBatches(BrainyProcess):
         return code
 
     def submit(self):
-        submission_result = self.submit_bash_job(self.get_bash_code())
+        submission_result = self.submit_bash_job(self.get_python_code())
 
         print('''
             <status action="%(step_name)s">submitting
@@ -142,7 +138,7 @@ class CreateJobBatches(BrainyProcess):
         self.set_flag('submitted')
 
     def resubmit(self):
-        submission_result = self.submit_bash_job(self.get_bash_code(),
+        submission_result = self.submit_bash_job(self.get_python_code(),
                                                  is_resubmitting=True)
 
         print('''
