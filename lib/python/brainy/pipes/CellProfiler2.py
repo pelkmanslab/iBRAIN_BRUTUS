@@ -65,7 +65,7 @@ class CreateJobBatches(BrainyProcess):
         return os.path.join(self.process_path, cp_pipeline_files[0])
 
     def put_on(self):
-        super(PreCluster, self).put_on()
+        super(CreateJobBatches, self).put_on()
         # Make sure those pathnames exists. Create if missing.
         if not os.path.exists(self.batch_path):
             os.makedirs(self.batch_path)

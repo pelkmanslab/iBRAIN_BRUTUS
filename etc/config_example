@@ -13,7 +13,7 @@ export IBRAIN_DATABASE_PATH=$IBRAIN_VAR_PATH/database
 export IBRAIN_USER=$(whoami)
 export IBRAIN_ADMIN_EMAIL=yauhen.yakimovich@uzh.ch
 
-
+export PYTHON_CMD="/usr/bin/env python2.7"
 export CELLPROFILER2_PATH=~/CellProfiler2
 
 export PATH=$IBRAIN_BIN_PATH:$PATH

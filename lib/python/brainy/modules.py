@@ -45,7 +45,9 @@ echo \\"var_path\\": \\\"$IBRAIN_VAR_PATH\\\",
 echo \\"log_path\\": \\\"$IBRAIN_LOG_PATH\\\",
 echo \\"database_path\\": \\\"$IBRAIN_DATABASE_PATH\\\",
 echo \\"user_path\\": \\\"$IBRAIN_USER\\\",
-echo \\"admin_path\\": \\\"$IBRAIN_ADMIN_EMAIL\\\"
+echo \\"admin_path\\": \\\"$IBRAIN_ADMIN_EMAIL\\\",
+echo \\"python_cmd\\": \\\"$PYTHON_CMD\\\",
+echo \\"cellprofiler2_path\\": \\\"$CELLPROFILER2_PATH\\\"
 echo }
     ''' % {'IBRAIN_ROOT': root})
     #print config_json
