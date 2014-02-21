@@ -19,9 +19,6 @@ function main {
             return
         fi
 
-
-BRAINYDIR="$(dirname "$(dirname "$(dirname "${BASH_SOURCE[0]}")")")/lib/python"
-BATCHSIZE=10 # Number of MIPs per BATCH
 python - <<PYTHON
 # Import iBRAIN environment.
 import sys

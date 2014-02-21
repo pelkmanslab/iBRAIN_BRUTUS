@@ -10,12 +10,17 @@ from brainy.process import BrainyProcess, BrainyProcessError
 from brainy.pipes import BrainyPipe
 from brainy.config import config
 
+
 def get_timestamp_str():
     return datetime.now().strftime('%Y%m%d%H%M%S')
 
-def get_cellprofiler2_path():
-    print config['cellprofiler2_path']
-    return os.path.join(config['cellprofiler2_path'], '')
+
+def get_cp2_call():
+    return '%s %s' % (
+        config['python_cmd'],
+        os.path.join(os.path.expanduser(config['cellprofiler2_path']),
+                     'CellProfiler.py'),
+    )
 
 
 class Pipe(BrainyPipe):
@@ -75,10 +80,47 @@ class CreateJobBatches(BrainyProcess):
         self.submit_bash_code()
         '''
         code = '''
-        python CellProfiler.py -b -i %(tiff_path)s -o %(batch_path)s \
-            --do-not-fetch --pipeline=%(cp_pipeline_file)s  -L INFO
-            ''
+        # Create CSV input image lists
+        %(python_cmd)s - <<END_OF_PYTHON
+        import sys
+        import os
+        # Import iBRAIN environment.
+        import ext_path
+        from brainy.cellprofiler import CellProfilerImages
+
+
+        images_path = '%(tiff_path)s'
+        output_path = os.path.join('%(batch_path)s', 'IMAGE_LISTS')
+        image_list_settings_filename = '%(image_list_settings_filename)s'
+
+        cpimages = CellProfilerImages()
+        if os.path.exists(image_list_settings_filename):
+            # Load custom JSON settings file
+            cpimages.parse_settings(image_list_settings_filename)
+        cpimages.split_images(images_path, output_path)
+        num_of_image_sets = cpimages.set_num
+
+        if cpimages.set_num == 0:
+            print 'Error, splitting of images failed. No image set were '
+                  'generated.'
+            exit(1)
+
+        # # Generate batch files
+        # output = brainy.invoke(command)
+        # print output
+
+        END_OF_PYTHON
+
+        # # Generate
+        # %(cp2_call)s -b -i %(tiff_path)s -o %(batch_path)s \
+        #     --do-not-fetch --pipeline=%(cp_pipeline_file)s  -L INFO
         ''' % {
+            'python_cmd': config['python_cmd'],
+            'cp2_call': get_cp2_call(),
+            'image_list_settings_filename': self.description.get(
+                'image_list_settings_filename',
+                '',
+            ),
             'cp_pipeline_file': self.get_cp_pipeline_path(),
             'batch_path': self.batch_path,
             'tiff_path': self.tiff_path,
