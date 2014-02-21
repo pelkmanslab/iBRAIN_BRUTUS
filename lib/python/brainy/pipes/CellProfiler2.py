@@ -90,6 +90,9 @@ class CreateJobBatches(BrainyProcess):
 
         images_path = '%(tiff_path)s'
         output_path = os.path.join('%(batch_path)s', 'IMAGE_LISTS')
+        if os.path.exists('%(batch_path)s')\
+            and not os.path.exists(output_path):
+            os.makedirs(output_path)
         image_list_settings_filename = '%(image_list_settings_filename)s'
 
         cpimages = CellProfilerImages()
