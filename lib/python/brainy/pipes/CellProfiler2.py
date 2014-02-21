@@ -124,7 +124,7 @@ class CreateJobBatches(BrainyProcess):
         return code
 
     def submit(self):
-        submission_result = self.submit_bash_job(self.get_python_code())
+        submission_result = self.submit_python_job(self.get_python_code())
 
         print('''
             <status action="%(step_name)s">submitting
@@ -138,8 +138,8 @@ class CreateJobBatches(BrainyProcess):
         self.set_flag('submitted')
 
     def resubmit(self):
-        submission_result = self.submit_bash_job(self.get_python_code(),
-                                                 is_resubmitting=True)
+        submission_result = self.submit_python_job(self.get_python_code(),
+                                                   is_resubmitting=True)
 
         print('''
             <status action="%(step_name)s">resubmitting
