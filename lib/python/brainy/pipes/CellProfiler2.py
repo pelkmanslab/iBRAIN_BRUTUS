@@ -85,7 +85,7 @@ class CreateJobBatches(BrainyProcess):
         import os
         # Import iBRAIN environment.
         import ext_path
-        from brainy.cellprofiler import CellProfilerImages
+        from brainy.apps.cellprofiler import CellProfilerImages
 
 
         images_path = '%(tiff_path)s'
