@@ -200,7 +200,6 @@ if ObjCounts < 1
 else
     listUniq = [1:ObjCounts];
 end
-toc
 
 
 
