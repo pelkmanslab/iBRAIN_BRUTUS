@@ -16,6 +16,9 @@ if not(nargin == 3 || nargin == 4)
     return
 end
 
+% Add custom project code support.
+brainy.libpath.checkAndAppendLibPath(OutputPath);
+
 load(CPOutputFile)
 
 % check if the pipeline ends with the CreateBatchFiles module
