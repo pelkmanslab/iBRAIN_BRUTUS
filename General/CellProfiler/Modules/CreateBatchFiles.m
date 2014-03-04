@@ -163,11 +163,13 @@ if (handles.Current.SetBeingAnalyzed > 1),
     return;
 end
 
+ChangeDir = false;
 if strncmp(BatchSavePath, '.',1)
     if length(BatchSavePath) == 1
         BatchSavePath = handles.Current.DefaultOutputDirectory;
     else
         BatchSavePath = fullfile(handles.Current.DefaultOutputDirectory,BatchSavePath(2:end));
+        ChangeDir = true;
     end
 end
 
@@ -176,6 +178,7 @@ if strncmp(BatchRemotePath, '.',1)
         BatchRemotePath = handles.Current.DefaultOutputDirectory;
     else
         BatchRemotePath = fullfile(handles.Current.DefaultOutputDirectory,BatchRemotePath(2:end));
+        ChangeDir = true;
     end
 end
 
@@ -184,6 +187,7 @@ if strncmp(BatchImagePath, '.',1)
         BatchImagePath = handles.Current.DefaultImageDirectory;
     else
         BatchImagePath = fullfile(handles.Current.DefaultImageDirectory,BatchImagePath(2:end));
+        ChangeDir = true;
     end
 end
 
@@ -192,6 +196,7 @@ if strncmp(BatchOutputPath, '.',1)
         BatchOutputPath = handles.Current.DefaultOutputDirectory;
     else
         BatchOutputPath = fullfile(handles.Current.DefaultOutputDirectory,BatchOutputPath(2:end));
+        ChangeDir = true;
     end
 end
 
@@ -215,6 +220,7 @@ PreservedHandles = handles;
 %%% the perspective of the local computer vs. the cluster
 %%% machines.
 if strcmp(OldPathname, '.') ~= 1
+    ChangeDir = true;
     %%% Changes pathnames in variables within this module.
     %%% BatchSavePath is not changed, because that function is carried
     %%% out on the local machine.
@@ -250,10 +256,18 @@ end
 %%% saved and fed to the cluster machines.
 %%% Rewrites the pathnames (relating to where images are stored) in
 %%% the handles structure for the remote machines.
+%%% [140218 MH] this interferes with LoadImages.m functionality, in
+%%% particular variable pathname input!
 Fieldnames = fieldnames(handles.Pipeline);
-PathFieldnames = Fieldnames(strncmp(Fieldnames,'Pathname',8)==1);
-for i = 1:length(PathFieldnames),
-    handles.Pipeline.(PathFieldnames{i}) = BatchImagePath;
+if ChangeDir
+    PathFieldnames = Fieldnames(strncmp(Fieldnames,'Pathname',8)==1);
+    for i = 1:length(PathFieldnames),
+        handles.Pipeline.(PathFieldnames{i}) = BatchImagePath;
+    end
+    warning(['Pathnames in ''handles.Pipeline'' are overwritten by user-defined pathnames! \n' ...
+                  'Note that this could create a conflict with user-defined input in other modules in your pipeline, such as LoadImages.m!'])
+else
+    fprintf('%s: Pathnames in ''handles.Pipeline'' are preserved\n',mfilename);
 end
 
 
@@ -294,6 +308,7 @@ save(PathAndFileName, 'handles', '-v6');
 %%% output directory, and possibly pathnames (which, actually, I don't
 %%% think is a problem).
 handles = PreservedHandles;
+
 
 %%% Create the individual batch files
 if (BatchSize <= 0)
