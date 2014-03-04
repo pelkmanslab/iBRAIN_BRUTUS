@@ -1,0 +1,30 @@
+{
+    // Define iBRAIN pipe type
+    "type": "CellProfiler2.Pipe",
+    "shared_project_folders": true,
+    // Define chain of processes
+    "chain": [
+        {
+            "type": "CellProfiler2.PreCluster",
+            "filename": "precluster_*.cpproj",
+            "default_parameters": {
+                "submission_queue": "8:00",
+                "resubmission_queue": "36:00"
+            }
+        }
+        // {
+        //     "type": "CellProfiler.CPCluster",
+        //     "default_parameters": {
+        //         "submission_queue": "8:00",
+        //         "resubmission_queue": "36:00"
+        //     }
+        // },
+        // {
+        //     "type": "CellProfiler.CPDataFusion",
+        //     "default_parameters": {
+        //         "submission_queue": "8:00",
+        //         "resubmission_queue": "36:00"
+        //     }
+        // }
+    ]
+}

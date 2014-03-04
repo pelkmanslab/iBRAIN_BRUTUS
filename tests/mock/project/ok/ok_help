@@ -1,0 +1,6 @@
+
+Type help command, to get detailed info on any command from the list.
+
+  help list_jobs
+  help kill_jobs
+
