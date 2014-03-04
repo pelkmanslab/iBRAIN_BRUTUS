@@ -2,6 +2,15 @@ SHELL=/bin/bash
 CMT=../cmt
 LOG=../dep_compile_logs
 
+all:
+		@echo "Maybe you want to do: make update ?"
+
+init:
+		git submodule update --init --recursive
+
+update:
+		git pull && git submodule foreach --recursive git pull
+
 inject_cmt:
 		@if [ ! -d ${LOG} ]; then mkdir ${LOG} ; fi
 		@if [ -d ${CMT} ]; then 																				\

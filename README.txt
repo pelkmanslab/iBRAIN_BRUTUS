@@ -13,6 +13,16 @@ How to obtain a copy of repository
 
 git clone https://code.pelkmanslab.org/git/dep
 
+or 
+
+git clone pgcode:~/git/dep
+
+After the repository is cloned run:
+
+make init 
+
+to update the linked sub-repositories.
+
 
 How to deploy code into the repository
 --------------------------------------
@@ -23,11 +33,17 @@ repository copy located at:
 
 <camelot_share_2>/Data/Code/dep
 
+Alternatively you can maintain your own copy of repository with r/w access,
+i.e. using pgcode see 
+https://pelkmanslab.org/wiki/index.php/VCS_Repositories#SSH-based_access_to_git_repositories
+
 2) (Optional) stage and commit new changes (files) using `git add -i` and 
 `git commit` commands.
  
 3) Write a short email to <yauhen.yakimovich@uzh.ch> with subject `dep`
 and a copy of your commit log describing the changes as a body text.
+
+
 
 
 Feedback
