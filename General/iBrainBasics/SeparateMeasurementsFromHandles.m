@@ -16,56 +16,59 @@ if nargin == 2 && isfield(cluster, 'BatchFilePrefix')
     EndImage = cluster.EndImage;
 else
     BatchFilePrefix = 'Batch_';
-    StartImage = handles.Current.BatchInfo.Start;
-    EndImage = handles.Current.BatchInfo.End;
+    try
+        StartImage = handles.Current.BatchInfo.Start;
+        EndImage = handles.Current.BatchInfo.End;
+    catch
+        StartImage = 1;
+        EndImage = length(handles.Measurements.Image.FileNames);        
+    end
 end
 
 strDataSorterOutputFolderPath = handles.Current.DefaultOutputDirectory;
-strAlternativeOutputPath = '\\Nas-biol-imsb-1\share-2-$\Data\Users\Berend\BATCH_RESULTS\Data\Users\BATCHANALYSIS\070314_VSV_DG_batch1CP013-1aa\DataSorter';
-
+% virus infection fields
 cellstrFieldsWithNoDescription = {'VirusScreenGaussians','VirusScreenThresholds','GridNucleiCount','GridNucleiEdges'};
+% benjamin misselwitz fields
+cellstrFieldsWithNoDescription = [cellstrFieldsWithNoDescription, {'ImageFileName','NumberNuclei','NumberSpots','ThresholdNuclei','ThresholdSpots','NumberInfectedCells','uninfected','count_spot_1','count_spot_2','count_spot_3','count_spot_4','count_spot_5','count_spot_6','count_spot_7','count_spot_8','count_spot_9','count_spot_10','spot_over_10','spot_related','spot_unrelated','SpotHistogramm','SpotDistance','MaxSpotSpotDistance','SpotIntensity','NucleiIntensity','PercentInfectedCells','LargeSizeExclNuclei','LargeSizeExclSpots','SmallSizeExclNuclei','SmallSizeExclSpots','BorderExclNuclei','BorderExclSpots','totalNuclei','Percent_LaSize','PreBlebSpots','PreBlebAreaSpots','MaxImageGranularity','WarningFocus','WarningFocus2','WarningBlobs','WarningBlebs','Included'}];
 
 %%%%%%%%%%%%%%%%%%%%%%%
 %%%  STORING  DATA  %%%
 %%%%%%%%%%%%%%%%%%%%%%%
 
-ListOfObjects = fieldnames(handles.Measurements);
+ListOfObjects = fieldnames(handles.Measurements); 
 for i = 1:length(ListOfObjects)
-ListOfMeasurements = fieldnames(handles.Measurements.(char(ListOfObjects(i))));
-for ii = 1:length(ListOfMeasurements)
+    ListOfMeasurements = fieldnames(handles.Measurements.(char(ListOfObjects(i))));
+    for ii = 1:length(ListOfMeasurements)
+        if length(ListOfMeasurements{ii}) > 6 && ... 
+                (not(strcmp(ListOfMeasurements{ii}(1,end-7:end),'Features')) || not(strcmp(ListOfMeasurements{ii}(1,end-3:end),'Text')))
+            % we are not dealing with a ...Features or ...Text list
 
-    if length(ListOfMeasurements{ii}) > 6 && ... 
-            (not(strcmp(ListOfMeasurements{ii}(1,end-7:end),'Features')) || not(strcmp(ListOfMeasurements{ii}(1,end-3:end),'Text')))
-        % we are not dealing with a ...Features or ...Text list
+            OutPutFile = fullfile(strDataSorterOutputFolderPath, sprintf('%s%d_to_%d_Measurements_%s_%s',BatchFilePrefix,StartImage,EndImage,char(ListOfObjects(i)), char(ListOfMeasurements(ii))));
+            matPossibleFeaturesIndex = strcmp(ListOfMeasurements, strcat(char(ListOfMeasurements(ii)),'Features'));
+            matPossibleTextIndex = strcmp(ListOfMeasurements, strcat(char(ListOfMeasurements(ii)),'Text'));
+            intFieldDescriptionIndex = [find(matPossibleFeaturesIndex), find(matPossibleTextIndex)];
 
-        OutPutFile = fullfile(strDataSorterOutputFolderPath, sprintf('%s%d_to_%d_Measurements_%s_%s',BatchFilePrefix,StartImage,EndImage,char(ListOfObjects(i)), char(ListOfMeasurements(ii))));
-        matPossibleFeaturesIndex = strcmp(ListOfMeasurements, strcat(char(ListOfMeasurements(ii)),'Features'));
-        matPossibleTextIndex = strcmp(ListOfMeasurements, strcat(char(ListOfMeasurements(ii)),'Text'));
-        intFieldDescriptionIndex = [find(matPossibleFeaturesIndex), find(matPossibleTextIndex)];
+            % init the output variable Measurements
+            Measurements = struct();            
 
-        % init the output variable Measurements
-        Measurements = struct();            
-
-        % save MeasurementFields that do not have a DescriptionField as
-        % listed in cellstrFieldsWithNoDescription
-        if not(isempty(find(strcmp(cellstrFieldsWithNoDescription, char(ListOfMeasurements(ii))))))
-            disp(sprintf('saving %s%d_to_%d_Measurements.%s.%s',BatchFilePrefix,StartImage,EndImage,char(ListOfObjects(i)), char(ListOfMeasurements(ii))))
-            Measurements.(char(ListOfObjects(i))).(char(ListOfMeasurements(ii))) = handles.Measurements.(char(ListOfObjects(i))).(char(ListOfMeasurements(ii)));
-        % also save all fieldnames
-        elseif not(isempty(intFieldDescriptionIndex))
-            disp(sprintf('saving %s%d_to_%d_Measurements.%s.%s and %s',BatchFilePrefix,StartImage,EndImage,char(ListOfObjects(i)), char(ListOfMeasurements(intFieldDescriptionIndex)), char(ListOfMeasurements(ii))))
-            Measurements.(char(ListOfObjects(i))).(char(ListOfMeasurements(intFieldDescriptionIndex))) = handles.Measurements.(char(ListOfObjects(i))).(char(ListOfMeasurements(intFieldDescriptionIndex)));
-            Measurements.(char(ListOfObjects(i))).(char(ListOfMeasurements(ii))) = handles.Measurements.(char(ListOfObjects(i))).(char(ListOfMeasurements(ii)));
+            % save MeasurementFields that do not have a DescriptionField as
+            % listed in cellstrFieldsWithNoDescription
+            if not(isempty(find(strcmp(cellstrFieldsWithNoDescription, char(ListOfMeasurements(ii))))))
+                disp(sprintf('saving %s%d_to_%d_Measurements.%s.%s',BatchFilePrefix,StartImage,EndImage,char(ListOfObjects(i)), char(ListOfMeasurements(ii))))
+                Measurements.(char(ListOfObjects(i))).(char(ListOfMeasurements(ii))) = handles.Measurements.(char(ListOfObjects(i))).(char(ListOfMeasurements(ii)));
+                save(OutPutFile, 'Measurements','-v7.3');%
+            % also save all fieldnames that have descriptionfields
+            elseif not(isempty(intFieldDescriptionIndex))
+                %%% REGULAR CODE
+                disp(sprintf('saving %s%d_to_%d_Measurements.%s.%s and %s',BatchFilePrefix,StartImage,EndImage,char(ListOfObjects(i)), char(ListOfMeasurements(intFieldDescriptionIndex)), char(ListOfMeasurements(ii))))
+                Measurements.(char(ListOfObjects(i))).(char(ListOfMeasurements(intFieldDescriptionIndex))) = handles.Measurements.(char(ListOfObjects(i))).(char(ListOfMeasurements(intFieldDescriptionIndex)));
+                Measurements.(char(ListOfObjects(i))).(char(ListOfMeasurements(ii))) = handles.Measurements.(char(ListOfObjects(i))).(char(ListOfMeasurements(ii)));
+                save(OutPutFile, 'Measurements','-v7.3');%
+            end
+            clear Measurements;
+        else
+            disp(sprintf('SKIPPED %s', char(ListOfMeasurements{ii})))
         end
-
-        try
-            save(OutPutFile, 'Measurements');
-        catch
-            OutPutFile = fullfile(strAlternativeOutputPath, sprintf('%s%d_to_%d_Measurements_%s_%s',BatchFilePrefix,StartImage,EndImage,char(ListOfObjects(i)), char(ListOfMeasurements(ii))));
-            save(OutPutFile, 'Measurements');            
-        end
-        
-        clear Measurements;
     end
 end
 
