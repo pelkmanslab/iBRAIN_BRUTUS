@@ -1,11 +1,13 @@
 import os
 import re
+import textwrap
 from datetime import datetime
 from xml.sax.saxutils import escape as escape_xml
 #from plato.shell.findutils import (Match, find_files)
 from fnmatch import fnmatch, translate as fntranslate
 from os.path import basename
 
+import brainy
 from brainy.process import BrainyProcess, BrainyProcessError
 from brainy.pipes import BrainyPipe
 from brainy.config import config
@@ -21,6 +23,53 @@ def get_cp2_call():
         os.path.join(os.path.expanduser(config['cellprofiler2_path']),
                      'CellProfiler.py'),
     )
+
+
+def create_imagelists_for_batching(tiff_path, batch_path,
+                                   image_list_settings_filename):
+    ''' Create CSV input image lists'''
+    from brainy.apps.cellprofiler import CellProfilerImages
+
+    images_path = tiff_path
+    output_path = os.path.join(batch_path, 'IMAGE_LISTS')
+    if os.path.exists(batch_path)\
+            and not os.path.exists(output_path):
+        os.makedirs(output_path)
+    image_list_settings_filename = image_list_settings_filename
+
+    cpimages = CellProfilerImages()
+    if os.path.exists(image_list_settings_filename):
+        # Load custom JSON settings file
+        cpimages.parse_settings(image_list_settings_filename)
+    cpimages.split_images(images_path, output_path)
+    num_of_image_sets = cpimages.set_num
+
+    if num_of_image_sets == 0:
+        print 'Error, splitting of images failed. No image set were '\
+              'generated.'
+        exit(1)
+
+    return cpimages
+
+
+def run_cp2_pipeline_batch(tiff_path, batch_path, cp_pipeline_file,
+                           csv_filepath):
+    '''
+    Execute CellProfiller2 in process in a command line. Pass arguments
+    sufficient to process a single batch of images.
+    '''
+    command = textwrap.wrap('''
+    %(cp2_call)s -L INFO -b -c -i %(tiff_path)s -o %(batch_path)s \
+        --do-not-fetch --pipeline=%(cp_pipeline_file)s \
+        --data-file=%(csv_filepath)s
+    ''' % {
+        'cp2_call': get_cp2_call(),
+        'tiff_path': tiff_path,
+        'batch_path': batch_path,
+        'cp_pipeline_file': cp_pipeline_file,
+        'csv_filepath': csv_filepath,
+    }, 255)
+    return brainy.invoke(command)
 
 
 class Pipe(BrainyPipe):
@@ -80,49 +129,37 @@ class CreateJobBatches(BrainyProcess):
         self.submit_python_code()
         '''
         code = '''
-        # Create CSV input image lists
-        import sys
-        import os
         # Import iBRAIN environment.
         import ext_path
-        from brainy.apps.cellprofiler import CellProfilerImages
+        from brainy.pipes.CellProfiller2 import (
+            create_imagelists_for_batching,
+            run_cp2_pipeline_batch)
 
+        cpimages = create_imagelists_for_batching(
+            '%(tiff_path)s',
+            '%(batch_path)s',
+            '%(image_list_settings_filename)s',
+        )
 
-        images_path = '%(tiff_path)s'
-        output_path = os.path.join('%(batch_path)s', 'IMAGE_LISTS')
-        if os.path.exists('%(batch_path)s')\
-            and not os.path.exists(output_path):
-            os.makedirs(output_path)
-        image_list_settings_filename = '%(image_list_settings_filename)s'
-
-        cpimages = CellProfilerImages()
-        if os.path.exists(image_list_settings_filename):
-            # Load custom JSON settings file
-            cpimages.parse_settings(image_list_settings_filename)
-        cpimages.split_images(images_path, output_path)
-        num_of_image_sets = cpimages.set_num
-
-        if cpimages.set_num == 0:
-            print 'Error, splitting of images failed. No image set were '\
-                  'generated.'
-            exit(1)
-
-        # # Generate batch files
-        # output = brainy.invoke(command)
-        # print output
-
-        # # Generate
-        # %(cp2_call)s -b -i %(tiff_path)s -o %(batch_path)s \
-        #     --do-not-fetch --pipeline=%(cp_pipeline_file)s  -L INFO
+        # Test pipeline by running first batch of images
+        output = run_cp2_pipeline_batch(
+            '%(tiff_path)s',
+            '%(batch_path)s',
+            '%(cp_pipeline_file)s',
+            # Pick first set of images for this test run.
+            csv_filepath=cpimages.saved_csv_files[0],
+        )
+        # TODO: check output for any errors or exceptions raised.
+        # But do it rather in has_data().
+        print output
         ''' % {
-            'cp2_call': get_cp2_call(),
+            'tiff_path': self.tiff_path,
+            'batch_path': self.batch_path,
             'image_list_settings_filename': self.description.get(
                 'image_list_settings_filename',
                 '',
             ),
             'cp_pipeline_file': self.get_cp_pipeline_path(),
-            'batch_path': self.batch_path,
-            'tiff_path': self.tiff_path,
         }
         return code
 

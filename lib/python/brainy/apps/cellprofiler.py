@@ -24,11 +24,42 @@ class CellProfilerImages(object):
     def __init__(self, settings=None):
         self.set_num = 0
         self.settings = dict() if not settings else settings
+        self.saved_csv_files = list()
+        self.__group_key_map = None
+
+    @property
+    def group_by_field(self):
+        '''Group images by 'group by' field, e.g. image channel.'''
+        return self.settings.get('group_by_field', 'Channel')
 
     @property
     def image_set_size_per_batch(self):
         return int(self.settings.get(
             'image_set_size_per_batch', '10'))
+
+    @property
+    def group_key_mapping(self):
+        if self.__group_key_map is None:
+            self.__group_key_map = dict()
+            self.__group_key_map.update(
+                self.settings.get(
+                    'group_key_map',
+                    # Default mapping. Can be changed by user.
+                    {
+                        '0': 'OrigBlue',
+                        '1': 'OrigGreen',
+                        '2': 'OrigRed',
+                        '3': 'OrigFarRed',
+                    }
+                )
+            )
+        return self.__group_key_map
+
+    def get_object_name(self, group_key):
+        for key in self.group_key_mapping:
+            if key in group_key:
+                return self.group_key_mapping[key]
+        raise KeyError('Failed to map object by group key %s' % group_key)
 
     def get_image_files(self, image_files_path):
         '''
@@ -52,7 +83,6 @@ class CellProfilerImages(object):
                 continue
             metadata = dict()
             metadata.update(match.groupdict())
-            metadata['pathname'] = os.path.join(image_files_path, filename)
             metadata['filename'] = filename
             image_files.append(metadata)
         return image_files
@@ -79,13 +109,12 @@ class CellProfilerImages(object):
         image_files = self.get_image_files(image_files_path)
         if len(image_files) == 0:
             raise NoImageFilesFound()
-        # Group images by 'group by' field, e.g. image channel.
-        group_by_field = self.settings.get('group_by_field', 'Channel')
+
         sorted_image_files = sorted(image_files,
-                                    key=lambda k: k[group_by_field])
+                                    key=lambda k: k[self.group_by_field])
         image_groups = dict()
         for metadata in sorted_image_files:
-            group_key = metadata[group_by_field]
+            group_key = metadata[self.group_by_field]
             if not group_key in image_groups:
                 image_groups[group_key] = list()
             image_groups[group_key].append(metadata)
@@ -109,13 +138,16 @@ class CellProfilerImages(object):
         for step in range(image_group_size):
             image_entry = list()
             shared_image_name = image_groups[group_keys[0]][step]['filename']\
-                .replace(image_groups[group_keys[0]][step][group_by_field], '')
+                .replace(
+                    image_groups[group_keys[0]][step][self.group_by_field],
+                    '',
+                )
             for group_key in group_keys:
                 metadata = image_groups[group_key][step]
                 # Filename should be the same, i.e. correctly aligned by
                 # grouping.
                 assert shared_image_name == metadata['filename']\
-                    .replace(metadata[group_by_field], '')
+                    .replace(metadata[self.group_by_field], '')
                 image_entry.append(image_groups[group_key][step])
             image_set.append(image_entry)
             if len(image_set) >= self.image_set_size_per_batch:
@@ -136,25 +168,39 @@ class CellProfilerImages(object):
     def save_as_csv_list(self, file_lists_path, image_set):
         csv_filename = os.path.join(file_lists_path,
                                     self.next_csv_filename())
+        self.saved_csv_files.append(csv_filename)
         with io.open(csv_filename, mode='wb') as f:
             fieldnames = image_set[0][0].keys()
             fieldnames.remove('filename')
-            fieldnames.remove('pathname')
-            header = ['Image_FileName', 'Image_PathName']
-            fieldmap = {
-                'filename': 'Image_FileName',
-                'pathname': 'Image_PathName',
-            }
-            for fieldname in fieldnames:
-                mapped_fieldname = 'Metadata_%s' % fieldname.title()
-                header.append(mapped_fieldname)
-                fieldmap[fieldname] = mapped_fieldname
+            fieldnames.insert(0, 'filename')
+            fieldmap = dict()
+            rows = list()
+            has_header = False
+            header = list()
+            for image_entry in image_set:
+                row = dict()
+                for object_num, metadata in enumerate(image_entry):
+                    # Get object name e.g. OrigBlue.
+                    objectname = self.get_object_name(
+                        metadata[self.group_by_field])
+                    if not has_header:
+                        for fieldname in fieldnames:
+                            if fieldname == 'filename':
+                                mapped_fieldname = 'Image_FileName_%s' % (
+                                    objectname)
+                            else:
+                                mapped_fieldname = 'Metadata_%s_%s' % (
+                                    fieldname.title(), objectname)
+                            header.append(mapped_fieldname)
+                            object_key = '%s_%d' % (fieldname, object_num)
+                            fieldmap[object_key] = mapped_fieldname
+                    for fieldname in metadata:
+                        object_key = '%s_%d' % (fieldname, object_num)
+                        row[fieldmap[object_key]] = metadata[fieldname]
+                if not has_header:
+                    has_header = True
+                rows.append(row)
+            # Finally, write rows to disk.
             writer = csv.DictWriter(f, fieldnames=header)
             writer.writeheader()
-            for image_entry in image_set:
-                for metadata in image_entry:
-                    row = dict()
-                    for key in metadata:
-                        row[fieldmap[key]] = metadata[key]
-                    writer.writerow(row)
-
+            writer.writerows(rows)
