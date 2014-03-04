@@ -64,7 +64,7 @@ TargetName = ObjectName;
 LabelMatrixImage = CPretrieveimage(handles,['Segmented' ObjectName],ModuleName,'MustBeGray','DontCheckScale');
 
 matObjectSizes = regionprops(LabelMatrixImage,'Area');
-matObjectSizes = cat(1,matObjectSizes.Area)
+matObjectSizes = cat(1,matObjectSizes.Area);
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
