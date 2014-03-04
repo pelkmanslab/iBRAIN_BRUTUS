@@ -39,7 +39,7 @@ ListOfObjects = fieldnames(handles.Measurements);
 for i = 1:length(ListOfObjects)
     ListOfMeasurements = fieldnames(handles.Measurements.(char(ListOfObjects(i))));
     for ii = 1:length(ListOfMeasurements)
-        if length(ListOfMeasurements{ii}) > 7 && ... 
+        if length(ListOfMeasurements{ii}) > 3 && ... 
                 (not(strcmp(ListOfMeasurements{ii}(1,end-7:end),'Features')) || not(strcmp(ListOfMeasurements{ii}(1,end-3:end),'Text')))
             % we are not dealing with a ...Features or ...Text list
 
