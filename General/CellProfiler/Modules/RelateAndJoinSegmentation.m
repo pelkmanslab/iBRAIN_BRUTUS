@@ -29,6 +29,16 @@ ParentName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %infotypeVAR03 = objectgroup indep
 SegmentedObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
+%textVAR04 = What do you want to call the subobjects identified by this module?
+%defaultVAR04 = SubOrganelle
+%infotypeVAR04 = objectgroup indep
+SegmentedSubObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+
+%textVAR05 = How did you call the corresponding intensity image?
+%infotypeVAR05 = imagegroup
+%inputtypeVAR05 = popupmenu
+IntImageName = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+
 
 %%%VariableRevisionNumber = 1
 
@@ -45,6 +55,10 @@ SubObjectLabelMatrix = CPretrieveimage(handles,['Segmented', SubObjectName],Modu
 %%% segmented objects.
 ParentObjectLabelMatrix = CPretrieveimage(handles,['Segmented', ParentName],ModuleName,'MustBeGray','DontCheckScale');
 
+%%% Retrieve intensity image
+IntensityImage = CPretrieveimage(handles,IntImageName,ModuleName,'MustBeGray','DontCheckScale');
+
+
 %%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%%
@@ -59,7 +73,7 @@ if ~isempty(FinalParentList)
     FinalParentListLM = [0;FinalParentList];
     NewObjectParentLabelMatrix = FinalParentListLM(SubObjectLabelMatrix+1);
     CurrentObjNhood = bwmorph(NewObjectParentLabelMatrix,'dilate',1);
-    CurrentObjNhood = bwmorph(CurrentObjNhood,'erode',1);
+    CurrentObjNhood = DilateBackground(bwlabel(CurrentObjNhood));%bwmorph(CurrentObjNhood,'erode',1);
     %CurrentObjNhood(edge(CurrentObjNhood))=0;
     CurrentObjNhood = ParentObjectLabelMatrix&CurrentObjNhood;
     NewObjectParentLabelMatrix = zeros(size(ParentObjectLabelMatrix));
@@ -69,9 +83,8 @@ else
     NewObjectParentLabelMatrix = SubObjectLabelMatrix;
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%
-%%% DISPLAY RESULTS %%%
-%%%%%%%%%%%%%%%%%%%%%%%
+NewSubobjectLabelMatrix = bwlabel(NewObjectParentLabelMatrix);
+
 %merge the segments of a same cell
 
 %[CurrentObjNhood,CurrentObjLabels] = bwdist(CurrentObjNhood);
@@ -86,29 +99,9 @@ end
 % figure;imagesc(mattest)
 
 
-%save the object segmentation
-fieldname = ['Segmented',SegmentedObjectName];
-handles.Pipeline.(fieldname) = NewObjectParentLabelMatrix;%FinalLabelMatrixImage;
-
-%%% Saves the ObjectCount, i.e., the number of segmented objects.
-%%% See comments for the Threshold saving above
-if ~isfield(handles.Measurements.Image,'ObjectCountFeatures')
-    handles.Measurements.Image.ObjectCountFeatures = {};
-    handles.Measurements.Image.ObjectCount = {};
-end
-column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ObjectCountFeatures,SegmentedObjectName)));
-if isempty(column)
-    handles.Measurements.Image.ObjectCountFeatures(end+1) = {SegmentedObjectName};
-    column = length(handles.Measurements.Image.ObjectCountFeatures);
-end
-handles.Measurements.Image.ObjectCount{handles.Current.SetBeingAnalyzed}(1,column) = max(NewObjectParentLabelMatrix(:));
-
-%%% Saves the location of each segmented object
-handles.Measurements.(SegmentedObjectName).LocationFeatures = {'CenterX','CenterY'};
-tmp = regionprops(NewObjectParentLabelMatrix,'Centroid');
-Centroid = cat(1,tmp.Centroid);
-handles.Measurements.(SegmentedObjectName).Location(handles.Current.SetBeingAnalyzed) = {Centroid};
-
+%%%%%%%%%%%%%%%%%%%%%%%
+%%% DISPLAY RESULTS %%%
+%%%%%%%%%%%%%%%%%%%%%%%
 
 drawnow
 
@@ -131,4 +124,92 @@ if any(findobj == ThisModuleFigureNumber)
     ColoredNewObjectParentLabelMatrix = CPlabel2rgb(handles,NewObjectParentLabelMatrix);
     CPimagesc(ColoredNewObjectParentLabelMatrix,handles);
     title('New Sub Objects');
+    OutlineOverlay = IntensityImage;
+    B = bwboundaries(NewObjectParentLabelMatrix,'holes');
+    subplot(2,2,4), CPimagesc(OutlineOverlay,handles),
+    title(['Outlines of New Sub Objects, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    hold on
+    for k = 1:length(B)
+        boundary = B{k};
+        plot(boundary(:,2), boundary(:,1), 'r', 'LineWidth', 1)
+    end
+    hold off
+end
+
+
+%%%%%%%%%%%%%%%%%%%%%%%
+%%% SAVE TO HANDLES %%%
+%%%%%%%%%%%%%%%%%%%%%%%
+
+%save the object segmentation
+fieldname = ['Segmented',SegmentedObjectName];
+handles.Pipeline.(fieldname) = NewObjectParentLabelMatrix;%FinalLabelMatrixImage;
+
+%%% Saves the ObjectCount, i.e., the number of segmented objects.
+%%% See comments for the Threshold saving above
+if ~isfield(handles.Measurements.Image,'ObjectCountFeatures')
+    handles.Measurements.Image.ObjectCountFeatures = {};
+    handles.Measurements.Image.ObjectCount = {};
+end
+
+% ======= hack 2014/02/17 [MH] ==============================================================================================
+% Use of 'strfind' is very dangerous, since it is not specific and finds any occurance (also substring)! I thus
+% replaced it by 'strcmp'.
+
+% save input objects to handles
+column = find(strcmp(handles.Measurements.Image.ObjectCountFeatures,SubObjectName));
+if isempty(column)
+    handles.Measurements.Image.ObjectCountFeatures(end+1) = {SubObjectName};
+    column = length(handles.Measurements.Image.ObjectCountFeatures);
+elseif ~strcmp(handles.Measurements.Image.ObjectCountFeatures(column),SubObjectName)
+    handles.Measurements.Image.ObjectCountFeatures(column) = {SubObjectName};
+    column = length(handles.Measurements.Image.ObjectCountFeatures);
+end
+handles.Measurements.Image.ObjectCount{handles.Current.SetBeingAnalyzed}(1,column) = max(SubObjectLabelMatrix(:));
+% save output subobjects to handles
+column = find(strcmp(handles.Measurements.Image.ObjectCountFeatures,SegmentedSubObjectName));
+if isempty(column)
+    handles.Measurements.Image.ObjectCountFeatures(end+1) = {SegmentedSubObjectName};
+    column = length(handles.Measurements.Image.ObjectCountFeatures);
+elseif ~strcmp(handles.Measurements.Image.ObjectCountFeatures(column),SegmentedSubObjectName)
+    handles.Measurements.Image.ObjectCountFeatures(column) = {SegmentedSubObjectName};
+    column = length(handles.Measurements.Image.ObjectCountFeatures);
+end
+handles.Measurements.Image.ObjectCount{handles.Current.SetBeingAnalyzed}(1,column) = max(NewSubobjectLabelMatrix(:));
+% ======= hack end ==========================================================================================================
+
+% save output object to handles
+column = find(strcmp(handles.Measurements.Image.ObjectCountFeatures,SegmentedObjectName));
+if isempty(column)
+    handles.Measurements.Image.ObjectCountFeatures(end+1) = {SegmentedObjectName};
+    column = length(handles.Measurements.Image.ObjectCountFeatures);
+elseif ~strcmp(handles.Measurements.Image.ObjectCountFeatures(column),SegmentedObjectName)
+    handles.Measurements.Image.ObjectCountFeatures(column) = {SegmentedObjectName};
+    column = length(handles.Measurements.Image.ObjectCountFeatures);
+end
+handles.Measurements.Image.ObjectCount{handles.Current.SetBeingAnalyzed}(1,column) = max(NewObjectParentLabelMatrix(:));
+
+%%% Saves the location of each segmented object
+handles.Measurements.(SegmentedObjectName).LocationFeatures = {'CenterX','CenterY'};
+tmp = regionprops(NewObjectParentLabelMatrix,'Centroid');
+Centroid = cat(1,tmp.Centroid);
+handles.Measurements.(SegmentedObjectName).Location(handles.Current.SetBeingAnalyzed) = {Centroid};
+
+%%% Saves the location of each segmented subobject
+handles.Measurements.(SegmentedSubObjectName).LocationFeatures = {'CenterX','CenterY'};
+tmp = regionprops(NewSubobjectLabelMatrix,'Centroid');
+Centroid = cat(1,tmp.Centroid);
+handles.Measurements.(SegmentedSubObjectName).Location(handles.Current.SetBeingAnalyzed) = {Centroid};
+
+%%% Saves parent-child relationship for each segmented object
+[handles,ChildList_obj,FinalParentList_obj] = CPrelateobjects(handles,SegmentedObjectName,ParentName,NewObjectParentLabelMatrix,ParentObjectLabelMatrix,ModuleName);
+[handles,ChildList_subobj,FinalParentList_subobj] = CPrelateobjects(handles,SegmentedSubObjectName,ParentName,NewSubobjectLabelMatrix,ParentObjectLabelMatrix,ModuleName);
+
+%%% Saves the final, segmented label matrix images of objects to
+%%% the handles structure so it can be used by subsequent modules.
+fieldname = ['Segmented', SegmentedObjectName];
+handles.Pipeline.(fieldname) = NewObjectParentLabelMatrix;
+fieldname = ['Segmented', SegmentedSubObjectName];
+handles.Pipeline.(fieldname) = NewSubobjectLabelMatrix;
+
 end

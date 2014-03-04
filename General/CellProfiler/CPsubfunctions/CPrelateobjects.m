@@ -66,7 +66,7 @@ ParentList = ChildParentList(:,2);
 for i = 1:max(ChildParentList(:,1))
     ParentValue = max(ParentList(ChildParentList(:,1) == i));
     if isempty(ParentValue)
-        ParentValue = 0;
+        ParentValue = NaN;%hack: 2014/02/07 [MH] changed from 0 to NaN
     end
     FinalParentList(i,1) = ParentValue;
 end
@@ -89,9 +89,9 @@ for i = 1:max(ParentList)
 end
 
 if exist('ChildList','var')
-    handles = CPaddmeasurements(handles,ParentName,'Children',[ChildName,'Count'],ChildList);
+    handles = CPaddmeasurements(handles,ParentName,'Children',ChildName,ChildList);%hack: 2014/01/03 [MH] 'Count' removed (resulted in problems finding children objects later)
 else
-    handles = CPaddmeasurements(handles,ParentName,'Children',[ChildName,'Count'],0);
+    handles = CPaddmeasurements(handles,ParentName,'Children',ChildName,0);
     ChildList = 0;
 end
 
