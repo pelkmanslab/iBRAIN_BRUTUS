@@ -172,7 +172,9 @@ if ~isfield(handles.Measurements,SubregionObjectName)
 end
 
 [handles,ChildList,FinalParentList] = CPrelateobjects(handles,SubregionObjectName,SecondaryObjectName,SubregionObjectImage,SecondaryObjectImage,ModuleName);
-[handles,ChildList,FinalParentList] = CPrelateobjects(handles,SubregionObjectName,PrimaryObjectName,SubregionObjectImage,PrimaryObjectImage,ModuleName);
+%%% [140219 MH] This doesn't make any sense: the primary objects (nuclei) are not parents of the tertiary objects
+%[handles,ChildList,FinalParentList] = CPrelateobjects(handles,SubregionObjectName,PrimaryObjectName,SubregionObjectImage,PrimaryObjectImage,ModuleName);
+
 
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
@@ -220,7 +222,7 @@ if ~isfield(handles.Measurements.Image,'ObjectCountFeatures')
     handles.Measurements.Image.ObjectCountFeatures = {};
     handles.Measurements.Image.ObjectCount = {};
 end
-column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ObjectCountFeatures,SubregionObjectName)));
+column = find(strcmp(handles.Measurements.Image.ObjectCountFeatures,SubregionObjectName));
 if isempty(column)
     handles.Measurements.Image.ObjectCountFeatures(end+1) = {SubregionObjectName};
     column = length(handles.Measurements.Image.ObjectCountFeatures);

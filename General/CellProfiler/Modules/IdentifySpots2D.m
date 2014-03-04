@@ -91,7 +91,7 @@ function handles = IdentifySpots2D(handles)
 % Website: http://www.imls.uzh.ch/research/pelkmans.html
 %
 % The design of this module largely follows a IdentifyPrimLoG2 by 
-% Baris Sumengen
+% Baris Sumengen.
 %
 % $Revision: 1889 $
 
@@ -207,17 +207,6 @@ else
     end
 end
 
-% Object intensity Threshold
-if iObjIntensityThr == '/'
-    iObjIntensityThr = [];
-else
-    try
-        iObjIntensityThr = str2double(iObjIntensityThr);
-    catch errObjIntensityThr
-        error(['Image processing was canceled in the ', ModuleName, ' module because the Stepsize for deblending could not be converted to a number.'])
-    end
-end
-
 % Bias correction
 if strcmp(iDoBiasCorrection,'Yes')
     bnDoBiasCorrection = true;
@@ -251,6 +240,19 @@ Options.DetectBias = DetectionBias;
 %%%%%%%%%%%%%%%%%%%%%%
 Image = double(CPretrieveimage(handles,ImageName,ModuleName,'DontCheckColor','DontCheckScale')).*65535;     % convert to scale used for spotdetection
 op = fspecialCP3D('2D LoG',iHsize);         % force 2D filter
+
+% Object intensity Threshold
+if iObjIntensityThr == '/'
+    iObjIntensityThr = [];
+elseif strcmp(iObjIntensityThr,'auto')
+    iObjIntensityThr = multithresh(Image).*0.8;% a bit more sensitive
+else
+    try
+        iObjIntensityThr = str2double(iObjIntensityThr);
+    catch errObjIntensityThr
+        error(['Image processing was canceled in the ', ModuleName, ' module because the Stepsize for deblending could not be converted to a number.'])
+    end
+end
 
 % Detect objects, note that input vectors are eval'ed
 [ObjCount{1} SegmentationCC{1} FiltImage] = ObjByFilter(Image,op,iDetectionThr,eval(iImgLimes),eval(iRescaleThr),iObjIntensityThr,true,[],DetectionBias);

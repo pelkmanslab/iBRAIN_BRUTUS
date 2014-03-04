@@ -14,7 +14,7 @@ function handles = IdentifyPrimaryTissue(handles)
 % Step 3:
 % Propagation of objects up to outlines in original nuclear staining
 % intensity image.
-%
+
 %
 % PARAMETERS:
 % Laplacion of Gaussian/shape based segmentation for low intensity images.
@@ -125,7 +125,7 @@ correctionFactor = str2double(char(handles.Settings.VariableValues{CurrentModule
 LoGMarkerCutoff = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,7}));
 
 %textVAR08 = LoG minimum marker to object fraction
-%defaultVAR08 = 0.4
+%defaultVAR08 = 0.6
 LoGObjMarkerRatio = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,8}));
 
 %textVAR09 = LoG minimum object area
@@ -137,7 +137,7 @@ LoGObjSize = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,9}
 SmoothingSize = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,10}));
 
 %textVAR11 = Membrane segmentation: percentage of stacks that must include the object
-%defaultVAR11 = 0.8
+%defaultVAR11 = 0.9
 stackSegmentationThreshold = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,11}));
 
 %textVAR12 = Discard border objects
@@ -170,14 +170,19 @@ LoGSize = 8 * LoGSigma;
 %%% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%%
 
+%% Load images %%
+
 %%% Load DAPI stacks
 i = size(stackDapi,3);
+% Add MIP to stack
 stackDapi(:,:,i+1) = max(stackDapi,[],3);
 
 %%% Load Membrane stacks
 j = size(stackMembrane,3);
+% Add MIP to stack
 stackMembrane(:,:,j+1) = max(stackMembrane,[],3);
 
+%%% Preallocate matrices
 SegmentationPerStack(:,:,size(stackDapi,3)) = zeros(size(stackDapi(:,:,1)));
 ThresholdMaskPerStack(:,:,size(stackDapi,3)) = zeros(size(stackDapi(:,:,1)));
 
@@ -186,6 +191,9 @@ imMIPDapi = stackDapi(:,:,end);
 imMIPMembrane = stackMembrane(:,:,end);
 if quantile(imMIPDapi(:),0.99) < MaxBackgroundValue
     
+    imThresholdStackOverlay = zeros(size(imMIPDapi));
+    imSegmentationStackOverlay = zeros(size(imMIPDapi));
+    imProjSegmentation = zeros(size(imMIPDapi));
     imFinalObjectsIntensityBorder = zeros(size(imMIPDapi));
     ImageProcessed = false;
         
@@ -202,7 +210,7 @@ else
     for i = 1:size(stackDapi,3)
         
         
-        %% Integrate nuclear and nuclear membrane images into one "corrected" intensity image %%
+        %% Integrate nuclear and nuclear membrane images into one image %%
         
         %%% Load images
         imDapi = stackDapi(:,:,i);
@@ -212,7 +220,7 @@ else
         imNormDapi = imnorm(imDapi,0.01,0.99);
         imNormMembrane = imnorm(imMembrane,0.01,0.99);
         
-        %%% 'Subtract' membrane image from DAPI image
+        %%% 'Subtract' membrane image from DAPI image (weight)
         imSub = immultiply(imNormDapi,imcomplement(imNormMembrane));
         
         
@@ -271,33 +279,37 @@ else
     %% Combine segmentations of individual z-stacks into one final segmenation image %%
     
     %%% Combine segmentations
-    %imLoGMaskOverlay = sum(LoGMask,3);
     imThresholdStackOverlay = sum(ThresholdMaskPerStack,3);
     imSegmentationStackOverlay = sum(SegmentationPerStack,3);
     % Use 3D information of z-stacks to create gaps between clumped nuclei
-    imProjThresholdMask = imThresholdStackOverlay > floor(size(stackDapi,3)*stackSegmentationThreshold);
+    imProjThresholdMask = imThresholdStackOverlay > floor(size(stackDapi,3)*0.6);
     imProjThresholdMask = imfill(imProjThresholdMask,'holes');
     imProjSegmentation = imSegmentationStackOverlay > floor(size(stackDapi,3)*stackSegmentationThreshold);
     imOverlay = imProjSegmentation + imProjThresholdMask;
     imProjSegmentation = imOverlay==2;
+
     % imLower = imSegmentationStackOverlay < floor(size(stackDapi,3)*stackSegmentationThreshold) & imSegmentationStackOverlay > 0;%floor(size(stackDapi,3)*0.35);
-    % imLowerSolidity = regionprops_label_image(imLower,[],'Solidity');
+    % imLowerSolidity = rplabel(imLower,[],'Solidity');
     % imOff = imLowerSolidity < 0.8 & imLower > 0;
     % imOffDil = imdilate(imOff,strel('disk',2));
     % imProjectedSegmentation = logical(imSegmentationStackOverlay) .* ~imOffDil;% > floor(size(stackDapi,3)*stackSegmentationThreshold);
     
     % %%% Recover objects that fall below the 'stackSegmentationThreshold', but have typical nuclear features (specifically, high solidity values)
     % imLowerEroded = imerode(imLower,strel('disk',2));
-    % imLowerErodedSolidity = regionprops_label_image(imLowerEroded,[],'Solidity');
+    % imLowerErodedSolidity = rplabel(imLowerEroded,[],'Solidity');
     % imMissed = imLowerErodedSolidity > 0.8;% & imLeftArea > 100;
     % imRecoveredSegmentation = logical(imProjectedSegmentation + imMissed);
     
-    %%% Recover objects that are missed by the LoG filter (as a consequence of nuclear SUN2 staining) using thresholding as a complimentary method
-    imOverlay2 = imProjSegmentation + imProjThresholdMask;
-    imThresRecover = imOverlay2==1;
-    imThresArea = regionprops_label_image(imThresRecover,[],'Area');%nice solution, but very slow!
-    imThresSolidity = regionprops_label_image(imThresRecover,[],'Solidity');
-    imMissed = imThresSolidity > 0.8 & imThresArea < 2000 & imThresArea > 100;
+    %%% Recover objects that are missed by the LoG filter (as a consequence of nuclear SUN2 staining)
+    imThresRecover = imOverlay==1;
+    % Only recover objects within a certain range of area and solidity
+    ThresAreas = cell2mat(struct2cell(regionprops(imThresRecover,'Area')))';
+    ValidThresAreas = find(ThresAreas<2000 & ThresAreas>100);
+    imThresArea = ismember(bwlabel(imThresRecover),ValidThresAreas);%figure,imagesc(rplabel(imThresRecover,[],'Area'))
+    ThresSolidity = cell2mat(struct2cell(regionprops(imThresRecover,'Solidity')))';
+    ValidThresSolidity = find(ThresSolidity>0.8);
+    imThresSolidity = ismember(bwlabel(imThresRecover),ValidThresSolidity);%figure,imagesc(rplabel(imThresRecover,[],'Solidity'))
+    imMissed = imfill((imThresArea + imThresSolidity)==2,'holes');
     imRecovSegmentation = logical(imProjSegmentation + imMissed);
     
     %%% Discard small objects
@@ -322,7 +334,7 @@ else
     imFinalObjects = imfill(imFinalObjects);
     
     
-    %% Final clean-up
+    %% Final clean-up %%
     
     %%% Size filter: discard small objects
     ObjectAreas = cell2mat(struct2cell(regionprops(imFinalObjects,'Area')))';
@@ -380,13 +392,17 @@ end
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber)
     CPfigure(handles,'PrimObj: Membrane segmentation',ThisModuleFigureNumber);
-    subplot(2,2,1), CPimagesc(imSub,handles), colormap('default'),
+    subplot(2,3,1), CPimagesc(imSub,handles), colormap('default'),
     title(['Subtracted image (MIP), cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
-    subplot(2,2,2), CPimagesc(imSegmentationStackOverlay,handles), colormap('default'),
+    subplot(2,3,2), CPimagesc(imSegmentationStackOverlay,handles), colormap('default'),
     title(['Stack segmentation overlay, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
-    subplot(2,2,3), CPimagesc(imOutlineShapeSeparatedOverlay,handles),
+    subplot(2,3,3), CPimagesc(imThresholdStackOverlay,handles), colormap('default'),
+    title(['Stack threshold overlay, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    subplot(2,3,4), CPimagesc(imProjSegmentation,handles), colormap('default'),
+    title(['Stack projected segmentation overlay, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    subplot(2,3,5), CPimagesc(imOutlineShapeSeparatedOverlay,handles),
     title(['Final objects outline, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
-    subplot(2,2,4), CPimagesc(imObjectsLabel,handles),
+    subplot(2,3,6), CPimagesc(imObjectsLabel,handles),
     title(['Final objects, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
 end
        
