@@ -305,8 +305,8 @@ FileFormat = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 AnalyzeSubDir = char(handles.Settings.VariableValues{CurrentModuleNum,13});
 %inputtypeVAR13 = popupmenu
 
-%pathnametextVAR14 = Enter the path name to the folder where the images to be loaded are located. Type period (.) for default image folder.
-Pathname = char(handles.Settings.VariableValues{CurrentModuleNum,14});
+%textVAR14 = Enter the path name to the folder where the images to be loaded are located (starting with "./../"). Type period (.) for default image folder.
+AlternativeImageFolder = char(handles.Settings.VariableValues{CurrentModuleNum,14});
 
 %%%VariableRevisionNumber = 1
 
@@ -355,18 +355,47 @@ if SetBeingAnalyzed == 1
     end
 
     %%% Get the pathname and check that it exists
-    if strncmp(Pathname,'.',1)
-        if length(Pathname) == 1
+    if strncmp(AlternativeImageFolder,'.',1)
+        if length(AlternativeImageFolder) == 1
             Pathname = handles.Current.DefaultImageDirectory;
         else
-            Pathname = fullfile(handles.Current.DefaultImageDirectory,Pathname(2:end));
+            Pathname = fullfile(handles.Current.DefaultImageDirectory,AlternativeImageFolder(2:end));
+            fprintf(['=================================================' ...
+                     '=================================================' ...
+                     '=================================================' ...
+                     '\n\n%s: You specified an alternative path:\n%s\n\n' ...
+                     '=================================================' ...
+                     '=================================================' ...
+                     '=================================================' ...
+                     '\n'],mfilename,Pathname);        
+        end
+    else strcmp(AlternativeImageFolder,'Pre')
+        if ~isempty(strfind(handles.Current.DefaultImageDirectory,'TIFF'))
+            pos = strfind(handles.Current.DefaultImageDirectory,'TIFF');
+            cycleNum = str2double(handles.Current.DefaultImageDirectory(pos-2));
+            if ~isnan(cycleNum)
+                Pathname = strrep(handles.Current.DefaultImageDirectory,[num2str(cycleNum),filesep,'TIFF'],[num2str(cycleNum-1),filesep,'TIFF']);
+                fprintf(['=================================================' ...
+                    '=================================================' ...
+                    '=================================================' ...
+                    '\n\n%s: You specified an alternative path:\n%s\n\n' ...
+                    '=================================================' ...
+                    '=================================================' ...
+                    '=================================================' ...
+                    '\n'],mfilename,Pathname);
+            else
+                error('Your pathname input specifies a previous multiplexing cycle ("Pre"), but your projects doesn''t seem to be a multiplexing project!')
+            end
+        else
+            error(['Image processing was canceled in the ', ModuleName, ' module because the path for previous multiplexing cycle could not be determined correctly.'])
         end
     end
     SpecifiedPathname = Pathname;
     if ~exist(SpecifiedPathname,'dir')
-        error(['Image processing was canceled in the ', ModuleName, ' module because the directory "',SpecifiedPathname,'" does not exist. Be sure that no spaces or unusual characters exist in your typed entry and that the pathname of the directory begins with /.'])
+        error(['Image processing was canceled in the ', ModuleName, ' module because the directory "',SpecifiedPathname,'" does not exist. Be sure that no spaces or unusual characters exist in your typed entry and that the pathname of the directory begins with ./'])
     end
 
+    
     if strcmp(LoadChoice,'Order')
 
         if strcmp(ImageOrMovie,'Image')
@@ -624,10 +653,12 @@ for n = 1:length(ImageName)
             FileList = handles.Pipeline.(fieldname);
             %%% Determines the file name of the image you want to analyze.
             CurrentFileName = FileList(SetBeingAnalyzed);
+
             %%% Determines the directory to switch to.
             fieldname = ['Pathname', ImageName{n}];
             Pathname = handles.Pipeline.(fieldname);
             [LoadedImage, handles] = CPimread(fullfile(Pathname,CurrentFileName{1}), handles);
+
             %%% Note, we are not using the CPretrieveimage subfunction because we are
             %%% here retrieving the image from the hard drive, not from the handles
             %%% structure.
