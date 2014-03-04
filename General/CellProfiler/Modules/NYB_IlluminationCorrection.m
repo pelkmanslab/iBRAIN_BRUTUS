@@ -56,6 +56,10 @@ SmoothingSize = str2num(handles.Settings.VariableValues{CurrentModuleNum,4});
 %defaultVAR05 = 0.5
 SmoothingSigma = str2num(handles.Settings.VariableValues{CurrentModuleNum,5});
 
+%textVAR06 = Enter the relative path name to the folder where the illumination correction files are located (starting with "./../"). Type "Pre" (Pre) to load files from previous multiplexing cycle. Type period (.) for default directory.
+%defaultVAR06 = .
+AlternativeIllCorrFolder = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+
 %%%VariableRevisionNumber = 4
 
 
@@ -68,6 +72,7 @@ drawnow
 % images by iBRAIN. Load the mean and std statistics assuming iBrain file 
 % structure. 
 
+
 % Get the channel of the image.
 [intChannelNumber] = check_image_channel(handles.Pipeline.(strcat('FileList',InputName)){handles.Current.SetBeingAnalyzed});
 intZstackNumber = 0;
@@ -79,7 +84,41 @@ strStatFieldName = sprintf('illcor_ch%03dz%03d',intChannelNumber,intZstackNumber
 
 if handles.Current.SetBeingAnalyzed == 1
     % Get the BATCH directory and load illcor statistics.
-    strBatchDir = handles.Current.DefaultOutputDirectory;
+    
+    % Get path to folder where files are located
+    if strncmp(AlternativeIllCorrFolder,'.',1)
+        if length(AlternativeIllCorrFolder) == 1
+            VarPathname = handles.Current.DefaultOutputDirectory;
+        else
+            VarPathname = fullfile(handles.Current.DefaultOutputDirectory,AlternativeIllCorrFolder(2:end));
+            fprintf(['=================================================' ...
+                     '=================================================' ...
+                     '=================================================' ...
+                     '\n\n%s: You specified an alternative path:\n%s\n\n' ...
+                     '=================================================' ...
+                     '=================================================' ...
+                     '=================================================' ...
+                     '\n'],mfilename,VarPathname);        
+        end
+    elseif strcmp(AlternativeIllCorrFolder,'Pre')
+        if isfield(handles.Pipeline,['Pathname',InputName])
+            VarPathname = fullfile(strrep(handles.Pipeline.(['Pathname',InputName]),'TIFF','BATCH'));
+            fprintf(['=================================================' ...
+                     '=================================================' ...
+                     '=================================================' ...
+                     '\n\n%s: You specified an alternative path in the LoadImages module:\n%s\n\n' ...
+                     '=================================================' ...
+                     '=================================================' ...
+                     '=================================================' ...
+                     '\n'],mfilename,VarPathname);
+        else
+            error(['Image processing was canceled in the ', ModuleName, ' module because the fieldname "',['Pathname',InputName],'" does not exist within handles.Pipeline. Be sure that you have saved it correctly using the LoadImages module'])
+        end
+    end
+    strBatchDir = VarPathname;
+    if ~exist(strBatchDir,'dir')
+        error(['Image processing was canceled in the ', ModuleName, ' module because the directory "',strBatchDir,'" does not exist. Be sure that no spaces or unusual characters exist in your typed entry and that the pathname of the directory begins with /.'])
+    end
     TempStats = load(fullfile(strBatchDir,sprintf('Measurements_batch_illcor_channel%03d_zstack%03d.mat',intChannelNumber,intZstackNumber)));    
     
     TempStats.stat_values.mean = double(TempStats.stat_values.mean);
@@ -107,7 +146,7 @@ strImageToImport = fullfile( ...
     handles.Pipeline.(strcat('Pathname',InputName)), ...
     handles.Pipeline.(strcat('FileList',InputName)){handles.Current.SetBeingAnalyzed});
 OrigImage = double(imread(strImageToImport));
-
+         
 
 %%%%%%%%%%%%%%%%%%
 %%% CORRECTION %%%
@@ -133,6 +172,10 @@ ImageOutput = ImageOutput/65535;
 ImageOutput = fixNonNumericalValueInImage(ImageOutput);
 %save to handle structure
 handles.Pipeline.(OutputName) = ImageOutput;
+fieldname = ['Filename', OutputName];
+handles.Pipeline.(fieldname) = {handles.Pipeline.(strcat('FileList',InputName)){handles.Current.SetBeingAnalyzed}};
+fieldname = ['Pathname', OutputName];
+handles.Pipeline.(fieldname) = handles.Pipeline.(strcat('Pathname',InputName));
 
 
 %%%%%%%%%%%%%%%%%%%%%%%
