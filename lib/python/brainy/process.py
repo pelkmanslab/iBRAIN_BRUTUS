@@ -33,8 +33,9 @@ def format_code(code, lang='bash'):
         if lang == 'python':
             if len(line.strip()) == 0:
                 continue
-            if left_strip_width is None:
+            if left_strip_width is None:    
                 # Strip only first left.
+                left_strip_width = 0
                 j = 0
                 while j < len(line):
                     if line[j] == ' ':

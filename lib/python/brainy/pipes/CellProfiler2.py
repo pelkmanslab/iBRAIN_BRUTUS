@@ -58,7 +58,7 @@ def run_cp2_pipeline_batch(tiff_path, batch_path, cp_pipeline_file,
     Execute CellProfiller2 in process in a command line. Pass arguments
     sufficient to process a single batch of images.
     '''
-    command = textwrap.wrap('''
+    command_lines = textwrap.wrap('''
     %(cp2_call)s -b -c -i %(tiff_path)s -o %(batch_path)s \
         --do-not-build --do-not-fetch --pipeline=%(cp_pipeline_file)s \
         --data-file=%(csv_filepath)s -L INFO
@@ -68,7 +68,9 @@ def run_cp2_pipeline_batch(tiff_path, batch_path, cp_pipeline_file,
         'batch_path': batch_path,
         'cp_pipeline_file': cp_pipeline_file,
         'csv_filepath': csv_filepath,
-    }, 255)
+    }, width=210, break_on_hyphens=False, break_long_words=False)
+    command = ' \\\n'.join(command_lines)
+    print command
     return brainy.invoke(command)
 
 
