@@ -459,7 +459,7 @@ if ~isempty(ObjectIDs)
                     % We have no other choice but one possible cut.
                     BestLinesIndex = 1;
                 else
-                    % We have some cuttign options. Look for optimal one.
+                    % We have some cutting options. Look for optimal one.
                     %=============debug=============
                     if debug
                         % Display lines on top of object intensity image
