@@ -59,9 +59,9 @@ def run_cp2_pipeline_batch(tiff_path, batch_path, cp_pipeline_file,
     sufficient to process a single batch of images.
     '''
     command = textwrap.wrap('''
-    %(cp2_call)s -L INFO -b -c -i %(tiff_path)s -o %(batch_path)s \
-        --do-not-fetch --pipeline=%(cp_pipeline_file)s \
-        --data-file=%(csv_filepath)s
+    %(cp2_call)s -b -c -i %(tiff_path)s -o %(batch_path)s \
+        --do-not-build --do-not-fetch --pipeline=%(cp_pipeline_file)s \
+        --data-file=%(csv_filepath)s -L INFO
     ''' % {
         'cp2_call': get_cp2_call(),
         'tiff_path': tiff_path,
