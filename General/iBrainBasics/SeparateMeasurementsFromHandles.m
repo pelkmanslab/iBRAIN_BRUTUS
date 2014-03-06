@@ -39,8 +39,9 @@ ListOfObjects = fieldnames(handles.Measurements);
 for i = 1:length(ListOfObjects)
     ListOfMeasurements = fieldnames(handles.Measurements.(char(ListOfObjects(i))));
     for ii = 1:length(ListOfMeasurements)
-        if length(ListOfMeasurements{ii}) > 3 && ... 
-                (not(strcmp(ListOfMeasurements{ii}(1,end-7:end),'Features')) || not(strcmp(ListOfMeasurements{ii}(1,end-3:end),'Text')))
+        if ((length(ListOfMeasurements{iix}) > 7 && ~(strcmp(ListOfMeasurements{iix}(1,end-7:end),'Features')))  ...
+            || (length(ListOfMeasurements{iix}) > 3 && ~(strcmp(ListOfMeasurements{iix}(1,end-3:end),'Text')))) ...
+            && (length(ListOfMeasurements{iix}) > 5 && ~(strcmp(ListOfMeasurements{iix}(1,1:6),'illcor')))
             % we are not dealing with a ...Features or ...Text list
 
             OutPutFile = fullfile(strDataSorterOutputFolderPath, sprintf('%s%d_to_%d_Measurements_%s_%s',BatchFilePrefix,StartImage,EndImage,char(ListOfObjects(i)), char(ListOfMeasurements(ii))));
