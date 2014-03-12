@@ -36,30 +36,38 @@ ERRORGREP=""
 for resultFile in $(ls $BATCHDIR/${RESULTFILESUFFIX}*.results -tr 2>/dev/null | tail -1); do
   #echo "$resultFile: "
   if ([ $(cat $resultFile | grep "TERM_RUNLIMIT" | wc -l ) -gt 0 ] ||
-      [ $(cat $resultFile | grep "TERM_OWNER" | wc -l ) -gt 0 ] ||
+      [ $(cat $resultFile | grep "Out of memory. Type HELP MEMORY for your options" | wc -l ) -gt 0 ]); then
+
+        if [ -e $(dirname $SUBMITTEDFILE)/$(basename $SUBMITTEDFILE .submitted).runlimit ]; then
+                echo "<warning>"
+                echo " Error: Job  $(basename $resultFile) timed out too many times."
+                echo "      <result_file>$resultFile</result_file>"
+                echo "</warning>"
+                return
+                ERRORCAUSE="[KNOWN] Timed out too many times."
+        else
+                echo "        [KNOWN ERROR FOUND]: Job exceeded runlimit, resetting job and placing timeout flag file"
+                touch $(dirname $SUBMITTEDFILE)/$(basename $SUBMITTEDFILE .submitted).runlimit
+                ERRORCAUSE="[KNOWN] Timed out; Trying in longer queue."
+        fi
+	
+	echo "          removing $resultFile"
+	rm $resultFile
+	if [ -e $SUBMITTEDFILE ]; then
+	   echo "          removing $SUBMITTEDFILE"
+	   rm $SUBMITTEDFILE
+        fi
+
+  elif ([ $(cat $resultFile | grep "TERM_OWNER" | wc -l ) -gt 0 ] ||
       [ $(cat $resultFile | grep "Problem calling GhostScript" | wc -l ) -gt 0 ] ||
       [ $(cat $resultFile | grep "Opening log file:" | wc -l ) -gt 0 ] ||
       [ $(cat $resultFile | grep "Assertion detected at" | wc -l ) -gt 0 ] ||
       [ $(cat $resultFile | grep "matlab: command not found" | wc -l ) -gt 0 ] ||
       [ $(cat $resultFile | grep "DISABLEDBYBEREND IMRESIZE" | wc -l ) -gt 0 ] ||
       [ $(cat $resultFile | grep "Undefined function or method " | wc -l ) -gt 0 ] ||
-      [ $(cat $resultFile | grep "License Manager Error" | wc -l ) -gt 0 ]);
-  then
-    if ([ $(cat $resultFile | grep "TERM_RUNLIMIT" | wc -l ) -gt 0 ] ||
-      [ $(cat $resultFile | grep "Out of memory. Type HELP MEMORY for your options" | wc -l ) -gt 0 ]); then
-	if [ -e $(dirname $SUBMITTEDFILE)/$(basename $SUBMITTEDFILE .submitted).runlimit ]; then
-		echo "<warning>"
-    		echo " Error: Job  $(basename $resultFile) timed out too many times."
-    		echo "      <result_file>$resultFile</result_file>"
-    		echo "</warning>"
-		return
-                ERRORCAUSE="[KNOWN] Timed out too many times."
-	else
-		echo "        [KNOWN ERROR FOUND]: Job exceeded runlimit, resetting job and placing timeout flag file"
-      		touch $(dirname $SUBMITTEDFILE)/$(basename $SUBMITTEDFILE .submitted).runlimit
-                ERRORCAUSE="[KNOWN] Timed out; Trying in longer queue."
-	fi
-    elif [ $(cat $resultFile | grep "TERM_OWNER" | wc -l ) -gt 0 ]; then
+      [ $(cat $resultFile | grep "License Manager Error" | wc -l ) -gt 0 ]); then
+    
+    if [ $(cat $resultFile | grep "TERM_OWNER" | wc -l ) -gt 0 ]; then
       echo "        [KNOWN ERROR FOUND]: Owner terminated job, resetting job"
       ERRORCAUSE="[KNOWN] Owner terminated job"
     elif [ $(cat $resultFile | grep "License Manager Error" | wc -l ) -gt 0 ]; then
