@@ -358,101 +358,109 @@ if strncmpi(AplyIllumCorr,'y',1)
     
 end
 
-%display the results
+%%%%%%%%%%%%%%%%%%%%%%
+%% DISPLAY RESULTS %%%
+%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
-CPfigure(handles,'Image',ThisModuleFigureNumber);
-CPresizefigure(OrigImage,'TwoByTwo',ThisModuleFigureNumber);
-subplot(2,5,1);
-try
-    CPimagesc(IllumFilt_Mean,handles);
-    colormap('JET')
-    colorbar
-    title('Mean Intensity Filter [Log10(intensity)]')
-end
-subplot(2,5,2);
-try
-    CPimagesc(IllumFilt_STD,handles);
-    colormap('JET')
-    colorbar
-    title('STD Intensity Filter [Log10(intensity)]')
-end
-subplot(2,5,6);
-try
-    CPimagesc(IllumFilt_SiteMean,handles);
-    colormap('JET')
-    colorbar
-    title('Site Mean Intensity Filter [Log10(intensity)]')
-end
-subplot(2,5,7);
-try
-    CPimagesc(IllumFilt_SiteSTD,handles);
-    colormap('JET')
-    colorbar
-    title('Site STD Intensity Filter [Log10(intensity)]')
-end
+if ~CPisHeadless()
 
-subplot(2,5,3);
-try
-    CPimagesc(OrigImage,handles);
-    colormap('JET')
-    title('Original Image')
-end
-subplot(2,5,8);
-try
-    CPimagesc(ImageOutputPlot,handles);
-    colormap('JET')
-    if strncmpi(AplyBackgroundSubtraction,'y',1)
-        title(sprintf('Corrected Image\n+Background Subtraction'),'FontSize',7)
-    else
-        title('Corrected Image')
+    ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
+    CPfigure(handles,'Image',ThisModuleFigureNumber);
+    CPresizefigure(OrigImage,'TwoByTwo',ThisModuleFigureNumber);
+    subplot(2,5,1);
+    try
+        CPimagesc(IllumFilt_Mean,handles);
+        colormap('JET')
+        colorbar
+        title('Mean Intensity Filter [Log10(intensity)]')
     end
-end
+    subplot(2,5,2);
+    try
+        CPimagesc(IllumFilt_STD,handles);
+        colormap('JET')
+        colorbar
+        title('STD Intensity Filter [Log10(intensity)]')
+    end
+    subplot(2,5,6);
+    try
+        CPimagesc(IllumFilt_SiteMean,handles);
+        colormap('JET')
+        colorbar
+        title('Site Mean Intensity Filter [Log10(intensity)]')
+    end
+    subplot(2,5,7);
+    try
+        CPimagesc(IllumFilt_SiteSTD,handles);
+        colormap('JET')
+        colorbar
+        title('Site STD Intensity Filter [Log10(intensity)]')
+    end
 
-subplot(2,5,4);
-try
-    hold on
-    hist(OrigImage(:),round(length(OrigImage(:))/20))
-    vline(BackgroundSubtractionVal,'--r')
-    hold off
-    if ~strncmpi(AplyBackgroundSubtraction,'y',1)
-        set(gca,'xlim',[quantile(OrigImage(:), 0.001) quantile(OrigImage(:), 0.95)])
+    subplot(2,5,3);
+    try
+        CPimagesc(OrigImage,handles);
+        colormap('JET')
+        title('Original Image')
     end
-    ylabel('Pixel Count')
-    xlabel('Intensity')
-    title('Original Image Histogram')
-end
-subplot(2,5,9);
-try
-    if ~strncmpi(AplyBackgroundSubtraction,'y',1)
-        hist(ImageOutputPlot(:),round(length(ImageOutputPlot(:))/20))
-        set(gca,'xlim',[quantile(OrigImage(:), 0.001) quantile(OrigImage(:), 0.95)])
-        title('Corrected Image Histogram')
-    else
-        hist(ImageOutputPlot(ImageOutputPlot>0),round(length(ImageOutputPlot(ImageOutputPlot>0))/20))
-        title('Corrected Image Histogram (values > 0)')
+    subplot(2,5,8);
+    try
+        CPimagesc(ImageOutputPlot,handles);
+        colormap('JET')
+        if strncmpi(AplyBackgroundSubtraction,'y',1)
+            title(sprintf('Corrected Image\n+Background Subtraction'),'FontSize',7)
+        else
+            title('Corrected Image')
+        end
     end
-    ylabel('Pixel Count')
-    xlabel('Intensity')
+
+    subplot(2,5,4);
+    try
+        hold on
+        hist(OrigImage(:),round(length(OrigImage(:))/20))
+        vline(BackgroundSubtractionVal,'--r')
+        hold off
+        if ~strncmpi(AplyBackgroundSubtraction,'y',1)
+            set(gca,'xlim',[quantile(OrigImage(:), 0.001) quantile(OrigImage(:), 0.95)])
+        end
+        ylabel('Pixel Count')
+        xlabel('Intensity')
+        title('Original Image Histogram')
+    end
+    subplot(2,5,9);
+    try
+        if ~strncmpi(AplyBackgroundSubtraction,'y',1)
+            hist(ImageOutputPlot(:),round(length(ImageOutputPlot(:))/20))
+            set(gca,'xlim',[quantile(OrigImage(:), 0.001) quantile(OrigImage(:), 0.95)])
+            title('Corrected Image Histogram')
+        else
+            hist(ImageOutputPlot(ImageOutputPlot>0),round(length(ImageOutputPlot(ImageOutputPlot>0))/20))
+            title('Corrected Image Histogram (values > 0)')
+        end
+        ylabel('Pixel Count')
+        xlabel('Intensity')
+
+    end
+    subplot(2,5,5);
+    try
+        hold on
+        hist(IllumFilt_SiteSTD(:),round(length(IllumFilt_SiteSTD(:))/20))
+        vline(intThresh,'--r')
+        hold off
+        ylabel('Pixel Count')
+        xlabel('Site STD Intensity Filter [Log10(intensity)]')
+        title('Site STD Intensity Filter Histogram')
+    end
+    subplot(2,5,10);
+    try
+        CPimagesc(matMask,handles);
+        colormap('JET')
+        title('Correction Mask')    
+    end
     
-end
-subplot(2,5,5);
-try
-    hold on
-    hist(IllumFilt_SiteSTD(:),round(length(IllumFilt_SiteSTD(:))/20))
-    vline(intThresh,'--r')
-    hold off
-    ylabel('Pixel Count')
-    xlabel('Site STD Intensity Filter [Log10(intensity)]')
-    title('Site STD Intensity Filter Histogram')
-end
-subplot(2,5,10);
-try
-    CPimagesc(matMask,handles);
-    colormap('JET')
-    title('Correction Mask')    
-end
+end 
+
+
 drawnow
 
 end

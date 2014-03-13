@@ -113,33 +113,35 @@ FinalImage = imfill(DilatedImage);
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
-if any(findobj == ThisModuleFigureNumber)
-    %%% Calculates the OriginalColoredLabelMatrixImage for displaying in the figure
-    %%% window in subplot(2,1,1).
-    OriginalColoredLabelMatrixImage = CPlabel2rgb(handles,SegmentedInputImage);
-    %%% Calculates the ShrunkenColoredLabelMatrixImage for displaying in the figure
-    %%% window in subplot(2,1,2).
-    PropagatedColoredLabelMatrixImage = CPlabel2rgb(handles,FinalImage);
+if ~CPisHeadless()
+    ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
+    if any(findobj == ThisModuleFigureNumber)
+        %%% Calculates the OriginalColoredLabelMatrixImage for displaying in the figure
+        %%% window in subplot(2,1,1).
+        OriginalColoredLabelMatrixImage = CPlabel2rgb(handles,SegmentedInputImage);
+        %%% Calculates the ShrunkenColoredLabelMatrixImage for displaying in the figure
+        %%% window in subplot(2,1,2).
+        PropagatedColoredLabelMatrixImage = CPlabel2rgb(handles,FinalImage);
 
-    %%% Activates the appropriate figure window.
-    CPfigure(handles,'Image',ThisModuleFigureNumber);
-    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-        CPresizefigure(OriginalColoredLabelMatrixImage,'TwoByOne',ThisModuleFigureNumber)
-    end%%% A subplot of the figure window is set to display the original image.
-    subplot(2,1,1);
-    CPimagesc(OriginalColoredLabelMatrixImage,handles);
-    title([ObjectName, ' cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
-    subplot(2,1,2);
-    CPimagesc(IntensityImage,handles);
-    title([PropagatedObjectName,' cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
-    B = bwboundaries(FinalImage,'holes');
-    hold on
-    for k = 1:length(B)
-        boundary = B{k};
-        plot(boundary(:,2), boundary(:,1), 'r', 'LineWidth', 1)
+        %%% Activates the appropriate figure window.
+        CPfigure(handles,'Image',ThisModuleFigureNumber);
+        if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+            CPresizefigure(OriginalColoredLabelMatrixImage,'TwoByOne',ThisModuleFigureNumber)
+        end%%% A subplot of the figure window is set to display the original image.
+        subplot(2,1,1);
+        CPimagesc(OriginalColoredLabelMatrixImage,handles);
+        title([ObjectName, ' cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
+        subplot(2,1,2);
+        CPimagesc(IntensityImage,handles);
+        title([PropagatedObjectName,' cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
+        B = bwboundaries(FinalImage,'holes');
+        hold on
+        for k = 1:length(B)
+            boundary = B{k};
+            plot(boundary(:,2), boundary(:,1), 'r', 'LineWidth', 1)
+        end
+        hold off
     end
-    hold off
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
