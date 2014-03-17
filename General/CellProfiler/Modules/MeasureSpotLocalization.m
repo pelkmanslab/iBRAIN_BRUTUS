@@ -43,7 +43,6 @@ function handles = MeasureSpotLocalization(handles)
 %
 %
 
-%%VariableRevisionNumber = 5
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
@@ -200,7 +199,6 @@ if ObjCounts < 1
 else
     listUniq = [1:ObjCounts];
 end
-
 
 
 %%% initialize parameters
@@ -467,7 +465,7 @@ end
 
 %%% save the features names
 if handles.Current.SetBeingAnalyzed==1
-    handles.Measurements.(ChildrenObjectName).ChildrenLocalizationFeatures{handles.Current.SetBeingAnalyzed} = strFeautesGlobal;
+    handles.Measurements.(ChildrenObjectName).ChildrenLocalizationFeatures = strFeautesGlobal;
     handles.Measurements.(ChildrenObjectName).ChildrenLocalization = cell(1,handles.Current.NumberOfImageSets);
 end
 
@@ -495,10 +493,10 @@ else
         matDisRadY1];
 end
 
-%%% save the features names
-if handles.Current.SetBeingAnalyzed==1
-    handles.Measurements.(ChildrenObjectName).ChildrenLocalizationFeatures{handles.Current.SetBeingAnalyzed} = strFeautesGlobal;
-end
+% %%% save the features names
+% if handles.Current.SetBeingAnalyzed==1
+%     handles.Measurements.(ChildrenObjectName).ChildrenLocalizationFeatures{handles.Current.SetBeingAnalyzed} = strFeautesGlobal;
+% end
 
 
 %Visuallize outputs

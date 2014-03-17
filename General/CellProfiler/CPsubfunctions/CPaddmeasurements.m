@@ -25,9 +25,7 @@ function handles = CPaddmeasurements(handles,Object,Measure,Feature,Data)
 %
 % $Revision: 2802 $
 
-Object
-Measure
-Feature
+fprintf('%s: Object: ''%s'', Measure: ''%s'', Feature: ''%s'' was added to the handles\n',mfilename,Object,Measure,Feature);
 
 FeaturesField = [Measure,'Features'];
 

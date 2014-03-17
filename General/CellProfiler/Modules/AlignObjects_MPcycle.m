@@ -396,12 +396,12 @@ for i = 1:length(ObjectNameList)
             % identify children object
             ixChild = find(strcmp(handles.Measurements.(ObjectName).ParentFeatures,ObjectNameList{obj}));
             if ~isempty(ixChild)
-                % calculate new object counts for the parent objects
+                % calculate new parent ids
                 childObj = max(unique(LabeledSegmentationOutputImages{ixChild}));%minus 1 to get rid of background 0
                 for subobj = 1:childObj
                     parentObj = unique(LabeledSegmentationOutputImages{obj}(LabeledSegmentationOutputImages{ixChild}==subobj));
                     parentObj(parentObj==0) = [];
-                    parentCount(subobj,ixChild) = length(parentObj);
+                    parentCount(subobj,ixChild) = parentObj;
                 end
                 % save new object counts to handles
                 handles.Measurements.(ObjectName).Parent{handles.Current.SetBeingAnalyzed} = parentCount;
