@@ -174,12 +174,16 @@ M_PROG"
             # output present
             elif [ -e $ILLCOROUTPUTFILE ]; then
 
-                for ILLCORRESULTFILE in ILLCORRESULTFILES; do
-                    DONE_LEARNING=$(grep 'statistics for all images was successfully learned. We are done.' ILLCORRESULTFILE -c)
-                    if [ $DONE_LEARNING -eq 0 ]; then
-                        COMPLETEDILLCORMEASUREMENTCHECK=0;
-                    fi
-                done
+                if [ ILLCORRESULTFILECOUNT -eq 0 ]; then
+                    COMPLETEDILLCORMEASUREMENTCHECK=0;
+                else
+                    for ILLCORRESULTFILE in ILLCORRESULTFILES; do
+                        DONE_LEARNING=$(grep 'statistics for all images was successfully learned. We are done.' ILLCORRESULTFILE -c)
+                        if [ $DONE_LEARNING -eq 0 ]; then
+                            COMPLETEDILLCORMEASUREMENTCHECK=0;
+                        fi
+                    done
+                fi
 
                 if  [ $COMPLETEDILLCORMEASUREMENTCHECK -eq 1 ]; then
                     echo "     <status action=\"$(basename $ILLCORSETTINGSFILE)\">completed"
