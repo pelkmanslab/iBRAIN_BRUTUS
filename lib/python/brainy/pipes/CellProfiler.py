@@ -327,13 +327,13 @@ class CPDataFusion(BrainyProcess):
         # Find actually present outputs.
         expr = re.compile('Measurements_([^\.]*)\.mat')
         parse_feature = lambda filename: expr.search(basename(filename)) \
-             .group(1)
+            .group(1)
         ignored_names = ['batch_illcor', 'OUT']
         found_files = [parse_feature(filename) for filename
                        in self.list_batch_dir()
                        if fnmatch(basename(filename), 'Measurements_*.mat')
                        and not basename(filename) in ignored_names]
-        print('Found %d fusion job results logs vs. %d merged .MAT feature files' %
-              (number_of_expected_fused_files, len(found_files)))
+        print('Found %d fusion job results logs vs. %d merged .MAT feature '
+              'files' % (number_of_expected_fused_files, len(found_files)))
         return number_of_expected_fused_files == len(found_files)
 
