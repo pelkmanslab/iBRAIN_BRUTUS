@@ -451,7 +451,7 @@ for INCLUDEDPATH in $(sed -e 's/[[:cntrl:]]//g' $INCLUDEDPATHSFILE); do
                 # submit job: run ibrain_project. sed-transform the xml to be web-friendly. store output in new XML output file
                 # FIXME first line in the submission below is an ugly fixs for BRUTUS infrastructural problems - an IO timeout
 bsub -W $QUEUE -oo $PROJECTXMLDIR/ibrain_project_sh_output.results <<EOS
-ls -l /BIOL/imsb/fs2/bio3/bio3/ 2>&1 > /dev/null
+ls -l /BIOL/sonas/biol_uzh_pelkmans_s4/ 2>&1 > /dev/null
 $IBRAIN_ROOT/iBRAIN_project.sh $INCLUDEDPATH $PRECLUSTERBACKUPPATH $PROJECTXMLDIR $NEWPROJECTXMLOUTPUT 2>&1 | $IBRAIN_BIN_PATH/sedTransformLogWeb.sed > $NEWPROJECTXMLOUTPUT 2>&1
 if [ -e $NEWPROJECTXMLOUTPUT ]; then
 
