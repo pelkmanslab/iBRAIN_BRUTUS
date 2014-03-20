@@ -207,7 +207,7 @@ class CPCluster(BrainyProcess):
         })
 
         self.set_flag('resubmitted')
-        super(PreCluster, self).resubmit()
+        super(CPCluster, self).resubmit()
 
     def has_data(self):
         '''Validate the integrity of cpcluster step'''
