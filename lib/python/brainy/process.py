@@ -33,7 +33,7 @@ def format_code(code, lang='bash'):
         if lang == 'python':
             if len(line.strip()) == 0:
                 continue
-            if left_strip_width is None:    
+            if left_strip_width is None:
                 # Strip only first left.
                 left_strip_width = 0
                 j = 0
@@ -89,67 +89,74 @@ class BrainyProcess(pipette.Process, FlagManager):
         return self.parameters.get('batch_size', '1')
 
     @property
-    def process_path(self):
-        return self.parameters['process_path']
-
-    @property
     def job_report_exp(self):
         return self.parameters.get(
             'job_report_exp',
-            '%s_\d+.job_report' % self.name if self._job_report_exp is None \
+            '%s_\d+.job_report' % self.name if self._job_report_exp is None
             else self._job_report_exp,
         )
 
     @property
+    def plate_path(self):
+        # We don't allow to parametrize plate_path for security reasons.
+        # See method restrict_to_safe_path() below.
+        return self.env['plate_path']
+
+    def restrict_to_safe_path(self, pathname):
+        '''Restrict every relative pathname to point within the plate path'''
+        plate_path = self.plate_path
+        if not plate_path.endswith('/'):
+            plate_path += '/'
+        if '../../' in pathname:
+            pathname = pathname.replace('../../', plate_path, 1)
+        return pathname.replace('..', '')
+
+    @property
+    def process_path(self):
+        return self.restrict_to_safe_path(self.parameters['process_path'])
+
+    @property
     def pipes_path(self):
         '''PIPES folder inside the plate path'''
-        return self.parameters.get(
+        return self.restrict_to_safe_path(self.parameters.get(
             'pipes_path',
-            # can this be guaranteed to always point to PIPES?
-            os.path.dirname(self.process_path),
-        )
+            self.env['pipes_path'],
+        ))
 
     @property
     def reports_path(self):
-        return self.parameters.get(
+        return self.restrict_to_safe_path(self.parameters.get(
             'reports_path',
             os.path.join(self.process_path, 'REPORTS'),
-        )
+        ))
 
     @property
     def batch_path(self):
-        return self.parameters.get(
+        return self.restrict_to_safe_path(self.parameters.get(
             'batch_path',
             os.path.join(self.process_path, 'BATCH'),
-        )
+        ))
 
     @property
     def tiff_path(self):
-        return self.parameters.get(
+        return self.restrict_to_safe_path(self.parameters.get(
             'tiff_path',
             self.env['tiff_path'],
-        )
+        ))
 
     @property
     def postanalysis_path(self):
-        return self.parameters.get(
+        return self.restrict_to_safe_path(self.parameters.get(
             'postanalysis_path',
             self.env['postanalysis_path'],
-        )
+        ))
 
     @property
     def jpg_path(self):
-        return self.parameters.get(
+        return self.restrict_to_safe_path(self.parameters.get(
             'jpg_path',
             self.env['jpg_path'],
-        )
-
-    @property
-    def plate_path(self):
-        return self.parameters.get(
-            'plate_path',
-            self.env['plate_path'],
-        )
+        ))
 
     @property
     def job_submission_queue(self):
