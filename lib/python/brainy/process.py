@@ -207,7 +207,7 @@ class BrainyProcess(pipette.Process, FlagManager):
 
     def list_batch_dir(self):
         if self.__batch_listing is None:
-            print('Listing batch folder. Please wait.. ')
+            # print('Listing batch folder. Please wait.. ')
             self.__batch_listing = list()
             for filename in os.listdir(self.batch_path):
                 self.__batch_listing.append(
@@ -222,10 +222,10 @@ class BrainyProcess(pipette.Process, FlagManager):
         # Differentiate between submission and resubmission parameters.
         if is_resubmitting:
             if not queue:
-                queue = self.job_submission_queue
+                queue = self.job_resubmission_queue
         else:
             if not queue:
-                queue = self.job_resubmission_queue
+                queue = self.job_submission_queue
         # Form a unique report file path.
         if not report_file:
             report_file = os.path.join(
@@ -241,7 +241,7 @@ class BrainyProcess(pipette.Process, FlagManager):
         )
 
     def submit_bash_job(self, bash_code, queue=None, report_file=None,
-                          is_resubmitting=False):
+                        is_resubmitting=False):
         script = '''
         %(bash_call)s << BASH_CODE;
         %(bash_code)s

@@ -36,21 +36,28 @@ class PreCluster(BrainyProcess):
     def get_cp_pipeline_path(self):
         filename_regex_obj = re.compile(fntranslate(
                                         self.cp_pipeline_fnpattern))
-        cp_pipeline_files = [
-            filename for filename in os.listdir(self.process_path)
-            if filename_regex_obj.match(filename)
-        ]
-        if len(cp_pipeline_files) > 1:
-            raise BrainyProcessError('More than one CP pipeline settings file'
-                                     ' found matching: %s in %s' %
-                                     (self.cp_pipeline_fnpattern,
-                                      self.process_path))
-        elif len(cp_pipeline_files) == 0:
-            raise BrainyProcessError('No CP pipeline settings file'
-                                     ' found matching: %s in %s' %
-                                     (self.cp_pipeline_fnpattern,
-                                      self.process_path))
-        return os.path.join(self.process_path, cp_pipeline_files[0])
+        # Look both in PIPES folder and process folder of the pipe (named
+        # after pipe).
+        for location in (self.process_path, self.pipes_path):
+            cp_pipeline_files = [
+                os.path.join(location, filename) for filename
+                in os.listdir(location)
+                if filename_regex_obj.match(filename)
+            ]
+            # Check if found anything and complain otherwise.
+            if len(cp_pipeline_files) > 1:
+                raise BrainyProcessError('More than one CP pipeline settings '
+                                         'file found matching: %s in %s' %
+                                         (self.cp_pipeline_fnpattern,
+                                          self.process_path))
+            elif len(cp_pipeline_files) == 1:
+                # First found pipeline. Rest is ignored.
+                return cp_pipeline_files[0]
+        # Failed to find anything.
+        raise BrainyProcessError('No CP pipeline settings file'
+                                 ' found matching: %s in %s' %
+                                 (self.cp_pipeline_fnpattern,
+                                  self.process_path))
 
     def put_on(self):
         super(PreCluster, self).put_on()
