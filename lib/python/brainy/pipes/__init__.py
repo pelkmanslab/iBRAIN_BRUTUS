@@ -198,7 +198,7 @@ class PipesModule(BrainyModule):
 
             if depends_on_previous and previous_pipeline.has_failed:
                 print('''
-                 <status action="%(pipeline_name)s">failed
+                 <status action="pipes-%(pipeline_name)s">failed
                     <warning>Previous pipe that we depend on has failed or did not complete</warning>
                  </status>
                 ''' % {
