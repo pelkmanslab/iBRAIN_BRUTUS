@@ -8,7 +8,11 @@ from brainy.modules import BrainyModule
 
 
 class BrainyPipeFailure(Exception):
-    '''Thrown when pipeline execution has to be interruptted.'''
+    '''Thrown when pipeline execution has to be interrupted.'''
+
+
+class ProccessEndedIncomplete(BrainyPipeFailure):
+    '''One of the pipe's processes failed to complete successfully.'''
 
 
 class BrainyPipe(pipette.Pipe):
@@ -17,6 +21,7 @@ class BrainyPipe(pipette.Pipe):
         super(BrainyPipe, self).__init__(definition)
         self.process_namespace = 'brainy.pipes'
         self.pipes_module = pipes_module
+        self.has_failed = False
 
     def instantiate_process(self, process_description,
                             default_type=None):
@@ -40,13 +45,9 @@ class BrainyPipe(pipette.Pipe):
         try:
             super(BrainyPipe, self).execute_process(process, parameters)
 
-            # Makes sense only if the was no output
-            # print('''
-            #  <status action="%(step_name)s">passed
-            #  </status>
-            # ''' % {
-            #     'step_name': step_name,
-            # })
+            if not process.is_complete:
+                raise ProccessEndedIncomplete()
+
         except BrainyProcessError as error:
             output = ''
             if error.output:
@@ -183,8 +184,33 @@ class PipesModule(BrainyModule):
         return result
 
     def process_pipelines(self):
+        previous_pipeline = None
         for pipeline in self.pipelines:
+            # Check if current pipeline is dependent on previous one.
+            depends_on_previous = False
+            if not previous_pipeline is None:
+                if 'before' in previous_pipeline.definition:
+                    depends_on_previous = \
+                        previous_pipeline.definition['before'] == pipeline.name
+                elif 'after' in pipeline.definition:
+                    depends_on_previous = \
+                        previous_pipeline.name == pipeline.definition['after']
+
+            if depends_on_previous and previous_pipeline.has_failed:
+                print('''
+                 <status action="%(pipeline_name)s">failed
+                    <warning>Previous pipe that we depend on was failed or incomplete</warning>
+                 </status>
+                ''' % {
+                    'pipeline_name': pipeline.name,
+                })
+                continue
+
+            # Execute current pipeline.
             self.execute_pipeline(pipeline)
+
+            # Remember as previous.
+            previous_pipeline = pipeline
 
     def execute_pipeline(self, pipeline):
         '''
@@ -192,8 +218,8 @@ class PipesModule(BrainyModule):
         PipesModule.
         '''
         try:
-           pipeline.communicate()
+            pipeline.communicate()
         except BrainyPipeFailure:
-            # Errors are reported inside individual
+            # Errors are reported inside individual pipeline.
             print '<!-- A pipeline has failed. Continue with the next one -->'
-
+            pipeline.has_failed = True
