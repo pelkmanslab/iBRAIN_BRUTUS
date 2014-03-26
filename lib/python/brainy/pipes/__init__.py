@@ -124,31 +124,31 @@ class PipesModule(BrainyModule):
                 before_dag[dependends_on].append(depended_pipename)
 
         def resolve_dependecy(name_a, name_b):
-            # After
+            # After            
             if name_a in after_dag:
                 if not name_b in after_dag:
                     # Second argument has no "after" dependencies.
-                    if name_b in after_dag[name_a]:
-                        return 1
+                    if name_b in after_dag[name_a]:                        
+                        return -1
                 else:
                     # Second argument has "after" dependencies.
                     if name_b in after_dag[name_a] \
                             and name_a in after_dag[name_b]:
                         raise Exception('Recursive dependencies')
                     if name_b in after_dag[name_a]:
-                        return 1
+                        return -1
             if name_b in after_dag:
                 if not name_a in after_dag:
                     # First argument has no "after" dependencies.
                     if name_a in after_dag[name_b]:
-                        return -1
+                        return 1
                 else:
                     # First argument has "after" dependencies.
                     if name_a in after_dag[name_b] \
                             and name_b in after_dag[name_a]:
                         raise Exception('Recursive dependencies')
                     if name_a in after_dag[name_b]:
-                        return -1
+                        return 1
             # Before
             if name_a in before_dag:
                 if not name_b in before_dag:
