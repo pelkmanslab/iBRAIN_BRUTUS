@@ -13,6 +13,9 @@ echo submitting DataFusion on $1/$FILENAME.mat
 REPORTFILE=DataFusion_${FILENAME}_$(date +"%y%m%d%H%M%S").results
 
 bsub -W 01:00 -R 'rusage[mem=4000]' -o $1/$REPORTFILE "matlab -singleCompThread -nodisplay -nojvm << M_PROG;
+% Add custom project code support.
+brainy.libpath.checkAndAppendLibPath(os.path.dirname(batchfile));
+% Run fusion.
 RunDataFusion('$1','$FILENAME');
 M_PROG"
 

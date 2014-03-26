@@ -174,7 +174,7 @@ M_PROG"
             # output present
             elif [ -e $ILLCOROUTPUTFILE ]; then
 
-                if [ ILLCORRESULTFILECOUNT -eq 0 ]; then
+                if [ $ILLCORRESULTFILECOUNT -eq 0 ]; then
                     COMPLETEDILLCORMEASUREMENTCHECK=0;
                 else
                     for ILLCORRESULTFILE in ILLCORRESULTFILES; do
