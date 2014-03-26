@@ -124,11 +124,11 @@ class PipesModule(BrainyModule):
                 before_dag[dependends_on].append(depended_pipename)
 
         def resolve_dependecy(name_a, name_b):
-            # After            
+            # After
             if name_a in after_dag:
                 if not name_b in after_dag:
                     # Second argument has no "after" dependencies.
-                    if name_b in after_dag[name_a]:                        
+                    if name_b in after_dag[name_a]:
                         return -1
                 else:
                     # Second argument has "after" dependencies.
@@ -199,7 +199,7 @@ class PipesModule(BrainyModule):
             if depends_on_previous and previous_pipeline.has_failed:
                 print('''
                  <status action="%(pipeline_name)s">failed
-                    <warning>Previous pipe that we depend on was failed or incomplete</warning>
+                    <warning>Previous pipe that we depend on has failed or did not complete</warning>
                  </status>
                 ''' % {
                     'pipeline_name': pipeline.name,
