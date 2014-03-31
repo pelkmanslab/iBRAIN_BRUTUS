@@ -426,3 +426,37 @@ class BrainyProcess(pipette.Process, FlagManager):
             print('''
         <status action="%(step_name)s">completed</status>
             ''' % {'step_name': self.step_name})
+
+
+class PythonCodeProcess(BrainyProcess):
+
+    def submit(self):
+        '''Default method for python code submission'''
+        submission_result = self.submit_python_job(self.get_python_code())
+
+        print('''
+            <status action="%(step_name)s">submitting
+            <output>%(submission_result)s</output>
+            </status>
+        ''' % {
+            'step_name': self.step_name,
+            'submission_result': escape_xml(submission_result),
+        })
+
+        self.set_flag('submitted')
+
+    def resubmit(self):
+        resubmission_result = self.submit_python_job(self.get_python_code(),
+                                                     is_resubmitting=True)
+
+        print('''
+            <status action="%(step_name)s">resubmitting
+            <output>%(resubmission_result)s</output>
+            </status>
+        ''' % {
+            'step_name': self.step_name,
+            'resubmission_result': escape_xml(resubmission_result),
+        })
+
+        self.set_flag('resubmitted')
+        super(PythonCodeProcess, self).resubmit()

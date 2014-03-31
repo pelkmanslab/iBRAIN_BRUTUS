@@ -1,6 +1,5 @@
 import os
 import re
-from datetime import datetime
 from xml.sax.saxutils import escape as escape_xml
 #from plato.shell.findutils import (Match, find_files)
 from fnmatch import fnmatch, translate as fntranslate
@@ -8,10 +7,7 @@ from os.path import basename
 
 from brainy.process import BrainyProcess, BrainyProcessError
 from brainy.pipes import BrainyPipe
-
-
-def get_timestamp_str():
-    return datetime.now().strftime('%Y%m%d%H%M%S')
+from brainy.pipes.Tools import get_timestamp_str
 
 
 class Pipe(BrainyPipe):

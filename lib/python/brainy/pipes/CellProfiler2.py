@@ -1,20 +1,16 @@
 import os
 import re
 import textwrap
-from datetime import datetime
 from xml.sax.saxutils import escape as escape_xml
 #from plato.shell.findutils import (Match, find_files)
 from fnmatch import fnmatch, translate as fntranslate
 from os.path import basename
 
 import brainy
-from brainy.process import BrainyProcess, BrainyProcessError
+from brainy.process import PythonCodeProcess, BrainyProcessError
 from brainy.pipes import BrainyPipe
 from brainy.config import config
-
-
-def get_timestamp_str():
-    return datetime.now().strftime('%Y%m%d%H%M%S')
+from brainy.pipes.Tools import get_timestamp_str
 
 
 def get_cp2_call():
@@ -83,7 +79,7 @@ class Pipe(BrainyPipe):
     '''
 
 
-class CreateJobBatches(BrainyProcess):
+class CreateJobBatches(PythonCodeProcess):
     '''
     Run CellProfiller2 project (pipeline) with CreateBatchFiles module.
     Expecting to create BATCH/Batch_data.h5 file.
@@ -165,32 +161,3 @@ class CreateJobBatches(BrainyProcess):
         }
         return code
 
-    def submit(self):
-        submission_result = self.submit_python_job(self.get_python_code())
-
-        print('''
-            <status action="%(step_name)s">submitting
-            <output>%(submission_result)s</output>
-            </status>
-        ''' % {
-            'step_name': self.step_name,
-            'submission_result': escape_xml(submission_result),
-        })
-
-        self.set_flag('submitted')
-
-    def resubmit(self):
-        submission_result = self.submit_python_job(self.get_python_code(),
-                                                   is_resubmitting=True)
-
-        print('''
-            <status action="%(step_name)s">resubmitting
-            <output>%(resubmission_result)s</output>
-            </status>
-        ''' % {
-            'step_name': self.step_name,
-            'resubmission_result': escape_xml(resubmission_result),
-        })
-
-        self.set_flag('resubmitted')
-        super(CreateJobBatches, self).resubmit()
