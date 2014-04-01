@@ -117,6 +117,7 @@ class CPCluster(BrainyProcess):
         super(CPCluster, self).__init__()
         self.__batch_files = None
         self._job_report_exp = 'Batch_\d+_to_\d+.results_\d+'
+        self._batch_expr = re.compile('Batch_(\d+_to_\d+)')
 
     @property
     def reports_path(self):
@@ -174,10 +175,20 @@ class CPCluster(BrainyProcess):
         self.set_flag('submitted')
 
     def resubmit(self):
-        results = list()
+        resubmission_results = list()
+        output_batches = self.get_out_files()
+        result_batches = self.get_result_files()
         for batch_filename in self.batch_files:
-            # TODO: resubmit only those files that have no data, i.e. failed
-            # with no output.
+            # Resubmit only those files that have no data, i.e. failed with no
+            # output.
+            batch_prefix = self.parse_batch(batch_filename)
+            if batch_prefix in output_batches \
+                    and batch_prefix in result_batches:
+                # This batch is complete. Do not resubmit it.
+                print '<!-- CP batch %s is complete. Skipping.. -->' % \
+                      batch_filename
+                continue
+            # Batch has not produced any output yet. We can resubmit it.
             matlab_code = self.get_matlab_code(batch_filename)
             batch_report = batch_filename.replace(
                 '.mat', '.results_%s' % get_timestamp_str())
@@ -186,9 +197,9 @@ class CPCluster(BrainyProcess):
                 report_file=batch_report,
                 is_resubmitting=True,
             )
-            results.append(resubmission_result)
+            resubmission_results.append(resubmission_result)
 
-        if not results:
+        if not resubmission_results:
             raise BrainyProcessError(warning='Failed to find any batches.. '
                                      'check or restart previous step')
 
@@ -198,26 +209,37 @@ class CPCluster(BrainyProcess):
             </status>
         ''' % {
             'step_name': self.step_name,
-            'batch_count': len(results),
-            'resubmission_result': escape_xml(str(results)),
+            'batch_count': len(resubmission_results),
+            'resubmission_result': escape_xml(str(resubmission_results)),
         })
 
         self.set_flag('resubmitted')
         super(CPCluster, self).resubmit()
 
+    def parse_batch(self, filename):
+        '''Return batch_prefix - a span of batch numbers.'''
+        return self._batch_expr.search(basename(filename)).group(1)
+
+    def get_out_files(self):
+        '''
+        Get a list of OUT.mat files from BATCH folder. Each file is produced
+        when measurements of a particular CP job are saved, i.e. written to
+        disk.
+        '''
+        return [self.parse_batch(filename) for filename
+                in self.list_batch_dir()
+                if fnmatch(basename(filename), 'Batch_*_OUT.mat')]
+
+    def get_result_files(self):
+        '''Get a list of job report files from BATCH folder.'''
+        return [self.parse_batch(filename)
+                for filename in self.list_batch_dir()
+                if fnmatch(basename(filename), 'Batch_*.results_*')]
+
     def has_data(self):
         '''Validate the integrity of cpcluster step'''
-        expr = re.compile('Batch_(\d+_to_\d+)')
-        parse_batch = lambda filename: expr.search(basename(filename)) \
-            .group(1)
-        output_batches = [parse_batch(filename) for filename
-                          in self.list_batch_dir()
-                          if fnmatch(basename(filename),
-                                     'Batch_*_OUT.mat')]
-        result_batches = dict(((parse_batch(filename), filename)
-                              for filename in self.list_batch_dir()
-                              if fnmatch(basename(filename),
-                                         'Batch_*.results_*')))
+        output_batches = self.get_out_files()
+        result_batches = self.get_result_files()
         #print('Found %d job results logs vs. %d .MAT output files' %
         #      (len(result_batches), len(output_batches)))
         return len(result_batches) == len(output_batches)

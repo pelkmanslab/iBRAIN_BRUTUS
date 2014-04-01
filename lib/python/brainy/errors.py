@@ -27,7 +27,8 @@ class OutOfMemoryError(KnownError):
     '''
 
 
-UNKNOWN_ERROR = re.compile('ERROR', re.IGNORECASE)
+#UNKNOWN_ERROR = re.compile('ERROR', re.IGNORECASE)
+UNKNOWN_ERROR = re.compile('Exited with exit code', re.IGNORECASE)
 
 
 KNOWN_ERRORS = {
