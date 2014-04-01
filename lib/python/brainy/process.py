@@ -368,26 +368,28 @@ class BrainyProcess(pipette.Process, FlagManager):
                         Job %s timed out too many times.
                         <result_file>%s</result_file>
                     ''' % (report_filename, report_filepath)
-                    raise BrainyProcessError(warning=message.strip(),
-                                             output=error.details)
+                    raise BrainyProcessError(
+                        warning=escape_xml(message.strip()),
+                        output=escape_xml(error.details)
+                    )
                 else:
-                    print '[KNOWN ERROR FOUND]: Job exceeded runlimit, ' \
-                        'resetting job and placing timeout flag file'
+                    print '<!--[KNOWN ERROR FOUND]: Job exceeded runlimit, ' \
+                        'resetting job and placing timeout flag file -->'
                     self.set_flag('runlimit')
             except KnownError as error:
-                print '[KNOWN ERROR FOUND]: %s' % error.message
-                print 'Resetting ".submitted" flag and removing job report.'
+                print '<!--[KNOWN ERROR FOUND]: %s' % error.message
+                print 'Resetting ".submitted" flag and removing job report.-->'
                 self.reset_submitted()
-                os.unlink('report_filepath')
-                raise BrainyProcessError(warning=error.message,
-                                         output=error.details)
+                os.unlink(report_filepath)
+                raise BrainyProcessError(warning=escape_xml(error.message),
+                                         output=escape_xml(error.details))
             except UnknownError as error:
                 message = '''
                     Unknown error found in result file %s
                     <result_file>%s</result_file>
                 ''' % (report_filename, report_filepath)
-                raise BrainyProcessError(warning=message.strip(),
-                                         output=error.details)
+                raise BrainyProcessError(warning=escape_xml(message.strip()),
+                                         output=escape_xml(error.details))
                 # TODO: append error message to ~/iBRAIN_errorlog.xml
 
         # Finally, no errors were found.
