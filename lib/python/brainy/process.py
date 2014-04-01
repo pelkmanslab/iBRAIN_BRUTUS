@@ -405,6 +405,9 @@ class BrainyProcess(pipette.Process, FlagManager):
             self.results['step_status'] = 'completed'
         # Step is incomplete. Do we want to submit?
         elif self.want_to_submit():
+            if self.working_jobs_count() > 0:
+                print '<!-- Warning: some jobs are still running, but we are '\
+                      'submitting everything a new! -->'
             self.submit()
         # Submitted but no work has started yet?
         elif self.no_work_is_happening():
