@@ -378,7 +378,7 @@ class BrainyProcess(pipette.Process, FlagManager):
                 print '[KNOWN ERROR FOUND]: %s' % error.message
                 print 'Resetting ".submitted" flag and removing job report.'
                 self.reset_submitted()
-                self.unlink('report_filepath')
+                os.unlink('report_filepath')
                 raise BrainyProcessError(warning=error.message,
                                          output=error.details)
             except UnknownError as error:
