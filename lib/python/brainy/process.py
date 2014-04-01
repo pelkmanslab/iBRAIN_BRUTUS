@@ -415,6 +415,7 @@ class BrainyProcess(pipette.Process, FlagManager):
             self.report('waiting')
         # Resubmit if no data output but job results found.
         elif self.finished_work_but_has_no_data():
+            # Hint: check if has_data() works correctly!
             self.resubmit()
         # Check for known errors if both data output and job results are
         # present.

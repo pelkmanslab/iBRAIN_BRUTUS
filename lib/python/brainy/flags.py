@@ -29,7 +29,11 @@ class FlagManager(object):
         If no no jobs are found for this project, module, or step, waiting is
         senseless. Remove ".submitted" file and try again.
         '''
-        self.reset_flag()
+        self.reset_flag('submitted')
+        # Since we are a high-level call, resetting depending flags guarantees
+        # we avoid complicated situations.
+        self.reset_flag('runlimit')
+        self.reset_flag('resubmitted')
 
     def set_flag(self, flag='submitted'):
         flag = '.'.join((self._get_flag_prefix(), flag))

@@ -200,8 +200,9 @@ class CPCluster(BrainyProcess):
             resubmission_results.append(resubmission_result)
 
         if not resubmission_results:
-            raise BrainyProcessError(warning='Failed to find any batches.. '
-                                     'check or restart previous step')
+            raise BrainyProcessError(warning='Failed to find any batches to '
+                                     'resubmit. Check or restart previous '
+                                     'step.')
 
         print('''
             <status action="%(step_name)s">resubmitting (%(batch_count)d) batches..
@@ -239,7 +240,8 @@ class CPCluster(BrainyProcess):
     def has_data(self):
         '''Validate the integrity of cpcluster step'''
         output_batches = self.get_out_files()
-        result_batches = self.get_result_files()
+        # Interested only in unique entries of job report files.
+        result_batches = set(self.get_result_files())
         #print('Found %d job results logs vs. %d .MAT output files' %
         #      (len(result_batches), len(output_batches)))
         return len(result_batches) == len(output_batches)
