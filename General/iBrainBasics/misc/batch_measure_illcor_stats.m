@@ -117,13 +117,18 @@ cmt.loadPackages();
         
         % Check if we should intermittently save the output (PDF and MAT
         % file) per channel: either every 500 steps or at last step
-        if mod(iCounter, 500) == 0 | i == min(numOfImages,numMaxImagesPerChannelProcessed) %#ok<OR2>
-            saveStats(strBatchDir, stats, intTargetChannelNumber, intTargetZStackNumber, strBatchPrefix);
-            saveFigure(strPathName, strFigureDir, stats, intTargetChannelNumber, intTargetZStackNumber, strBatchPrefix);
-	    log_msg('%s: saved measured statistics for %d  out of %d images.. ',mfilename, iCounter, numOfImages);
-        end
+%
+% [YY] This iterative behavoir is disabled in favour of one single saving attempt, when everything is learned.
+%
+%%%         if mod(iCounter, 500) == 0 | i == min(numOfImages,numMaxImagesPerChannelProcessed) %#ok<OR2>
+%%%             saveStats(strBatchDir, stats, intTargetChannelNumber, intTargetZStackNumber, strBatchPrefix);
+%%%             saveFigure(strPathName, strFigureDir, stats, intTargetChannelNumber, intTargetZStackNumber, strBatchPrefix);
+%%% 	    log_msg('%s: saved measured statistics for %d  out of %d images.. ',mfilename, iCounter, numOfImages);
+%%%        end
         
     end
+    saveStats(strBatchDir, stats, intTargetChannelNumber, intTargetZStackNumber, strBatchPrefix);
+    saveFigure(strPathName, strFigureDir, stats, intTargetChannelNumber, intTargetZStackNumber, strBatchPrefix);
     elapsedTime = toc(timePoint);
     log_msg('%s: learning %d images took %g seconds.\n',mfilename, numOfImages, elapsedTime);
     log_msg('%s: statistics for all images was successfully learned. We are done.\n',mfilename);
