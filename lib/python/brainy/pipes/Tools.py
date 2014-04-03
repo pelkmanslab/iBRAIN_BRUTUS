@@ -38,6 +38,12 @@ class BackupPreviousBatch(PythonCodeProcess):
             os.path.join(self.process_path, 'BACKUPS'),
         ))
 
+    def put_on(self):
+        super(BackupPreviousBatch, self).put_on()
+        # Recreate missing BACKUPS folder path.
+        if not os.path.exists(self.backups_path):
+            os.makedirs(self.backups_path)
+
     def get_python_code(self):
         '''
         Note that the interpreter call is included by
