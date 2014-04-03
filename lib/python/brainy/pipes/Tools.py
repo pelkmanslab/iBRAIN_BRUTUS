@@ -1,6 +1,8 @@
 import os
 import shutil
 from datetime import datetime
+from plato.shell.findutils import (Match, find_files)
+from fnmatch import fnmatch, translate as fntranslate
 
 import brainy
 from brainy.process import PythonCodeProcess
@@ -60,3 +62,16 @@ class BackupPreviousBatch(PythonCodeProcess):
             'backups_path': self.backups_path,
         }
         return code
+
+    def has_data(self):
+        '''
+        If backups folder is empty, it means no backup was done.
+        '''
+        previous_backups = find_files(
+            path=self.backups_path,
+            match=Match(filetype='directory', name='BATCH_*'),
+            recursive=False,
+        )
+        if len(previous_backups) > 0:
+            return True
+        return False
