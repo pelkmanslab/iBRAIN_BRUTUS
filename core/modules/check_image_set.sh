@@ -95,7 +95,7 @@ function main {
             else
                 echo "     <status action=\"${MODULENAME}\">submitting"
                 echo "      <message>"
-                echo "    TIFF directory has passed waiting fase. Creating BATCH directory and starting iBRAIN analysis."
+                echo "    TIFF directory has passed waiting phase. Creating BATCH directory and starting iBRAIN analysis."
                 echo "      </message>"
                 echo "      <output>"
                 touch ${TIFFDIR}/CheckImageSet_${TIFFCOUNT}.complete
@@ -108,6 +108,18 @@ function main {
                 fi
                 echo "      </output>"
                 echo "     </status>"
+
+                # Move microscope specific metadata away from TIFF
+                METADATADIR=${PLATEFOLDER}/METADATA/
+                echo "     <status action=\"${MODULENAME}-metadata\">submitting"
+                echo "      <message>"
+                echo "    MOVING microscope specific metadata file out of TIFF directory."
+                echo "      </message>"
+                echo "      <output>"
+                ${IBRAIN_BIN_PATH}/move_microscope_metadata.sh $TIFFDIR $METADATADIR
+                echo "      </output>"
+                echo "     </status>"
+                
             fi
         elif [ $COMPLETEFILECHECK -eq 1 ] && [ -e $BATCHDIR/ConvertAllTiff2Png.complete ]; then
 
@@ -117,7 +129,7 @@ function main {
             fi
             echo "     <status action=\"${MODULENAME}\">completed</status>"
 
-fi
+        fi
 
 }
 
