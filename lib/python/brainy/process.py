@@ -283,6 +283,7 @@ class BrainyProcess(pipette.Process, FlagManager):
 
     def working_jobs_count(self, needle=None):
         if needle is None:
+            # TODO: make jobs more specific. Process path is too general.
             needle = os.path.dirname(self.reports_path)
         try:
             return int(wc(
@@ -423,6 +424,8 @@ class BrainyProcess(pipette.Process, FlagManager):
         # Check for known errors if both data output and job results are
         # present.
         else:
+            print '<!-- Checking logs for errors. Setting process state to '\
+                  'completed if none found. -->'
             self.check_logs_for_errors()
             self.results['step_status'] = 'completed'
             self.set_flag('complete')
