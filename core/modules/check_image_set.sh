@@ -79,10 +79,8 @@ function main {
 
         #elif [ $COMPLETEFILECHECK -eq 0 ] && [ $TIFFDIRLASTMODIFIED -eq 1 ]; then
         elif [ $COMPLETEFILECHECK -eq 0 ] && [ ! -e $BATCHDIR/ConvertAllTiff2Png.complete ]; then
-
-
-            if [ ! -e $TIFFDIR/CheckImageSet_${TIFFCOUNT}.complete ]; then
-
+            # check if we can write into TIFF
+            if [ ! -w $TIFFDIR ]; then
                 echo "     <status action=\"${MODULENAME}\">failed"
                 echo "      <warning>"
                 echo "       check-image-set FAILED: CAN NOT WRITE TO TIFF DIRECTORY!"
@@ -98,19 +96,21 @@ function main {
                 echo "    TIFF directory has passed waiting phase. Creating BATCH directory and starting iBRAIN analysis."
                 echo "      </message>"
                 echo "      <output>"
-                touch ${TIFFDIR}/CheckImageSet_${TIFFCOUNT}.complete
-                touch ${BATCHDIR}/checkimageset.complete
+                # Create missing BATCH and POSTANALYSIS.
                 if [ ! -e $BATCHDIR ]; then
                     mkdir -p $BATCHDIR
-                fi
+                fi                
                 if [ ! -d $POSTANALYSISDIR ]; then
                     mkdir -p $POSTANALYSISDIR
                 fi
+                # Marked module step as 'complete'.            
+                #touch ${TIFFDIR}/CheckImageSet_${TIFFCOUNT}.complete
+                #touch ${BATCHDIR}/checkimageset.complete
                 echo "      </output>"
                 echo "     </status>"
 
                 # Move microscope specific metadata away from TIFF
-                METADATADIR=${PLATEFOLDER}/METADATA/
+                METADATADIR=${PROJECTDIR}/METADATA/
                 echo "     <status action=\"${MODULENAME}-metadata\">submitting"
                 echo "      <message>"
                 echo "    MOVING microscope specific metadata file out of TIFF directory."

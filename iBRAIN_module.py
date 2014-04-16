@@ -193,7 +193,7 @@ if __name__ == '__main__':
     try:
         module_parameters = parse_module_parameters(args)
     except ParameterError as error:
-        sys.stderr.write(error.message + '\n')
+        sys.stderr.write(repr(error) + '\n')
         parser.print_help(sys.stderr)
         exit()
 
