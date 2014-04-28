@@ -2,6 +2,10 @@ function localPath = npc(networkPath)
 %NPC is a network path conversion function mapping remote path to its local
 %counterpart.
 %
+% This version contian a patch by Thomas:
+% x Does not give constant misleading warnings
+% x Uses same optional settings file as npc
+%
 % Network Path Conversion function is used to wrap around inline string
 % constants with full path to a file. Input is always a path as it is valid
 % for the remote side (e.g. cluster, etc.) and it should be substituted
@@ -26,11 +30,11 @@ function localPath = npc(networkPath)
 %     settings(5).replace = '/share/nas/ethz-share7';
 %     filename = [os.path.dirname(which('npc')) filesep 'npc.local'];
 %
-% Then to save as .MAT 
-% 
+% Then to save as .MAT
+%
 %     save([filename '.mat'],'settings');
-% 
-% or as 
+%
+% or as
 %
 %     string.write([filename '.json'], savejson('', settings));
 %
@@ -38,7 +42,7 @@ function localPath = npc(networkPath)
 % @author: Berend Snijder <berend.snijder@imls.uzh.ch>
 % @author: Yauhen Yakimovich <yauhen.yakimovich@uzh.ch>
 %
-% Lucas Pelkmans Lab http://pelkmans.uzh.ch/
+% Lucas Pelkmans Lab http://www.pelkmanslab.org/
 %
 % See also FULLFILE, FILESEP, OS.PATH.EXISTS
 
@@ -65,13 +69,13 @@ end
 % array with 'pattern' and 'replace' keys.
 %
 localSettings = getLocalSettings();
-% Has local settings? Use the map the path. Note: remote sites like Brutus 
+% Has local settings? Use the map the path. Note: remote sites like Brutus
 % never have any local settings.
 if ~isempty(localSettings)
     localPath = mapNetworkPath(networkPath, localSettings);
     try
         if strcmp(localPath,networkPath)
-            % Also locally use heuristics, if no change            
+            % Also locally use heuristics, if no change
             localPath = fallback(networkPath);
         end
     catch exception
@@ -95,14 +99,14 @@ persistent localSettings;
 if isempty(localSettings)
     localSettings = [];
     [pathstr, name, ext] = fileparts(mfilename('fullpath'));
-    matSettingsFile = [pathstr filesep name '.local.mat'];
-    jsonSettingsFile = [pathstr filesep name '.local.json'];
-    if os.path.exists(matSettingsFile)     
+    matSettingsFile = [pathstr filesep 'npc.local.mat'];            % use same setting file as npc
+    jsonSettingsFile = [pathstr filesep 'npc.local.json'];
+    if os.path.exists(matSettingsFile)
         data = load(matSettingsFile);
         localSettings = data.settings;
-    elseif os.path.exists(jsonSettingsFile)        
+    elseif os.path.exists(jsonSettingsFile)
         if ~exist('loadjson')
-            % Please install JSONlab package from 
+            % Please install JSONlab package from
             % http://www.mathworks.com/matlabcentral/fileexchange/33381
             settings = [];
             return
@@ -258,9 +262,6 @@ if ~intPathFormat
     
     % only throw warning if format_path was not in the stack trace
     ST = dbstack('-completenames');
-    if isempty(find(strcmpi({ST.name},'format_path'), 1)) && isempty(find(strcmpi({ST.name},'go'), 1))
-        warning('naspathconv:unknownPathFormat','%s: ''%s'' is not recognized as a NAS path',mfilename,strRootPath)
-    end
     
     % end of function
     return
@@ -273,6 +274,7 @@ if ispc
     strLocalBaseShare2 = '\\nas-unizh-imsb1.ethz.ch\share-2-$\';
     strLocalBaseShare3 = '\\nas-unizh-imsb1.ethz.ch\share-3-$\';
     strLocalBaseShare4 = '\\nas21nwg01.ethz.ch\biol_uzh_pelkmans_s4\';
+    strLocalBaseShare5 = '\\nas21nwg01.ethz.ch\biol_uzh_pelkmans_s5\';
     strLocalBaseShare6 = '\\nas21nwg01.ethz.ch\biol_uzh_pelkmans_s6\';
     strLocalBaseShare7 = '\\nas21nwg01.ethz.ch\biol_uzh_pelkmans_s7\';
 elseif ismac
@@ -286,12 +288,14 @@ elseif ismac
         strLocalBaseShare2 = sprintf('%s/shares/ethz-share2/',userDir);
         strLocalBaseShare3 = sprintf('%s/shares/ethz-share3/',userDir);
         strLocalBaseShare4 = sprintf('%s/shares/ethz-share4/',userDir);
+        strLocalBaseShare5 = sprintf('%s/shares/ethz-share5/',userDir);
         strLocalBaseShare6 = sprintf('%s/shares/ethz-share6/',userDir);
         strLocalBaseShare7 = sprintf('%s/shares/ethz-share7/',userDir);
     else
         strLocalBaseShare2 = '/Volumes/share-2-$/';
         strLocalBaseShare3 = '/Volumes/share-3-$/';
         strLocalBaseShare4 = '/Volumes/biol_uzh_pelkmans_s4/';
+        strLocalBaseShare5 = '/Volumes/biol_uzh_pelkmans_s5/';
         strLocalBaseShare6 = '/Volumes/biol_uzh_pelkmans_s6/';
         strLocalBaseShare7 = '/Volumes/biol_uzh_pelkmans_s7/';
     end
@@ -299,12 +303,13 @@ elseif isunix
     strLocalBaseShare2 = '/BIOL/imsb/fs2/bio3/bio3/';
     strLocalBaseShare3 = '/BIOL/imsb/fs3/bio3/bio3/';
     strLocalBaseShare4 = '/BIOL/sonas/biol_uzh_pelkmans_s4/';
+    strLocalBaseShare5 = '/BIOL/sonas/biol_uzh_pelkmans_s5/';
     strLocalBaseShare6 = '/BIOL/sonas/biol_uzh_pelkmans_s6/';
     strLocalBaseShare7 = '/BIOL/sonas/biol_uzh_pelkmans_s7/';
 end
 
 % some windowd machines need the ".d.ethz.ch", and some don't
-if ispc
+if ispc   % note that on brutus: unmounted, but brutus is not pc
     if ~fileattrib(strLocalBaseShare2)
         strLocalBaseShare2 = '\\nas-biol-imsb-1.d.ethz.ch\share-2-$\';
         
@@ -329,13 +334,15 @@ if ispc
     
 end
 
-% check if they are both present, otherwise notify user (may get annoying)
-if ~fileattrib(strLocalBaseShare2)
-    warning('naspathconv:unableToReachNasShare','%s: unable to reach share-2-$ on ''%s'', please map this path',mfilename,strLocalBaseShare2)
-end
-if ~fileattrib(strLocalBaseShare3)
-    warning('naspathconv:unableToReachNasShare','%s: unable to reach share-3-$ on ''%s'', please map this path',mfilename,strLocalBaseShare3)
-end
+%%% check if they are both present, otherwise notify user (may get
+%%% annoying) [TS: deactivated since on brutus share two not mounted:
+%%% prevent excess fileattrib]
+% if ~fileattrib(strLocalBaseShare2)
+%     warning('naspathconv:unableToReachNasShare','%s: unable to reach share-2-$ on ''%s'', please map this path',mfilename,strLocalBaseShare2)
+% end
+% if ~fileattrib(strLocalBaseShare3)
+%     warning('naspathconv:unableToReachNasShare','%s: unable to reach share-3-$ on ''%s'', please map this path',mfilename,strLocalBaseShare3)
+% end
 % Disabled warning for SoNas Shares (indeed got annoying)
 % if ~fileattrib(strLocalBaseShare4)
 %     warning('naspathconv:unableToReachSoNasShare','%s: unable to reach share-4 on ''%s'', please map this path',mfilename,strLocalBaseShare4)
@@ -386,6 +393,11 @@ if intNasShare == 0
     strNewPath = strrep(strNewPath,'/',filesep);
     strNewPath4 = strrep(strNewPath,'\',filesep);
     
+    % create tentative path for share 5
+    strNewPath = strrep(strRootPath,strPathBase,strLocalBaseShare5);
+    strNewPath = strrep(strNewPath,'/',filesep);
+    strNewPath5 = strrep(strNewPath,'\',filesep);
+    
     % create tentative path for share 6
     strNewPath = strrep(strRootPath,strPathBase,strLocalBaseShare6);
     strNewPath = strrep(strNewPath,'/',filesep);
@@ -396,23 +408,25 @@ if intNasShare == 0
     strNewPath = strrep(strNewPath,'/',filesep);
     strNewPath7 = strrep(strNewPath,'\',filesep);
     
-    % if share 3 path exists, use this, otherwise use share-2-$ (fulles
-    % share...)
-    if fileattrib(strNewPath2)
-        strNewPath = strNewPath2;
-    elseif fileattrib(strNewPath3)
-        strNewPath = strNewPath3;
-    elseif fileattrib(strNewPath4)
+    % try SONAS shares at first, only then legacy share2/3, which are not
+    % on brutus
+    if fileattrib(strNewPath4)
         strNewPath = strNewPath4;
     elseif fileattrib(strNewPath6)
         strNewPath = strNewPath6;
     elseif fileattrib(strNewPath7)
         strNewPath = strNewPath7;
-    else
-        % if we weren't able to determine the nas share, try if the current new
-        % path exist (for share-3-$), if not, see if the path exists for share-2-$
-        warning('naspathconv:unableToDetermineNasShareNumber','%s: unable to determine the share-number from ''%s'', and neither corresponding share-2-$ nor share-3-$ paths are found. Assuming share-2-$, but expext a crash..',mfilename,strPathBase)
+    elseif fileattrib(strNewPath5)
+        strNewPath = strNewPath5;
+    elseif  fileattrib(strNewPath2)
         strNewPath = strNewPath2;
+    elseif fileattrib(strNewPath3)
+        strNewPath = strNewPath3;
+    else
+        % if we weren't able to determine the nas share, try to use ETH
+        % Share 4
+        warning('naspathconv:unableToDetermineNasShareNumber','%s: unable to determine the share-number from ''%s'', and neither share paths is found. Assuming share-4, but expext a crash..',mfilename,strPathBase)
+        strNewPath = strNewPath4;
     end
     
     % do the conversion for share-2-$
@@ -424,6 +438,9 @@ elseif intNasShare == 3
     % do the conversion for share-4
 elseif intNasShare == 4
     strNewPath = strrep(strRootPath,strPathBase,strLocalBaseShare4);
+    % do the conversion for share-5
+elseif intNasShare == 5
+    strNewPath = strrep(strRootPath,strPathBase,strLocalBaseShare5);
     % do the conversion for share-6
 elseif intNasShare == 6
     strNewPath = strrep(strRootPath,strPathBase,strLocalBaseShare6);
@@ -439,5 +456,30 @@ strConvPath = strNewPath;
 
 
 end % function
-
-
+% 
+% function doNotWarnByNetwork = ignoreNetworkWarning
+% % prevent that warning that path is not network path, will not be displayed
+% % on some computers
+% 
+% 
+% persistent cachedComputerToIgnore  % remove excess system calls by caching
+% 
+% if isempty(cachedComputerToIgnore)
+%     
+%     [~, name] = system('hostname');
+%     name = lower(name);
+%     
+%     if strcmpi(name,'tswork'); % Thomas' computer
+%         cachedComputerToIgnore = true;
+%     elseif strcmpi(name,'pauli'); % Gabriele's computer
+%         cachedComputerToIgnore = true;
+%     else
+%         cachedComputerToIgnore = false;
+%     end
+%     
+% end
+% 
+% doNotWarnByNetwork = cachedComputerToIgnore;
+% 
+% end
+% 
