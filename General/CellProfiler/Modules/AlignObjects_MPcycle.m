@@ -9,11 +9,17 @@ function handles = AlignObjects_MPcycle(handles)
 % from the handles. Then it aligns the intensity and the segmentation
 % images. To this end, both images are cropped according to the loaded
 % shift descriptors.
+%
+% To segment different object groups, which can have different amount of
+% objects (like cells and single vesicles), use separate instances of the
+% AlignObjects_MPcycle module. Individual objects within an object group
+% require a 1:1 matching
 % *************************************************************************
 %
 % Author:
 %    Markus Herrmann <markus.herrmann@imls.uzh.ch>
 %
+% $Revision: 1879 $
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
@@ -101,6 +107,7 @@ IntImOutputNameList{3} = char(handles.Settings.VariableValues{CurrentModuleNum,1
 %infotypeVAR14 = imagegroup indep
 IntImOutputNameList{4} = char(handles.Settings.VariableValues{CurrentModuleNum,14});
 
+%%%VariableRevisionNumber = 12
 
 
 
@@ -110,6 +117,12 @@ IntImOutputNameList{4} = char(handles.Settings.VariableValues{CurrentModuleNum,1
 
 %%% retrieve shift descriptors from handles
 shift = handles.shiftDescriptor;
+
+f = isnan(shift.xShift);   % [TS] : assume NaN (no shift calculated) to be no shift
+shift.xShift(f) = 0;
+
+f = isnan(shift.yShift);
+shift.yShift(f) = 0;
 
 %%% get index of current image
 strOrigImageName = char(handles.Measurements.Image.FileNames{handles.Current.SetBeingAnalyzed}{1,1});
@@ -155,6 +168,11 @@ for i = 1:sum(~strcmp(ObjectNameList,'Do not use'))
     end
 end
 
+% track, wheher all segementations should be cleared (e.g.: if object count 
+% differs or the shift is above the maximally allowed tolerance for shifts);
+doEraseSegementation = false; 
+
+
 %%% if more than one object, make sure that all objects have identical object counts
 if length(SegmentationOutputImages)>1
     LabeledSegmentationOutputImages = SegmentationOutputImages;
@@ -183,7 +201,11 @@ if length(SegmentationOutputImages)>1
     % check that object count is finally really identical
     checkNum = cell2mat(cellfun(@(x) max(unique(x(:))),LabeledSegmentationOutputImages,'Uniformoutput',false));
     if length(unique(checkNum))>1
-        error('%s: object count must not be different between segmented objects',mfilename)
+        % [TS 14-05-04] : changed default behaviour: instead of error
+        % (which will break analysis of plate-wide projects), there will be no
+        % segmentation used
+        fprintf('object count must not be different between segmented objects: Assume absent segmentation \n');
+        doEraseSegementation = true;
     end
     
 else
@@ -194,6 +216,11 @@ end
 
 %%% if shift exeeds maximally tolerated valued, exclude site from analysis
 if logical(shift.noShiftIndex(index))
+    doEraseSegementation = true;
+end
+
+% Replace segmentation by empty image, in case there was a problem
+if doEraseSegementation == true;
     for k = 1:length(ObjectNameList)
         LabeledSegmentationOutputImages{k} = bwlabel(zeros(size(IntensityOutputImages{1})));
     end
