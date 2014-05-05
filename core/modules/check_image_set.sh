@@ -104,8 +104,8 @@ function main {
                     mkdir -p $POSTANALYSISDIR
                 fi
                 # Marked module step as 'complete'.            
-                #touch ${TIFFDIR}/CheckImageSet_${TIFFCOUNT}.complete
-                #touch ${BATCHDIR}/checkimageset.complete
+                touch ${TIFFDIR}/CheckImageSet_${TIFFCOUNT}.complete
+                touch ${BATCHDIR}/checkimageset.complete
                 echo "      </output>"
                 echo "     </status>"
 
