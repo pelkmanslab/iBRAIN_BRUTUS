@@ -177,7 +177,7 @@ doEraseSegementation = false;
 if length(SegmentationOutputImages)>1
     LabeledSegmentationOutputImages = SegmentationOutputImages;
     % get object count
-    objectNum = cell2mat(cellfun(@(x) length(unique(x(:))),SegmentationOutputImages,'Uniformoutput',false));
+    objectNum = cell2mat(cellfun(@(x) length(unique(x(:))),SegmentationOutputImages,'Uniformoutput',false));  
     [~,IX] = sort(objectNum,'ascend');
     
     for k = IX(2:end)
@@ -209,9 +209,8 @@ if length(SegmentationOutputImages)>1
     end
     
 else
-    
-    LabeledSegmentationOutputImages = bwlabel(SegmentationOutputImages);
-    
+    %%% only one object, so business as usual
+    LabeledSegmentationOutputImages{1} = bwlabel(SegmentationOutputImages{1});  
 end
 
 %%% if shift exeeds maximally tolerated valued, exclude site from analysis
