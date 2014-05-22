@@ -8,6 +8,27 @@ ProjFolder = CPdir(projectPath);
 ProjFolder = {ProjFolder(logical([ProjFolder.isdir] & cell2mat(cellfun(@(x)length(x)>2,{ProjFolder.name},'UniformOutput',false)))).name};
 SubprojPath = cellfun(@(x)fullfile(projectPath,x),ProjFolder,'UniformOutput',false);
 
+% exclude directories whose name doesn't end with a number
+f = cell2mat(cellfun(@(x) ~isempty(regexp(x, '.*?(\d+)$')), SubprojPath, 'UniformOutput',false));
+SubprojPath = SubprojPath(f);
+
+% Sort independent of the platform according to tailing numbers in file
+% name
+myFilterFun =  @(x) regexp(x,'.*?(\d+)$','tokens');
+TailingNumbers = cellfun(myFilterFun ,SubprojPath,'UniformOutput',false);
+f = cellfun(@(x) ~isempty(x), TailingNumbers);
+PutativeSubProjPath  = SubprojPath(f);
+PutativeTailingNumbers = TailingNumbers(f);
+PutativeTailingNumbers = cellfun(@(x) str2num(x{:}{:}), PutativeTailingNumbers,'UniformOutput',false);
+
+matTailingNumber = cell2mat(PutativeTailingNumbers);
+[sortedCheck, sIX] = sort(matTailingNumber);
+if any(sortedCheck ~= (sortedCheck(1):sortedCheck(end)))
+    error('sorting wrong')
+else
+    SubprojPath = PutativeSubProjPath(sIX);
+end
+
 %%% get image filenames for each subproject
 TiffPath = cellfun(@(x)fullfile(x,'TIFF'),SubprojPath,'UniformOutput',false);
 TiffFolder = cellfun(@CPdir,TiffPath,'UniformOutput', false);
