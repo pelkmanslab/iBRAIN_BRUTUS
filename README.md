@@ -1,5 +1,5 @@
- iBrain
- ======
+iBRAIN
+======
 
 iBRAiN is an acronym for image-Based RNAi and was developed as a middle ware
 between image analysis software, content management of siRNA libraries, the
@@ -80,8 +80,8 @@ Don't forget to set permissions for execution
   chmod +x sedTransformLogWebUser.sed
 
 
- Crontab
- -------
+Crontab
+-------
 
 
 
@@ -137,4 +137,12 @@ umask 0007
 #module load matlab/7.8
 module load matlab/7.12 ffmpeg/0.8.2
 
+
+Tests
+-----
+
+
+To run nose tests navigate into
+
+cd test/unit
 
