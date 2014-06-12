@@ -76,7 +76,7 @@ class BackupPreviousBatch(PythonCodeProcess):
             match=Match(filetype='directory', name='BATCH_*'),
             recursive=False,
         )
-        if len(previous_backups) > 0:
+        for item in previous_backups:
             return True
         return False
 
