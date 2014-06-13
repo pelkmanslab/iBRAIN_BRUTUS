@@ -22,6 +22,18 @@ class Pipe(BrainyPipe):
 class PreCluster(BrainyProcess):
     '''Run CellProfiller with CreateBatchFiles module'''
 
+    def __init__(self):
+        super(PreCluster, self).__init__()
+        self.__batch_files = None
+
+    @property
+    def batch_files(self):
+        '''Get batch files for submission with CPCluster'''
+        if self.__batch_files is None:
+            self.__batch_files = CPCluster.get_batch_files(
+                self.list_batch_dir())
+        return self.__batch_files
+
     @property
     def cp_pipeline_fnpattern(self):
         return self.description.get(
@@ -109,6 +121,11 @@ class PreCluster(BrainyProcess):
         self.set_flag('resubmitted')
         super(PreCluster, self).resubmit()
 
+    def has_data(self):
+        '''Validate if precluster has generated any batch files'''
+        # TODO: potentially try to learn the exact expected number of files.
+        return len(self.batch_files) > 0
+
 
 class CPCluster(BrainyProcess):
     '''Submit individual batches of CellProfiller as jobs and check results'''
@@ -124,14 +141,19 @@ class CPCluster(BrainyProcess):
         # Support old mode
         return self.batch_path
 
+    @staticmethod
+    def get_batch_files(all_files):
+        '''Match files in the BATCH/* to the pattern of batch file.'''
+        batch_expr = re.compile('Batch_\d+_to_\d+.mat')
+        return [filename for filename in all_files
+                if batch_expr.search(basename(filename))]
+
     @property
     def batch_files(self):
         '''Get batch files for submission with CPCluster'''
         if self.__batch_files is None:
-            batch_expr = re.compile('Batch_\d+_to_\d+.mat')
-            self.__batch_files = [filename for filename
-                                  in self.list_batch_dir()
-                                  if batch_expr.search(basename(filename))]
+            self.__batch_files = CPCluster.get_batch_files(
+                self.list_batch_dir())
         return self.__batch_files
 
     def put_on(self):
