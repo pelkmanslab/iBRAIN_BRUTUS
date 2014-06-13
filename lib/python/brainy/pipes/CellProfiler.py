@@ -159,6 +159,10 @@ class CPCluster(BrainyProcess):
             results.append(submission_result)
 
         if not results:
+            # We want to explicitly check for errors and report them, if any
+            # found.
+            self.check_logs_for_errors()
+            # If no errors were found, we still have to report a warning!
             raise BrainyProcessError(warning='Failed to find any batches.. '
                                      'check or restart previous step')
 
@@ -200,6 +204,10 @@ class CPCluster(BrainyProcess):
             resubmission_results.append(resubmission_result)
 
         if not resubmission_results:
+            # We want to explicitly check for errors and report them, if any
+            # found.
+            self.check_logs_for_errors()
+            # If no errors were found, we still have to report a warning!
             raise BrainyProcessError(warning='Failed to find any batches to '
                                      'resubmit. Check or restart previous '
                                      'step.')
@@ -245,6 +253,7 @@ class CPCluster(BrainyProcess):
         #print('Found %d job results logs vs. %d .MAT output files' %
         #      (len(result_batches), len(output_batches)))
         return len(result_batches) == len(output_batches)
+
 
 
 class CPDataFusion(BrainyProcess):
