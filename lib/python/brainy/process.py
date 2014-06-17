@@ -399,6 +399,21 @@ class BrainyProcess(pipette.Process, FlagManager):
     def resubmit(self):
         self.set_flag('runlimit')
 
+    def check_for_missed_errors(self):
+        '''
+        "Check for errors" might have failed to detect the error, so we still
+        need to make sure that our data was generated correctly.
+        '''
+        if not self.has_data():
+            if self.has_runlimit():
+                message = 'We reached a limit of retry attempts, but data is '\
+                    + 'missing possibly due to some undetected errors. Please'\
+                    + ' check the corresponding log files.'
+                raise BrainyProcessError(warning=message)
+            raise BrainyProcessError(warning='Data is missing possibly due to '
+                                     'some undetected errors. Please check the'
+                                     ' corresponding log files.')
+
     def run(self):
         ## print self.get_job_reports()
         ## print self.working_jobs_count()
@@ -428,6 +443,9 @@ class BrainyProcess(pipette.Process, FlagManager):
             print '<!-- Checking logs for errors. Setting process state to '\
                   'completed if none found. -->'
             self.check_logs_for_errors()
+            self.check_for_missed_errors()
+            # At this point we have detected no errors and the data test
+            # has passed -> mark process as 'completed'.
             self.results['step_status'] = 'completed'
             self.set_flag('complete')
 
