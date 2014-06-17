@@ -56,8 +56,8 @@ class BrainyPipe(pipette.Pipe):
             if error.warning:
                 # Optionally link the log file if found.
                 if error.job_report:
-                    warning = '<warning>%s<report_file>%s</report_file>' + \
-                        '</warning>' % (error.warning, error.job_report)
+                    warning = ('<warning>%s<report_file>%s</report_file>' + \
+                        '</warning>') % (error.warning, error.job_report)
                 else:
                     warning = '<warning>%s</warning>' % error.warning
 
