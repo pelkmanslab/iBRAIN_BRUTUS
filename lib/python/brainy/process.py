@@ -405,14 +405,22 @@ class BrainyProcess(pipette.Process, FlagManager):
         need to make sure that our data was generated correctly.
         '''
         if not self.has_data():
+            job_report = None
+            if self.has_job_reports():
+                # Pick latest report
+                reports = self.get_job_reports()
+                if len(reports) > 0:
+                    job_report = reports[0]
             if self.has_runlimit():
-                message = 'We reached a limit of retry attempts, but data is '\
-                    + 'missing possibly due to some undetected errors. Please'\
-                    + ' check the corresponding log files.'
-                raise BrainyProcessError(warning=message)
-            raise BrainyProcessError(warning='Data is missing possibly due to '
-                                     'some undetected errors. Please check the'
-                                     ' corresponding log files.')
+                message = 'We reached a limit of retry attempts, but data are'\
+                    + ' missing possibly due to some undetected errors. Pleas'\
+                    + 'e inspect the corresponding log files.'
+                raise BrainyProcessError(warning=message,
+                                         job_report=job_report)
+            raise BrainyProcessError(warning='Data are missing possibly due to'
+                                     ' some undetected errors. Please inspect '
+                                     'the corresponding log files.',
+                                     job_report=job_report)
 
     def run(self):
         ## print self.get_job_reports()

@@ -54,7 +54,12 @@ class BrainyPipe(pipette.Pipe):
                 output = '<output>%s</output>' % error.output
             warning = ''
             if error.warning:
-                warning = '<warning>%s</warning>' % error.warning
+                # Optionally link the log file if found.
+                if error.job_report:
+                    warning = '<warning>%s<report_file>%s</report_file>' + \
+                        '</warning>' % (error.warning, error.job_report)
+                else:
+                    warning = '<warning>%s</warning>' % error.warning
 
             print('''
         <status action="%(step_name)s">failed
