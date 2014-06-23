@@ -80,7 +80,7 @@ function main {
             else
                 echo "     <status action=\"${MODULENAME}\">submitting"
                 echo "      <message>"
-                echo "       $FOLDER directory has passed waiting fase. Continue.."
+                echo "       $FOLDER directory has passed waiting phase. Continue.."
                 echo "      </message>"
                 echo "      <output>"
                 touch $COMPLETEFLAG
