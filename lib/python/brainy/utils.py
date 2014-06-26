@@ -4,8 +4,7 @@ from subprocess import (PIPE, Popen)
 
 
 # http://www.w3.org/TR/REC-xml/#charsets
-escape_exp = re.compile('/[^\u0009\u000a\u000d\u0020-\uD7FF\uE000'
-                        '-\uFFFD]+/')
+escape_exp = re.compile(u'[^\u0009\u000a\u000d\u0020-\uD7FF\uE000-\uFFFD]+')
 
 
 def invoke(command, _in=None):
@@ -20,4 +19,4 @@ def invoke(command, _in=None):
 
 
 def escape_xml(raw_value):
-    return escape_exp.sub('', escape_xml_special_chars(raw_value))
+    return escape_exp.sub('', unicode(escape_xml_special_chars(raw_value)))

@@ -53,7 +53,7 @@ class BrainyPipe(pipette.Pipe):
             if error.output:
                 # Use CDATA tag this part of the XML parsable but ignore
                 # unexpected characters.
-                output = '<output><![CDATA[%s]]></output>' % error.output\
+                output = '<output><![CDATA[\n%s\n]]></output>' % error.output\
                     .replace(']]>', ']]&lt;')
             warning = ''
             if error.warning:
