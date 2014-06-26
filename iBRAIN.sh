@@ -75,7 +75,7 @@ echo " -->"
 
 echo " <ibrain_meta>"
 echo "  <author>Yauhen Yakimovich, Berend Snijder</author>"
-echo "  <version>$(cat $IBRAIN_ROOT/VERSION)</version>"
+echo "  <version>$IBRAIN_VERSION</version>"
 echo "  <date_last_modified>$(stat $0 | grep Modify | awk '{print $2,$3}')</date_last_modified>"
 echo "  <start>$(date +"%y%m%d %H:%M:%S")</start>"
 echo "  <host_name>$HOSTNAME</host_name>"

@@ -25,6 +25,14 @@ export SCHEDULING_ENGINE="shellcmd"
 # Leave it empty if you don't need it.
 export IBRAIN_SED_SHARES=''
 
+export IBRAIN_VERSION="$(cat $IBRAIN_ROOT/VERSION)"
+export IBRAIN_GIT_FOLDER=$IBRAIN_ROOT/../code/iBRAIN
+if [ -d $IBRAIN_GIT_FOLDER ]; then
+	IBRAIN_VERSION="$IBRAIN_VERSION git hashtag: $(cd $IBRAIN_GIT_FOLDER && git rev-parse HEAD)"
+	if [ -d $IBRAIN_GIT_FOLDER/../dep ]; then
+		IBRAIN_VERSION="$IBRAIN_VERSION | codebase hashtag: $(cd $IBRAIN_GIT_FOLDER/../dep && git rev-parse HEAD)"
+	fi
+fi
 
 export PATH=$PATH:$IBRAIN_BIN_PATH
 
