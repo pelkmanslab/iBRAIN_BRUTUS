@@ -51,13 +51,17 @@ class BrainyPipe(pipette.Pipe):
         except BrainyProcessError as error:
             output = ''
             if error.output:
-                output = '<output>%s</output>' % error.output
+                # Use CDATA tag this part of the XML parsable but ignore
+                # unexpected characters.
+                output = '<output><![CDATA[%s]]></output>' % error.output\
+                    .replace(']]>', ']]&lt;')
             warning = ''
             if error.warning:
                 # Optionally link the log file if found.
                 if error.job_report:
-                    warning = ('<warning>%s<report_file>%s</report_file>' + \
-                        '</warning>') % (error.warning, error.job_report)
+                    warning = ('<warning>%s<report_file>%s</report_file>' +
+                               '</warning>') % \
+                        (error.warning, error.job_report)
                 else:
                     warning = '<warning>%s</warning>' % error.warning
 

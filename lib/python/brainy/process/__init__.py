@@ -370,11 +370,10 @@ PYTHON_CODE''' % {
                     message = '''
                         Job %s timed out too many times.
                         <result_file>%s</result_file>
-                    ''' % (report_filename, report_filepath)
-                    raise BrainyProcessError(
-                        warning=escape_xml(message.strip()),
-                        output=escape_xml(error.details)
-                    )
+                    ''' % (escape_xml(report_filename),
+                           escape_xml(report_filepath))
+                    raise BrainyProcessError(warning=message.strip(),
+                                             output=escape_xml(error.details))
                 else:
                     print '<!--[KNOWN ERROR FOUND]: Job exceeded runlimit, ' \
                         'resetting job and placing timeout flag file -->'
@@ -390,8 +389,9 @@ PYTHON_CODE''' % {
                 message = '''
                     Unknown error found in result file %s
                     <result_file>%s</result_file>
-                ''' % (report_filename, report_filepath)
-                raise BrainyProcessError(warning=escape_xml(message.strip()),
+                ''' % (escape_xml(report_filename),
+                       escape_xml(report_filepath))
+                raise BrainyProcessError(warning=message.strip(),
                                          output=escape_xml(error.details))
                 # TODO: append error message to ~/iBRAIN_errorlog.xml
 
