@@ -1,7 +1,6 @@
 import os
 import re
 from datetime import datetime
-from xml.sax.saxutils import escape as escape_xml
 from cStringIO import StringIO
 from pindent import reformat_filter
 import pipette
@@ -10,6 +9,7 @@ from brainy.scheduler import SHORT_QUEUE, NORM_QUEUE
 from brainy.config import get_config
 from brainy.errors import (UnknownError, KnownError, TermRunLimitError,
                            check_report_file_for_errors)
+from brainy.utils import escape_xml, escape_xml_cdata
 
 
 brainy_config = get_config()
@@ -372,8 +372,10 @@ PYTHON_CODE''' % {
                         <result_file>%s</result_file>
                     ''' % (escape_xml(report_filename),
                            escape_xml(report_filepath))
-                    raise BrainyProcessError(warning=message.strip(),
-                                             output=escape_xml(error.details))
+                    raise BrainyProcessError(
+                        warning=message.strip(),
+                        output=escape_xml_cdata(error.details),
+                    )
                 else:
                     print '<!--[KNOWN ERROR FOUND]: Job exceeded runlimit, ' \
                         'resetting job and placing timeout flag file -->'
@@ -383,16 +385,20 @@ PYTHON_CODE''' % {
                 print 'Resetting ".submitted" flag and removing job report.-->'
                 self.reset_submitted()
                 os.unlink(report_filepath)
-                raise BrainyProcessError(warning=escape_xml(error.message),
-                                         output=escape_xml(error.details))
+                raise BrainyProcessError(
+                    warning=escape_xml(error.message),
+                    output=escape_xml_cdata(error.details),
+                )
             except UnknownError as error:
                 message = '''
                     Unknown error found in result file %s
                     <result_file>%s</result_file>
                 ''' % (escape_xml(report_filename),
                        escape_xml(report_filepath))
-                raise BrainyProcessError(warning=message.strip(),
-                                         output=escape_xml(error.details))
+                raise BrainyProcessError(
+                    warning=message.strip(),
+                    output=escape_xml_cdata(error.details),
+                )
                 # TODO: append error message to ~/iBRAIN_errorlog.xml
 
         # Finally, no errors were found.
