@@ -59,10 +59,15 @@ echo }
 #         # Map to bash variables
 
 
-    if not IBRAIN_ROOT is None:
-        # Use externally defined brainy.modules.IBRAIN_ROOT value.
-        config = get_config()
-    else:
-        # Make ext_path secondary to modification of the brainy.config.IBRAIN_ROOT
-        from ext_path import root_path
-        config = get_config(root_path)
+# Use OS environment setting if present.
+if IBRAIN_ROOT is None and 'IBRAIN_ROOT' in os.environ:
+    assert os.path.exists(os.environ['IBRAIN_ROOT'])
+    IBRAIN_ROOT = os.environ['IBRAIN_ROOT']
+
+if not IBRAIN_ROOT is None:
+    # Use externally defined brainy.modules.IBRAIN_ROOT value.
+    config = get_config()
+else:
+    # Make ext_path secondary to modification of the brainy.config.IBRAIN_ROOT
+    from ext_path import root_path
+    config = get_config(root_path)
