@@ -182,10 +182,10 @@ fi
 ### PARSE ALL QUEUED JOBS FOR UNIQUE JOB NAMES/PROCESSES/ETC.
 echo "  <job_overview>"
 echo "   <running>"
-$IBRAIN_BIN_PATH/categorizejobs2.sh $IBRAIN_LOG_PATH/bjobsrw.txt | escape_xml.py
+$IBRAIN_BIN_PATH/categorizejobs.sh $IBRAIN_LOG_PATH/bjobsrw.txt
 echo "   </running>"
 echo "   <all>"
-$IBRAIN_BIN_PATH/categorizejobs2.sh $IBRAIN_LOG_PATH/bjobsw.txt | escape_xml.py
+$IBRAIN_BIN_PATH/categorizejobs.sh $IBRAIN_LOG_PATH/bjobsw.txt
 echo "   </all>"
 echo "  </job_overview>"
 
