@@ -15,6 +15,21 @@ Authors:
 
 Copyright (c) 2013 Pelkmans' Lab http://www.pelkmanslab.org/
 
+    Installation
+    ============
+
+    Linux (Ubuntu)
+    --------------
+
+Use *easy_install* tool in command line:
+
+    sudo easy_install PyPlato
+
+or if you don't have a super-user access
+
+    pip install --user PyPlato
+
+
 '''
 from __future__ import print_function
 import os
@@ -41,6 +56,15 @@ VERBOSITY_LEVELS = {
 
 # Note that flags support fnmatch format
 RESTART_MODULES = {
+    'tiff2png': {
+        'project_files': [
+            'ConvertAllTiff2Png.submitted',
+        ],
+        'batch_files': [
+            'batch_png_convert_*',
+            'ConvertAllTiff2Png_batch_png_convert_*_*.results',
+        ],
+    },
     'illcor': {
         'project_files': [
             'IllumCorrection_batch_illcor_*.submitted',
@@ -67,24 +91,28 @@ RESTART_MODULES = {
     },
     'precluster': {
         'project_files': [
-            'PreCluster_*.submitted',
-            'PreCluster_*.resubmitted',
-            'PreCluster_*.runlimit',
+            'PreCluster.submitted',
+            'PreCluster.resubmitted',
+            'PreCluster.runlimit',
         ],
         'batch_files': [
             'PreCluster_*.results',
         ],
     },
-    # 'batchjobs': {
-    #     # Kill batch jobs?
-    #     'project_files': [
-    #         'SubmitBatchJobs.resubmitted',
-    #         'SubmitBatchJobs.submitted',
-    #     ],
-    #     'batch_files': [
-    #         'PreCluster_*.results',
-    #     ],
-    # }
+    # Reset batch jobs step
+    'batchjobs': {
+        'project_files': [
+            'SubmitBatchJobs.resubmitted',
+            'SubmitBatchJobs.submitted',
+        ],
+        'batch_files': [
+            'Batch_*_OUT.mat',
+            'Batch_*_to_*_Measurements_*.mat',
+            re.compile('Batch_\d+_to_\d+\.mat'),
+            re.compile('Batch_\d+_to_\d+\.txt'),
+            'Batch_*_to_*_*_*.results',
+        ],
+    },
     'celltype-overview': {
         'project_files': [
             'CreateCellTypeOverview.submitted',
@@ -92,6 +120,35 @@ RESTART_MODULES = {
         ],
         'batch_files': [
             'CreateCellTypeOverview_*.results',
+        ],
+    },
+    'fusion': {
+        'project_files': [
+        ],
+        'batch_files': [
+            'DataFusion_Measurements_*.results',
+        ],
+    },
+    'pop-context': {
+        'project_files': [
+        ],
+        'batch_files': [
+            'getLocalCellDensityPerWell_auto_*.results',
+        ],
+    },
+    'stich-seg': {
+        'project_files': [
+        ],
+        'batch_files': [
+            'StitchSegmentationPerWell_*.results',
+        ],
+    },
+    'plate-overview': {
+        'project_files': [
+            'CreatePlateOverview.submitted',
+        ],
+        'batch_files': [
+            'CreatePlateOverview_*.results',
         ],
     },
 }
@@ -129,11 +186,16 @@ RESET_LIST = {
         'project_files': [
             '*.submitted',
             '*.resubmitted',
+            'iBRAIN_Stage_1.completed',
+            'FuseBasicData_*.results',
+            'BASICDATA*',
+            'ADVANCEDDATA*.mat',
         ],
         'project_folders': [
             'BATCH',
             'JPG',
             'POSTANALYSIS',
+            'SEGMENTATION*',
         ],
     }
 }
@@ -311,7 +373,7 @@ class iBRAINTool(object):
                     print('Resubmitting incomplete batch: %s' % batch_span)
                     error_results.append(result_batches[batch_span])
             if error_results:
-                # Kill foudn errors
+                # Kill found errors
                 self.kill_files(error_results)
                 # Kill submission flags
                 submit_flags = resolve_filenames([
@@ -341,6 +403,11 @@ class iBRAINTool(object):
             return
         if args.restart:
             if args.restart != 'project':
+                # print(args.restart)
+                # if ',' in args.restart:
+                #     modules = args.restart.split(',')
+                # print(modules)
+                # exit()
                 tool.restart_module(args.restart)
             else:
                 tool.restart_project()
