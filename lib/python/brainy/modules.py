@@ -1,3 +1,7 @@
+'''
+Integration between iBRAIN and brainy.
+
+'''
 import os
 import re
 from datetime import datetime

@@ -11,6 +11,12 @@ __all__ = ['get_config', 'set_root']
 
 
 def set_root(new_root):
+    '''
+    First time get_config() is called the configuration is cached.
+    You can change IBRAIN_ROOT by calling set_root only before calling it
+    either as argument for get_config() or before get_config().
+    Any set_root() invocation after get_config() is pointless.
+    '''
     global IBRAIN_ROOT, _config
     IBRAIN_ROOT = new_root
     _config = None
@@ -59,15 +65,19 @@ echo }
 #         # Map to bash variables
 
 
+# To use externally defined brainy.modules.IBRAIN_ROOT value call set_root()
+# Otherwise we try guessing from OS ENV or by importing ext_path (symlink).
+
+
 # Use OS environment setting if present.
 if IBRAIN_ROOT is None and 'IBRAIN_ROOT' in os.environ:
     assert os.path.exists(os.environ['IBRAIN_ROOT'])
     IBRAIN_ROOT = os.environ['IBRAIN_ROOT']
 
-if not IBRAIN_ROOT is None:
-    # Use externally defined brainy.modules.IBRAIN_ROOT value.
-    config = get_config()
-else:
-    # Make ext_path secondary to modification of the brainy.config.IBRAIN_ROOT
+# Guessing by parsing __file__ in ext_path module.
+if IBRAIN_ROOT is None:
     from ext_path import root_path
-    config = get_config(root_path)
+    IBRAIN_ROOT = root_path
+
+# Note that we don't call get_config(), so there is still an option e.g. for
+# a unit test to perform set_root().
