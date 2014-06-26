@@ -188,6 +188,18 @@ class PipesModule(BrainyModule):
             result.append(pipes[pipename])
         return result
 
+    def execute_pipeline(self, pipeline):
+        '''
+        Execute passed pipeline process within the context of this
+        PipesModule.
+        '''
+        try:
+            pipeline.communicate()
+        except BrainyPipeFailure:
+            # Errors are reported inside individual pipeline.
+            print '<!-- A pipeline has failed. Continue with the next one -->'
+            pipeline.has_failed = True
+
     def process_pipelines(self):
         previous_pipeline = None
         for pipeline in self.pipelines:
@@ -216,15 +228,3 @@ class PipesModule(BrainyModule):
 
             # Remember as previous.
             previous_pipeline = pipeline
-
-    def execute_pipeline(self, pipeline):
-        '''
-        Execute passed pipeline process within the context of this
-        PipesModule.
-        '''
-        try:
-            pipeline.communicate()
-        except BrainyPipeFailure:
-            # Errors are reported inside individual pipeline.
-            print '<!-- A pipeline has failed. Continue with the next one -->'
-            pipeline.has_failed = True

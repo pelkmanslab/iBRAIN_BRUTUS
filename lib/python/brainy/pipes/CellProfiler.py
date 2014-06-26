@@ -74,8 +74,6 @@ class PreCluster(BrainyProcess):
             os.makedirs(self.batch_path)
         if not os.path.exists(self.postanalysis_path):
             os.makedirs(self.postanalysis_path)
-        if not os.path.exists(self.reports_path):
-            os.makedirs(self.reports_path)
 
     def get_matlab_code(self):
         matlab_code = '''

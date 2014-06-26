@@ -6,7 +6,7 @@ from plato.shell.findutils import (Match, find_files)
 from fnmatch import fnmatch, translate as fntranslate
 
 import brainy
-from brainy.process import PythonCodeProcess
+from brainy.process.code import PythonCodeProcess
 
 
 KNOWN_MICROSCOPES = ['CV7K']

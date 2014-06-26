@@ -1,7 +1,7 @@
 import os
 import sys
 import tempfile
-import ext_path
+import brainy_tests
 from brainy.apps.cellprofiler import CellProfilerImages
 
 

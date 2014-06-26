@@ -1,21 +1,21 @@
 import os
 import re
 from datetime import datetime
-from sh import ErrorReturnCode, grep, egrep, wc
 from xml.sax.saxutils import escape as escape_xml
-
+from cStringIO import StringIO
+from pindent import reformat_filter
 import pipette
 from brainy.flags import FlagManager
-from brainy.modules import invoke
-from brainy.lsf import SHORT_QUEUE, NORM_QUEUE
-from brainy.config import config
+from brainy.scheduler import SHORT_QUEUE, NORM_QUEUE
+from brainy.config import get_config
 from brainy.errors import (UnknownError, KnownError, TermRunLimitError,
                            check_report_file_for_errors)
 
 
+brainy_config = get_config()
 BASH_CALL = '/bin/bash'
-MATLAB_CALL = 'matlab -singleCompThread -nodisplay -nojvm'
-PYTHON_CALL = config['python_cmd']
+MATLAB_CALL = brainy_config['matlab_cmd']
+PYTHON_CALL = brainy_config['python_cmd']
 PROCESS_STATUS = [
     'submitting',
     'waiting',
@@ -26,11 +26,20 @@ PROCESS_STATUS = [
 ]
 
 
+def clean_python_code(code):
+    input = StringIO()
+    input.write(code)
+    output = StringIO()
+    reformat_filter(input, output, expandtabs=True)
+    return output.getvalue()
+
+
 def format_code(code, lang='bash'):
     result = ''
-    left_strip_width = None
-    for line in code.split('\n'):
-        if lang == 'python':
+    if lang == 'python':
+        #result = clean_python_code(code)
+        left_strip_width = None
+        for line in code.split('\n'):
             if len(line.strip()) == 0:
                 continue
             if left_strip_width is None:
@@ -44,7 +53,8 @@ def format_code(code, lang='bash'):
                     else:
                         break
             result += line.rstrip()[left_strip_width:] + '\n'
-        else:
+    else:
+        for line in code.split('\n'):
             if len(line.strip()) == 0:
                 continue
             result += line.strip() + '\n'
@@ -218,7 +228,7 @@ class BrainyProcess(pipette.Process, FlagManager):
             # sys.stdout.flush()
         return self.__batch_listing
 
-    def submit_job(self, script, queue=None, report_file=None,
+    def submit_job(self, shell_command, queue=None, report_file=None,
                    is_resubmitting=False):
         # Differentiate between submission and resubmission parameters.
         if is_resubmitting:
@@ -235,45 +245,41 @@ class BrainyProcess(pipette.Process, FlagManager):
         elif not report_file.startswith('/'):
             report_file = os.path.join(self.reports_path, report_file)
         assert os.path.exists(os.path.dirname(report_file))
-        return self.scheduler.bsub(
-            '-W', queue,
-            '-o', report_file,
-            script,
-        )
+        return self.scheduler.submit_job(shell_command, queue, report_file)
 
     def submit_bash_job(self, bash_code, queue=None, report_file=None,
                         is_resubmitting=False):
-        script = '''
-        %(bash_call)s << BASH_CODE;
-        %(bash_code)s
-        BASH_CODE''' % {
+        script = '''%(bash_call)s << BASH_CODE;
+%(bash_code)s
+BASH_CODE''' % {
             'bash_call': self.bash_call,
-            'bash_code': bash_code,
+            'bash_code': format_code(bash_code, lang='bash'),
         }
-        return self.submit_job(format_code(script), queue, report_file)
+        return self.submit_job(script, queue, report_file)
 
     def submit_matlab_job(self, matlab_code, queue=None, report_file=None,
                           is_resubmitting=False):
-        script = '''
-        %(matlab_call)s << MATLAB_CODE;
-        %(matlab_code)s
-        MATLAB_CODE''' % {
+        script = '''%(matlab_call)s << MATLAB_CODE;
+%(matlab_code)s
+MATLAB_CODE''' % {
             'matlab_call': self.matlab_call,
-            'matlab_code': matlab_code,
+            'matlab_code': format_code(matlab_code, lang='matlab'),
         }
-        return self.submit_job(format_code(script), queue, report_file)
+        return self.submit_job(script, queue, report_file)
 
     def submit_python_job(self, python_code, queue=None, report_file=None,
                           is_resubmitting=False):
-        script = '''
-        %(python_call)s - << PYTHON_CODE;
-        %(python_code)s
-        PYTHON_CODE''' % {
+        script = '''%(python_call)s - << PYTHON_CODE;
+import sys
+sys.path = ['%(ibrain_root)s'] + sys.path
+%(python_code)s
+PYTHON_CODE''' % {
             'python_call': self.python_call,
-            'python_code': python_code,
+            'python_code': format_code(python_code, lang='python'),
+            'ibrain_root': brainy_config['root']
+            # TODO LIB/PYTHON
         }
-        return self.submit_job(format_code(script, lang='python'), queue,
-                               report_file)
+        return self.submit_job(script, queue, report_file)
 
     @property
     def job_reports_count(self):
@@ -286,21 +292,16 @@ class BrainyProcess(pipette.Process, FlagManager):
         if needle is None:
             # TODO: make jobs more specific. Process path is too general.
             needle = os.path.dirname(self.reports_path)
-        try:
-            return int(wc(
-                egrep(
-                    grep(self.scheduler.bjobs('-aw'), needle),
-                    '(RUN|PEND)'
-                ), '-l'
-            ))
-        except ErrorReturnCode:
-            return 0
+        return self.scheduler.count_working_jobs(needle)
 
     def put_on(self):
         super(BrainyProcess, self).put_on()
-        # Recreate missing process folder path.
+        # Create missing process folder path.
         if not os.path.exists(self.process_path):
             os.makedirs(self.process_path)
+        # Create missing job reports folder path.
+        if not os.path.exists(self.reports_path):
+            os.makedirs(self.reports_path)
         # Set status to
         self.results['step_status'] = 'submitting'
 
@@ -464,37 +465,3 @@ class BrainyProcess(pipette.Process, FlagManager):
             print('''
         <status action="%(step_name)s">completed</status>
             ''' % {'step_name': self.step_name})
-
-
-class PythonCodeProcess(BrainyProcess):
-
-    def submit(self):
-        '''Default method for python code submission'''
-        submission_result = self.submit_python_job(self.get_python_code())
-
-        print('''
-            <status action="%(step_name)s">submitting
-            <output>%(submission_result)s</output>
-            </status>
-        ''' % {
-            'step_name': self.step_name,
-            'submission_result': escape_xml(submission_result),
-        })
-
-        self.set_flag('submitted')
-
-    def resubmit(self):
-        resubmission_result = self.submit_python_job(self.get_python_code(),
-                                                     is_resubmitting=True)
-
-        print('''
-            <status action="%(step_name)s">resubmitting
-            <output>%(resubmission_result)s</output>
-            </status>
-        ''' % {
-            'step_name': self.step_name,
-            'resubmission_result': escape_xml(resubmission_result),
-        })
-
-        self.set_flag('resubmitted')
-        super(PythonCodeProcess, self).resubmit()

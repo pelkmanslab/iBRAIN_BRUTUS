@@ -10,4 +10,4 @@ brainy.get_config()
 @author: Yauhen Yakimovich <yauhen.yakimovich@uzh.ch>
 
 '''
-from modules import get_config, invoke
+from brainy.config import get_config
