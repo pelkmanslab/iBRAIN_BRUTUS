@@ -9,7 +9,7 @@ from brainy.scheduler import SHORT_QUEUE, NORM_QUEUE
 from brainy.config import get_config
 from brainy.errors import (UnknownError, KnownError, TermRunLimitError,
                            check_report_file_for_errors)
-from brainy.utils import escape_xml, escape_xml_cdata
+from brainy.utils import escape_xml
 
 
 brainy_config = get_config()
@@ -374,7 +374,7 @@ PYTHON_CODE''' % {
                            escape_xml(report_filepath))
                     raise BrainyProcessError(
                         warning=message.strip(),
-                        output=escape_xml_cdata(error.details),
+                        output=escape_xml(error.details),
                     )
                 else:
                     print '<!--[KNOWN ERROR FOUND]: Job exceeded runlimit, ' \
@@ -387,7 +387,7 @@ PYTHON_CODE''' % {
                 os.unlink(report_filepath)
                 raise BrainyProcessError(
                     warning=escape_xml(error.message),
-                    output=escape_xml_cdata(error.details),
+                    output=escape_xml(error.details),
                 )
             except UnknownError as error:
                 message = '''
@@ -397,7 +397,7 @@ PYTHON_CODE''' % {
                        escape_xml(report_filepath))
                 raise BrainyProcessError(
                     warning=message.strip(),
-                    output=escape_xml_cdata(error.details),
+                    output=escape_xml(error.details),
                 )
                 # TODO: append error message to ~/iBRAIN_errorlog.xml
 

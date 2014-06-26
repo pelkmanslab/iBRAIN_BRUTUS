@@ -1,11 +1,11 @@
 import re
-from xml.sax.saxutils import escape as escape_xml
+from xml.sax.saxutils import escape as escape_xml_special_chars
 from subprocess import (PIPE, Popen)
 
 
 # http://www.w3.org/TR/REC-xml/#charsets
-escape_exp = re.compile('/[^\x0009\x000a\x000d\x0020-\xD7FF\xE000'
-                        '-\xFFFD]+/u')
+escape_exp = re.compile('/[^\u0009\u000a\u000d\u0020-\uD7FF\uE000'
+                        '-\uFFFD]+/')
 
 
 def invoke(command, _in=None):
@@ -19,5 +19,5 @@ def invoke(command, _in=None):
     return process.stdout.read()
 
 
-def escape_xml_cdata(raw_value):
-    return escape_exp.sub('', raw_value)
+def escape_xml(raw_value):
+    return escape_exp.sub('', escape_xml_special_chars(raw_value))
