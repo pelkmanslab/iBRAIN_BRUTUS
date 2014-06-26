@@ -4,7 +4,6 @@ from xml.sax.saxutils import escape as escape_xml
 #from plato.shell.findutils import (Match, find_files)
 from fnmatch import fnmatch, translate as fntranslate
 from os.path import basename
-
 from brainy.process import BrainyProcess, BrainyProcessError
 from brainy.pipes import BrainyPipe
 from brainy.pipes.Tools import get_timestamp_str

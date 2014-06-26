@@ -1,15 +1,12 @@
 import os
 import re
 import textwrap
-from xml.sax.saxutils import escape as escape_xml
-#from plato.shell.findutils import (Match, find_files)
-from fnmatch import fnmatch, translate as fntranslate
-from os.path import basename
+from fnmatch import translate as fntranslate
 import brainy
-from brainy.process import PythonCodeProcess, BrainyProcessError
+from brainy.process import BrainyProcessError
+from brainy.process.code import PythonCodeProcess
 from brainy.pipes import BrainyPipe
 from brainy.config import config
-from brainy.pipes.Tools import get_timestamp_str
 
 
 def get_cp2_call():
