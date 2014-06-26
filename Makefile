@@ -7,6 +7,7 @@ all:
 install:
 		echo 'Installing into ${INSTALL_FOLDER}'
 		[ -d ${INSTALL_FOLDER} ] || mkdir ${INSTALL_FOLDER}
+		cp ${CURR_FOLDER}/VERSION ${INSTALL_FOLDER}/
 		cp ${CURR_FOLDER}/*.sh ${INSTALL_FOLDER}/
 		cp ${CURR_FOLDER}/*.py ${INSTALL_FOLDER}/
 		[ -d ${INSTALL_FOLDER}/bin ] || ln -s ${CURR_FOLDER}/bin ${INSTALL_FOLDER}/bin

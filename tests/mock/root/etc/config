@@ -20,5 +20,11 @@ export MATLAB_CMD="/usr/bin/env matlab -singleCompThread -nodisplay -nojvm"
 # Alternatively pick from {'shellcmd', 'lsf'}
 export SCHEDULING_ENGINE="shellcmd"
 
+# Applied to map relative path to full path on a cluster. Example:
+#export IBRAIN_SED_SHARES='s|/share-\([0-9]\)|/BIOL/sonas/biol_uzh_pelkmans_s\1|g'
+# Leave it empty if you don't need it.
+export IBRAIN_SED_SHARES=''
+
+
 export PATH=$PATH:$IBRAIN_BIN_PATH
 

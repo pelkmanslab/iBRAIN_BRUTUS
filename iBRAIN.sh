@@ -321,10 +321,10 @@ for INCLUDEDPATH in $(sed -e 's/[[:cntrl:]]//g' $INCLUDEDPATHSFILE); do
 					BOOLDATACHANGE=1
 	            else
 	                # Get all plate paths and check for newer.
-		            PROJECTPLATEDIRS=$(grep -e '<plate_dir>.*</plate_dir>' $LATESTPROJECTXMLOUTPUT | sed 's|<[^>]*>||g' | sed 's|/share-\([23]\)|/BIOL/imsb/fs\1/bio3/bio3|g')
+		            PROJECTPLATEDIRS=$(grep -e '<plate_dir>.*</plate_dir>' $LATESTPROJECTXMLOUTPUT | sed 's|<[^>]*>||g' | sed "$IBRAIN_SED_SHARES" )
 					for PLATEDIR in $PROJECTPLATEDIRS; do
 						if [ "$PLATEDIR" ] && [ -d "$PLATEDIR" ]; then
-							#echo "checking $PLATEDIR"
+							echo "checking plate directory: $PLATEDIR"
 							if [ "$PLATEDIR" -nt "$LATESTPROJECTXMLOUTPUT" -o "${PLATEDIR}/TIFF" -nt "$LATESTPROJECTXMLOUTPUT" ]; then
 								# Set BOOLDATACHANGE to 1
 								BOOLDATACHANGE=1
@@ -334,6 +334,11 @@ for INCLUDEDPATH in $(sed -e 's/[[:cntrl:]]//g' $INCLUDEDPATHSFILE); do
 				                #echo "checking $PLATEDIR/BATCH"
                                 BOOLDATACHANGE=1
                                 echo "$PLATEDIR/BATCH is newer than $(basename $LATESTPROJECTXMLOUTPUT)"
+                                break  # We have found a data-change, so skip rest of loop.
+						    elif [ -d "$PLATEDIR/PIPES" ] && [ "${PLATEDIR}/PIPES" -nt "$LATESTPROJECTXMLOUTPUT" ]; then
+				                #echo "checking $PLATEDIR/PIPES"
+                                BOOLDATACHANGE=1
+                                echo "$PLATEDIR/PIPES is newer than $(basename $LATESTPROJECTXMLOUTPUT)"
                                 break  # We have found a data-change, so skip rest of loop.
 							fi
 						else
