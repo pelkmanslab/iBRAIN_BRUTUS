@@ -50,7 +50,7 @@ class Lsf(BrainyScheduler):
 
     def count_working_jobs(self, key):
         '''
-        Find out how many jobs a both PENDING and RUNNING. Require job
+        Find out how many jobs are both PENDING and RUNNING. Require job
         description to contain the **key** substring. If key is None,
         then no filtering is done.
         '''
