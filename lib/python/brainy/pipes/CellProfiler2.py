@@ -6,13 +6,16 @@ import brainy
 from brainy.process import BrainyProcessError
 from brainy.process.code import PythonCodeProcess
 from brainy.pipes import BrainyPipe
-from brainy.config import config
+from brainy.config import get_config
+
+
+brainy_config = get_config()
 
 
 def get_cp2_call():
     return '%s %s' % (
-        config['python_cmd'],
-        os.path.join(os.path.expanduser(config['cellprofiler2_path']),
+        brainy_config['python_cmd'],
+        os.path.join(os.path.expanduser(brainy_config['cellprofiler2_path']),
                      'CellProfiler.py'),
     )
 
@@ -114,8 +117,6 @@ class CreateJobBatches(PythonCodeProcess):
             os.makedirs(self.batch_path)
         if not os.path.exists(self.postanalysis_path):
             os.makedirs(self.postanalysis_path)
-        if not os.path.exists(self.reports_path):
-            os.makedirs(self.reports_path)
 
     def get_python_code(self):
         '''

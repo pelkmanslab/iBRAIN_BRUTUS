@@ -3,7 +3,6 @@ from brainy.scheduler.base import (SHORT_QUEUE, NORM_QUEUE, LONG_QUEUE,
                                    JOB_STATES, BrainyScheduler)
 import logging
 logger = logging.getLogger(__name__)
-from sh import ErrorReturnCode, grep, egrep, wc
 
 
 class NoLsfSchedulerFound(Exception):
@@ -50,26 +49,30 @@ class Lsf(BrainyScheduler):
         )
 
     def count_working_jobs(self, key):
-        try:
-            return int(wc(
-                egrep(
-                    grep(self.bjobs('-aw'), key),
-                    '(RUN|PEND)'
-                ), '-l'
-            ))
-        except ErrorReturnCode:
+        '''
+        Find out how many jobs a both PENDING and RUNNING. Require job
+        description to contain the **key** substring. If key is None,
+        then no filtering is done.
+        '''
+        jobs_list = self.bjobs('-aw').split('\n')
+        if len(jobs_list) == 0:
+            raise Exception('Failed to run bjobs')
+        elif len(jobs_list) == 1 and 'No job found' in jobs_list:
             return 0
+        working_jobs = [job_info for job_info in jobs_list
+                        if ' RUN ' in job_info or ' PEND ' in job_info]
+        logger.debug('Total number of working jobs found: %d' %
+                     len(working_jobs))
+        if key is None:
+            # No filtering is applied.
+            filtered_jobs = working_jobs
+        else:
+            # Sieve only matched job info strings.
+            filtered_jobs = [job_info for job_info in jobs_list
+                             if key in job_info]
+        return len(filtered_jobs)
 
     def list_jobs(self, states):
         assert all([(state in JOB_STATES) for state in states])
-        lsf_states = None
-        for state in states:
-            if not lsf_states:
-                lsf_states = self.states_map[state]
-            else:
-                lsf_states += '|%s' % self.states_map[state]
-        try:
-            return egrep(self.bjobs('-aw'), '(%s)' % lsf_states).split('\n')
-        except ErrorReturnCode:
-            # Return empty list
-            return list()
+        # TODO: make pure python implementation for state filtering.
+        return self.bjobs('-aw').split('\n')

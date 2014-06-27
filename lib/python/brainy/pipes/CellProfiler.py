@@ -274,7 +274,6 @@ class CPCluster(BrainyProcess):
         return len(result_batches) == len(output_batches)
 
 
-
 class CPDataFusion(BrainyProcess):
     '''
     Submit fusion jobs of measurements obtained from results of CellProfiller
