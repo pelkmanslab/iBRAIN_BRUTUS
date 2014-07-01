@@ -48,7 +48,7 @@ class Lsf(BrainyScheduler):
             shell_command,
         )
 
-    def count_working_jobs(self, key):
+    def count_working_jobs(self, key=None):
         '''
         Find out how many jobs are both PENDING and RUNNING. Require job
         description to contain the **key** substring. If key is None,

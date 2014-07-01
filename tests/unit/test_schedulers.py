@@ -33,5 +33,4 @@ class TestCustomCode(BrainyTest):
         assert scheduler.count_working_jobs(None) > 0
         key = 'Data__Users__Markus__AntioxScreen'
         assert scheduler.count_working_jobs(key) > 0
-        assert False
 

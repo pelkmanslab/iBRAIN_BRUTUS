@@ -22,6 +22,7 @@ class BrainyPipe(pipette.Pipe):
         self.process_namespace = 'brainy.pipes'
         self.pipes_module = pipes_module
         self.has_failed = False
+        self.previous_process_params = None
 
     def instantiate_process(self, process_description,
                             default_type=None):
@@ -33,6 +34,17 @@ class BrainyPipe(pipette.Pipe):
     def get_step_name(self, process_name):
         return 'pipes-%s-%s' % (self.name, process_name)
 
+    def get_previous_parameters(self):
+        if self.previous_process_params is None:
+            return
+        if not self.previous_process_params['previous_process_params'] is None:
+            # Avoid chaining the back up to the first process. Such linking
+            # can motivate a very bad programming practices. Only one step
+            # before is allowed to memorize. Everything else is just to
+            # complicated. So we unlink previous of previous here.
+            self.previous_process_params['previous_process_params'] = None
+        return self.previous_process_params
+
     def execute_process(self, process, parameters):
         '''Add verbosity, e.g. report status using iBRAIN XML scheme'''
         step_name = self.get_step_name(process.name)
@@ -42,6 +54,11 @@ class BrainyPipe(pipette.Pipe):
             self.name,
         )
         parameters['step_name'] = step_name
+        # Some modules are allowed to have limited dependency on previous
+        # steps, but this is restricted. Also check unlinking in
+        # get_previous_parameters().
+        parameters['previous_process_params'] = self.get_previous_parameters()
+        self.previous_process_params = parameters
         try:
             super(BrainyPipe, self).execute_process(process, parameters)
 

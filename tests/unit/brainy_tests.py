@@ -1,6 +1,7 @@
 '''
 Basic routings for nose testing of brainy code.
 '''
+import re
 import os
 import sys
 import tempfile
@@ -52,6 +53,7 @@ class BrainyTest(object):
 
     def start_capturing_output(self):
         # Start output capturing.
+        self.captured_output = None
         self.__old_stdout = sys.stdout
         sys.stdout = self.__stdout = StringIO()
 
@@ -71,3 +73,10 @@ class BrainyTest(object):
         # Restore the standard input.
         sys.stdin = self.__old_stdin
         # self.stop_capturing_output()
+
+    def get_report_content(self):
+        match = re.search('^Report file is written to:\s*([^\s\<]+)',
+                          self.captured_output, re.MULTILINE)
+        report_file = match.group(1)
+        assert os.path.exists(report_file)
+        return open(report_file).read()

@@ -21,6 +21,7 @@ class CustomPipe(BrainyPipe):
     CustomPipe is a stub to supervise running of custom user code processes.
     '''
 
+
 class PythonCall(PythonCodeProcess):
     '''Run a piece of custom code given by user .'''
 

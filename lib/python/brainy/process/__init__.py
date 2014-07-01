@@ -78,6 +78,24 @@ class BrainyProcess(pipette.Process, FlagManager):
         self.__reports = None
         self.__batch_listing = None
         self._job_report_exp = None
+        # List all the relevant process parameters that can be injected into
+        # description values. This provides an additional level of
+        # parametrization. Also see format_with_params()
+        self.format_parameters = [
+            'name',
+            'step_name',
+            'batch_size',
+            'plate_path',
+            'process_path',
+            'pipes_path',
+            'reports_path',
+            'batch_path',
+            'tiff_path',
+            'postanalysis_path',
+            'jpg_path',
+            'job_submission_queue',
+            'job_resubmission_queue',
+        ]
 
     @property
     def env(self):
@@ -203,6 +221,16 @@ class BrainyProcess(pipette.Process, FlagManager):
             'python_call',
             PYTHON_CALL,
         )
+
+    def format_with_params(self, value):
+        '''
+        Inject updated values into the code. This applies string.format() DSL
+        using self.parameters dictionary as arguments.
+        '''
+        process_params = dict()
+        for name in self.format_parameters:
+            process_params[name] = getattr(self, name)
+        return value.format(**process_params)
 
     def _get_flag_prefix(self):
         return os.path.join(self.process_path, self.name)
