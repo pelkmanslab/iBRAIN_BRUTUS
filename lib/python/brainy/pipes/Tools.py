@@ -251,5 +251,4 @@ from brainy.pipes.Tools import LinkFiles
                 ))
                 if not source_matches == target_matches:
                     return False
-        print 'you!'
         return True
