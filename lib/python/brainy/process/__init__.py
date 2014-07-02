@@ -254,10 +254,11 @@ class BrainyProcess(pipette.Process, FlagManager):
         valid_folders.append(os.path.join(IBRAIN_LIB_PATH, lang.lower()))
         for subfolder in user_path:
             folder_path = self.restrict_to_safe_path(subfolder)
-            if os.path.exists(folder_path):
+            if not os.path.exists(folder_path):
                 logger.warning('The custom code path does not exist: %s' %
                                folder_path)
-                valid_folders.append(folder_path)
+                continue
+            valid_folders.append(folder_path)
         return ':'.join(valid_folders)
 
     def format_with_params(self, value):
