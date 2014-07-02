@@ -32,9 +32,13 @@ if [ -d $IBRAIN_GIT_FOLDER ]; then
 	if [ -d $IBRAIN_GIT_FOLDER/../dep ]; then
 		IBRAIN_VERSION_DEP_HASHTAG="<dep_git_hashtag>$(cd $IBRAIN_GIT_FOLDER/../dep && git rev-parse HEAD)</dep_git_hashtag>"
 	fi
+    if [ -d $IBRAIN_GIT_FOLDER/../CellProfiler2 ]; then
+        IBRAIN_VERSION_CP2_HASHTAG="<cp2_git_hashtag>$(cd $IBRAIN_GIT_FOLDER/../CellProfiler2 && git rev-parse HEAD)</cp2_git_hashtag>"
+    fi
 fi
 # IS included in the meta information of iBRAIN
-export IBRAIN_VERSION_INFO="<version>$IBRAIN_VERSION</version>${IBRAIN_VERSION_IBRAIN_HASHTAG}${IBRAIN_VERSION_DEP_HASHTAG}"
+export IBRAIN_VERSION_INFO="<version>$IBRAIN_VERSION</version>${IBRAIN_VERSION_IBRAIN_HASHTAG}${IBRAIN_VERSION_DEP_HASHTAG}${IBRAIN_VERSION_CP2_HASHTAG}"
+
 
 export PATH=$PATH:$IBRAIN_BIN_PATH
 

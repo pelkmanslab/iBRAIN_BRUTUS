@@ -109,6 +109,7 @@
 						</tbody>
 					</table>
 				</div><!-- br style="clear: both;"/ -->
+				<!-- turn of statistics for disk space
 				<div style="float: left; border: 1px #dddddd solid; background-color: white; margin: 5px; margin-right: 10px;">
 					<table border="0" cellpadding="0" cellspacing="2">
 						<tbody>
@@ -150,7 +151,7 @@
 							</tr>
 						</tbody>
 					</table>
-				</div>				
+				</div>-->		
 				<xsl:apply-templates select="ibrain_log/ibrain_meta/job_overview"/>
 				<xsl:apply-templates select="ibrain_log/ibrain_meta/latest_result_files"/>
 				<xsl:apply-templates select="ibrain_log/ibrain_meta"/>
