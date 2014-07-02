@@ -1,19 +1,10 @@
-import os
-import sys
-from xml.sax.saxutils import escape as escape_xml
 import textwrap
-import brainy
-from brainy.utils import invoke
+from  brainy.utils import invoke, escape_xml
 from brainy.pipes import BrainyPipe
 from brainy.process.code import (BashCodeProcess, MatlabCodeProcess,
                                  PythonCodeProcess)
-
-
-# TODO: if process description contains map_call() call it to obtain
-# a dictionary of submit_calls and keys. By default, map_call() prints
-# JSON out, which is then parsed and processed.
-# Approach to reduce is some what similar same set of keys should
-# help generate reduce jobs.
+from brainy.process.decorator import (format_with_params,
+                                      require_key_in_description)
 
 
 class CustomPipe(BrainyPipe):
@@ -22,45 +13,48 @@ class CustomPipe(BrainyPipe):
     '''
 
 
-class PythonCall(PythonCodeProcess):
-    '''Run a piece of custom code given by user .'''
+class Submittable(object):
+    '''
+    Run a piece of custom code given by user in self.description[submit_call].
+    '''
 
-    def get_python_call_stmt(self, call_type, call_stmt=None):
-        '''
-        Note that the interpreter call is included by
-        self.submit_python_code().  We refer a required process description
-        key called 'custom_code'.
-        '''
-        # Call type is expected to be a property.
-        if call_stmt is None:
-            call_stmt = getattr(self, call_type).__get__(self)
-            call_stmt = call_stmt.format(self.parameters)
-        code = '''
-            # Import iBRAIN environment.
-            import ext_path
+    @property
+    @format_with_params
+    @require_key_in_description
+    def submit_call(self):
+        'Main code to be submitted.'
 
-            %s ''' % call_stmt
-        return code
+
+class BashCall(BashCodeProcess, Submittable):
+    '''Bake and call bash as a single job.'''
+
+    def get_bash_code(self):
+        return self.submit_call
+
+
+class MatlabCall(MatlabCodeProcess, Submittable):
+    '''Bake and call python as a single job.'''
+
+    def get_matlab_code(self):
+        return self.submit_call
+
+
+class PythonCall(PythonCodeProcess, Submittable):
+    '''Bake and call python as a single job.'''
 
     def get_python_code(self):
-        '''
-        Bake code that would be actually submitted to run. Expected JSON field
-        is *custom_code*.
-        '''
-        return self.get_python_call_stmt('submit_call')
+        return self.submit_call
 
-    def has_data(self):
-        '''
-        Optionally call the method responsible for checking consistency of the
-        data.
-        '''
-        if not 'check_data_call' in self.description:
-            return
-        output = invoke(self.get_python_call_stmt(
-                        call_stmt=self.description['check_data_call']))
-        if len(output.strip()) > 0:
-            # Interpret any output as error.
-            print '<!-- Checking data consistency failed: %s -->' % \
-                  escape_xml(output)
-            return False
-        return True
+
+# TODO: if process description contains map_call() call it to obtain
+# a dictionary of submit_calls and keys. By default, map_call() prints
+# JSON out, which is then parsed and processed.
+# Approach to reduce is some what similar same set of keys should
+# help generate reduce jobs.
+
+class Map(object):
+    pass
+
+
+class Reduce(object):
+    pass

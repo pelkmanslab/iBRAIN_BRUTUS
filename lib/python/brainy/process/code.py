@@ -1,9 +1,7 @@
-from xml.sax.saxutils import escape as escape_xml
 from brainy.process import BrainyProcess
-from brainy.process.decorator import require_keys_in_description
+from brainy.utils import invoke, escape_xml
 
 
-@require_keys_in_description('submit_call')
 class CodeProcess(BrainyProcess):
 
     def __init__(self, code_language):
@@ -45,6 +43,23 @@ class CodeProcess(BrainyProcess):
 
         self.set_flag('resubmitted')
         BrainyProcess.resubmit(self)
+
+    def has_data(self):
+        '''
+        Optionally call the method responsible for checking consistency of the
+        data.
+        '''
+        if not 'check_data_call' in self.description:
+            return
+        bake_code = getattr(self, 'bake_%s_code' % self.code_language)
+        script = bake_code(self.description['check_data_call'])
+        output = invoke(script)
+        if len(output.strip()) > 0:
+            # Interpret any output as error.
+            print '<!-- Checking data consistency failed: %s -->' % \
+                  escape_xml(output)
+            return False
+        return True
 
 
 class BashCodeProcess(CodeProcess):

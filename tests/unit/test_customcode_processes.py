@@ -4,8 +4,6 @@ Testing brainy.process.code.* classes that help to submit custom user code.
 Usage example:
     nosetests -vv -x --pdb test_customcode_processes
 '''
-import re
-import os
 from brainy_tests import MockPipesModule, BrainyTest
 
 
@@ -38,7 +36,28 @@ def bake_a_working_mock_pipe():
     "chain": [
         {
             "type": "CustomCode.PythonCall",
-            "submit_call": "print 'I am a mock custom call'",
+            "submit_call": "print 'I am a mock custom python call'",
+            "default_parameters": {
+                "job_submission_queue": "8:00",
+                "job_resubmission_queue": "36:00",
+                "batch_path": "../../BATCH"
+            }
+        }
+    ]
+}
+    \n''')
+
+
+def bake_a_bash_pipe():
+    return MockPipesModule('''
+{
+    // Define iBRAIN pipe type
+    "type": "CellProfiler.Pipe",
+    // Define chain of processes
+    "chain": [
+        {
+            "type": "CustomCode.BashCall",
+            "submit_call": "echo 'I am a mock custom bash call'",
             "default_parameters": {
                 "job_submission_queue": "8:00",
                 "job_resubmission_queue": "36:00",
@@ -72,11 +91,19 @@ class TestCustomCode(BrainyTest):
         pipes_module.process_pipelines()
         # Check output.
         self.stop_capturing_output()
-        #print self.captured_output
-        match = re.search('^Report file is written to:\s*([^\s\<]+)',
-                          self.captured_output, re.MULTILINE)
-        report_file = match.group(1)
-        assert os.path.exists(report_file)
-        report_file_content = open(report_file).read()
-        assert 'I am a mock custom call' in report_file_content
+        print self.captured_output
+        #assert False
+        assert 'I am a mock custom python call' in self.get_report_content()
+
+    def test_a_basic_bash_call(self):
+        '''Test BashCall: for basic submission'''
+        self.start_capturing_output()
+        # Run pipes.
+        pipes_module = bake_a_bash_pipe()
+        pipes_module.process_pipelines()
+        # Check output.
+        self.stop_capturing_output()
+        print self.captured_output
+        #assert False
+        assert 'I am a mock custom bash call' in self.get_report_content()
 

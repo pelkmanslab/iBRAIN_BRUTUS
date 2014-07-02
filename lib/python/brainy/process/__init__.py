@@ -1,5 +1,6 @@
 import os
 import re
+import logging
 from datetime import datetime
 from cStringIO import StringIO
 from pindent import reformat_filter
@@ -12,6 +13,7 @@ from brainy.errors import (UnknownError, KnownError, TermRunLimitError,
 from brainy.utils import escape_xml
 
 
+logger = logging.getLogger(__name__)
 brainy_config = get_config()
 BASH_CALL = '/bin/bash'
 MATLAB_CALL = brainy_config['matlab_cmd']
@@ -24,6 +26,10 @@ PROCESS_STATUS = [
     'failed',
     'completed',
 ]
+IBRAIN_LIB_PATH = os.path.join(brainy_config['root'], 'lib')
+USER_BASH_PATH = os.path.join(IBRAIN_LIB_PATH, 'bash')
+USER_MATLAB_PATH = os.path.join(IBRAIN_LIB_PATH, 'matlab')
+USER_PYTHON_PATH = os.path.join(IBRAIN_LIB_PATH, 'python')
 
 
 def clean_python_code(code):
@@ -84,7 +90,6 @@ class BrainyProcess(pipette.Process, FlagManager):
         self.format_parameters = [
             'name',
             'step_name',
-            'batch_size',
             'plate_path',
             'process_path',
             'pipes_path',
@@ -114,10 +119,6 @@ class BrainyProcess(pipette.Process, FlagManager):
         return self.parameters['step_name']
 
     @property
-    def batch_size(self):
-        return self.parameters.get('batch_size', '1')
-
-    @property
     def job_report_exp(self):
         return self.parameters.get(
             'job_report_exp',
@@ -138,7 +139,10 @@ class BrainyProcess(pipette.Process, FlagManager):
             plate_path += '/'
         if '../../' in pathname:
             pathname = pathname.replace('../../', plate_path, 1)
-        return pathname.replace('..', '')
+        pathname = pathname.replace('..', '')
+        # The actual jailing withing the plate_path.
+        assert pathname.startswith(plate_path)
+        return pathname
 
     @property
     def process_path(self):
@@ -222,6 +226,40 @@ class BrainyProcess(pipette.Process, FlagManager):
             PYTHON_CALL,
         )
 
+    @property
+    def user_bash_path(self):
+        user_path = self.parameters.get('user_bash_path',
+                                        '{plate_path}/LIB/BASH')
+        return self.format_with_params(user_path)
+
+    @property
+    def user_matlab_path(self):
+        user_path = self.parameters.get('user_matlab_path',
+                                        '{plate_path}/LIB/MATLAB')
+        return self.format_with_params(user_path)
+
+    @property
+    def user_python_path(self):
+        user_path = self.parameters.get('user_python_path',
+                                        '{plate_path}/LIB/PYTHON')
+        return self.format_with_params(user_path)
+
+    def get_user_code_path(self, lang='python', valid_folders=None):
+        property_name = 'user_%s_path' % lang.lower()
+        assert hasattr(self, property_name)
+        value = getattr(self, property_name)
+        user_path = value.split(':')
+        if valid_folders is None:
+            valid_folders = list()
+        valid_folders.append(os.path.join(IBRAIN_LIB_PATH, lang.lower()))
+        for subfolder in user_path:
+            folder_path = self.restrict_to_safe_path(subfolder)
+            if os.path.exists(folder_path):
+                logger.warning('The custom code path does not exist: %s' %
+                               folder_path)
+                valid_folders.append(folder_path)
+        return ':'.join(valid_folders)
+
     def format_with_params(self, value):
         '''
         Inject updated values into the code. This applies string.format() DSL
@@ -275,38 +313,54 @@ class BrainyProcess(pipette.Process, FlagManager):
         assert os.path.exists(os.path.dirname(report_file))
         return self.scheduler.submit_job(shell_command, queue, report_file)
 
-    def submit_bash_job(self, bash_code, queue=None, report_file=None,
-                        is_resubmitting=False):
-        script = '''%(bash_call)s << BASH_CODE;
+    def bake_bash_code(self, bash_code):
+        return '''%(bash_call)s << BASH_CODE;
+export PATH="%(user_path)s:$PATH"
 %(bash_code)s
 BASH_CODE''' % {
             'bash_call': self.bash_call,
             'bash_code': format_code(bash_code, lang='bash'),
+            'user_path': self.get_user_code_path(lang='bash'),
         }
+
+    def submit_bash_job(self, bash_code, queue=None, report_file=None,
+                        is_resubmitting=False):
+        script = self.bake_bash_code(bash_code)
         return self.submit_job(script, queue, report_file)
 
-    def submit_matlab_job(self, matlab_code, queue=None, report_file=None,
-                          is_resubmitting=False):
-        script = '''%(matlab_call)s << MATLAB_CODE;
+    def bake_matlab_code(self, matlab_code):
+        return '''%(matlab_call)s << MATLAB_CODE;
+path('%(user_path)s', path);
 %(matlab_code)s
 MATLAB_CODE''' % {
             'matlab_call': self.matlab_call,
             'matlab_code': format_code(matlab_code, lang='matlab'),
+            'user_path': self.get_user_code_path(lang='matlab'),
         }
+
+    def submit_matlab_job(self, matlab_code, queue=None, report_file=None,
+                          is_resubmitting=False):
+        script = self.bake_matlab_code(matlab_code)
         return self.submit_job(script, queue, report_file)
 
-    def submit_python_job(self, python_code, queue=None, report_file=None,
-                          is_resubmitting=False):
-        script = '''%(python_call)s - << PYTHON_CODE;
+    def bake_python_code(self, python_code):
+        user_path = str(self.get_user_code_path(
+                        lang='python',
+                        valid_folders=[brainy_config['root']])).split(':')
+        assert type(user_path) == list
+        return '''%(python_call)s - << PYTHON_CODE;
 import sys
-sys.path = ['%(ibrain_root)s'] + sys.path
+sys.path = %(user_path)s + sys.path
 %(python_code)s
 PYTHON_CODE''' % {
             'python_call': self.python_call,
             'python_code': format_code(python_code, lang='python'),
-            'ibrain_root': brainy_config['root']
-            # TODO LIB/PYTHON
+            'user_path': user_path,
         }
+
+    def submit_python_job(self, python_code, queue=None, report_file=None,
+                          is_resubmitting=False):
+        script = self.bake_python_code(python_code)
         return self.submit_job(script, queue, report_file)
 
     @property

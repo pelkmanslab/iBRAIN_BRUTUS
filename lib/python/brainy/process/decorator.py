@@ -45,7 +45,7 @@ def require_key_in_description(property_method):
                 'Missing "%s" key in JSON descriptor of the process.' %
                 property_name
             )
-        result = property_method()
+        result = property_method(self)
         return self.description[property_name] if result is None else result
 
     return get_required_description_key

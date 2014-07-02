@@ -139,13 +139,13 @@ class LinkFiles(PythonCodeProcess):
     @property
     @format_with_params
     @require_key_in_description
-    def source_location():
+    def source_location(self):
         pass
 
     @property
     @format_with_params
     @require_key_in_description
-    def target_location():
+    def target_location(self):
         pass
 
     def put_on(self):
