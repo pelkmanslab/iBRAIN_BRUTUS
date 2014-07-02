@@ -26,13 +26,15 @@ export SCHEDULING_ENGINE="shellcmd"
 export IBRAIN_SED_SHARES=''
 
 export IBRAIN_VERSION="$(cat $IBRAIN_ROOT/VERSION)"
-export IBRAIN_GIT_FOLDER=$IBRAIN_ROOT/../code/iBRAIN
+IBRAIN_GIT_FOLDER=$IBRAIN_ROOT/../code/iBRAIN
 if [ -d $IBRAIN_GIT_FOLDER ]; then
-	IBRAIN_VERSION="$IBRAIN_VERSION git hashtag: $(cd $IBRAIN_GIT_FOLDER && git rev-parse HEAD)"
+	IBRAIN_VERSION_IBRAIN_HASHTAG="<iBRAIN_git_hashtag>$(cd $IBRAIN_GIT_FOLDER && git rev-parse HEAD)</iBRAIN_git_hashtag>"
 	if [ -d $IBRAIN_GIT_FOLDER/../dep ]; then
-		IBRAIN_VERSION="$IBRAIN_VERSION | codebase hashtag: $(cd $IBRAIN_GIT_FOLDER/../dep && git rev-parse HEAD)"
+		IBRAIN_VERSION_DEP_HASHTAG="<dep_git_hashtag>$(cd $IBRAIN_GIT_FOLDER/../dep && git rev-parse HEAD)</dep_git_hashtag>"
 	fi
 fi
+# IS included in the meta information of iBRAIN
+export IBRAIN_VERSION_INFO="<version>$IBRAIN_VERSION</version>${IBRAIN_VERSION_IBRAIN_HASHTAG}${IBRAIN_VERSION_DEP_HASHTAG}"
 
 export PATH=$PATH:$IBRAIN_BIN_PATH
 

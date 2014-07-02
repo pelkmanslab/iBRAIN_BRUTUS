@@ -2,9 +2,11 @@
 #
 # iBRAIN.sh
 #
+# 020614: Please read the commit comments in the GIT repo ;-)
+#
 # 120822: renamed into iBRAIN.sh
 #
-# 081009: udpate: split iBRAIN.sh (wrapper) and iBRAIN_project.sh, and store iBRAIN_project.sh output as project specific XML
+# 081009: update: split iBRAIN.sh (wrapper) and iBRAIN_project.sh, and store iBRAIN_project.sh output as project specific XML
 #   Preferably, we only store the per project output if the data has changed, so we must do a 'diff -b -i -B old.xml new.xml'
 #	to check for this, and only store differences. Note that we should therefore not include any now-dates etc. in the project.xml
 #   output.
@@ -75,7 +77,7 @@ echo " -->"
 
 echo " <ibrain_meta>"
 echo "  <author>Yauhen Yakimovich, Berend Snijder</author>"
-echo "  <version>$IBRAIN_VERSION</version>"
+echo "  $IBRAIN_VERSION_INFO"
 echo "  <date_last_modified>$(stat $0 | grep Modify | awk '{print $2,$3}')</date_last_modified>"
 echo "  <start>$(date +"%y%m%d %H:%M:%S")</start>"
 echo "  <host_name>$HOSTNAME</host_name>"
