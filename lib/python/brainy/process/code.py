@@ -1,8 +1,30 @@
+import json
 from brainy.process import BrainyProcess
 from brainy.utils import invoke, escape_xml
 
 
-class CodeProcess(BrainyProcess):
+class CanCheckData(object):
+
+    def has_data(self):
+        '''
+        Optionally call the method responsible for checking consistency of the
+        data. Code is baked into a script and invoked in the shell. Method will
+        interpret any output as error.
+        '''
+        if not 'check_data_call' in self.description:
+            return
+        bake_code = getattr(self, 'bake_%s_code' % self.code_language)
+        script = bake_code(self.description['check_data_call'])
+        output = invoke(script)
+        if len(output.strip()) > 0:
+            # Interpret any output as error.
+            print '<!-- Checking data consistency failed: %s -->' % \
+                  escape_xml(output)
+            return False
+        return True
+
+
+class CodeProcess(BrainyProcess, CanCheckData):
 
     def __init__(self, code_language):
         BrainyProcess.__init__(self)
@@ -44,23 +66,6 @@ class CodeProcess(BrainyProcess):
         self.set_flag('resubmitted')
         BrainyProcess.resubmit(self)
 
-    def has_data(self):
-        '''
-        Optionally call the method responsible for checking consistency of the
-        data.
-        '''
-        if not 'check_data_call' in self.description:
-            return
-        bake_code = getattr(self, 'bake_%s_code' % self.code_language)
-        script = bake_code(self.description['check_data_call'])
-        output = invoke(script)
-        if len(output.strip()) > 0:
-            # Interpret any output as error.
-            print '<!-- Checking data consistency failed: %s -->' % \
-                  escape_xml(output)
-            return False
-        return True
-
 
 class BashCodeProcess(CodeProcess):
 
@@ -79,3 +84,41 @@ class PythonCodeProcess(CodeProcess):
 
     def __init__(self):
         super(PythonCodeProcess, self).__init__('python')
+
+
+# class JsonProcess(BrainyProcess, CanCheckData):
+
+#     def __init__(self, code_language):
+#         BrainyProcess.__init__(self)
+#         self.code_language = code_language
+
+#     @property
+#     def map(self):
+#         bake_code = getattr(self, 'bake_%s_code' % self.code_language)
+#         script = bake_code(self.map_call)
+#         return json.loads(invoke(script))
+
+#     def submit(self,):
+#         bake_code = getattr(self, 'bake_%s_code' % self.code_language)
+#         #submit_code_job = getattr(self, 'submit_%s_job' % self.code_language)
+#         for key, value in self.map.iteritems():
+#             accepting_json_code = '''
+
+#             '''
+
+#              % {
+#                 'bash_call': self.bash_call,
+#                 'input':
+#             }
+#             submission_result = submit_code_job(code)
+
+#             print('''
+#                 <status action="%(step_name)s">submitting
+#                 <output>%(submission_result)s</output>
+#                 </status>
+#             ''' % {
+#                 'step_name': self.step_name,
+#                 'submission_result': escape_xml(submission_result),
+#             })
+
+#             self.set_flag('submitted')

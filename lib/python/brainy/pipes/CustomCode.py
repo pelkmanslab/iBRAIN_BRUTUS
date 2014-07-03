@@ -46,15 +46,13 @@ class PythonCall(PythonCodeProcess, Submittable):
         return self.submit_call
 
 
-# TODO: if process description contains map_call() call it to obtain
-# a dictionary of submit_calls and keys. By default, map_call() prints
-# JSON out, which is then parsed and processed.
-# Approach to reduce is some what similar same set of keys should
-# help generate reduce jobs.
+# class MapPython(JsonProcess):
 
-class Map(object):
-    pass
+#     @property
+#     def map(self):
+#         bake_code = getattr(self, 'bake_%s_code' % self.code_language)
+#         script = bake_code(self.map_call)
+#         return json.loads(invoke(script))
 
-
-class Reduce(object):
-    pass
+# class Reduce(object):
+#     pass
