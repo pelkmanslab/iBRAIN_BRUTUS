@@ -1,5 +1,5 @@
 import textwrap
-from  brainy.utils import invoke, escape_xml
+from brainy.utils import invoke, escape_xml
 from brainy.pipes import BrainyPipe
 from brainy.process.code import (BashCodeProcess, MatlabCodeProcess,
                                  PythonCodeProcess)
@@ -47,12 +47,12 @@ class PythonCall(PythonCodeProcess, Submittable):
 
 
 # class MapPython(JsonProcess):
-
+#
 #     @property
 #     def map(self):
 #         bake_code = getattr(self, 'bake_%s_code' % self.code_language)
 #         script = bake_code(self.map_call)
 #         return json.loads(invoke(script))
-
+#
 # class Reduce(object):
 #     pass
