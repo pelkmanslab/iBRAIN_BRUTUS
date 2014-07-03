@@ -31,6 +31,7 @@ from brainy.pipes import PipesModule
 # Configure basic logging to point STDOUT.
 logging.basicConfig(
         level=logging.INFO,
+        stream=sys.stdout,
         format='<!--%(asctime)s %(name)-20s %(levelname)-8s %(message)s-->',
         datefmt='%m-%d %H:%M')
 

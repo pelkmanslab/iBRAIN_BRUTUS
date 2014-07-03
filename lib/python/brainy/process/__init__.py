@@ -27,9 +27,9 @@ PROCESS_STATUS = [
     'completed',
 ]
 IBRAIN_LIB_PATH = os.path.join(brainy_config['root'], 'lib')
-USER_BASH_PATH = os.path.join(IBRAIN_LIB_PATH, 'bash')
-USER_MATLAB_PATH = os.path.join(IBRAIN_LIB_PATH, 'matlab')
-USER_PYTHON_PATH = os.path.join(IBRAIN_LIB_PATH, 'python')
+IBRAIN_LIB_BASH_PATH = os.path.join(IBRAIN_LIB_PATH, 'bash')
+IBRAIN_LIB_MATLAB_PATH = os.path.join(IBRAIN_LIB_PATH, 'matlab')
+IBRAIN_LIB_PYTHON_PATH = os.path.join(IBRAIN_LIB_PATH, 'python')
 
 
 def clean_python_code(code):
@@ -331,11 +331,14 @@ BASH_CODE''' % {
 
     def bake_matlab_code(self, matlab_code):
         return '''%(matlab_call)s << MATLAB_CODE;
-path('%(user_path)s', path);
+path('%(ibrain_lib_matlab_path)s', path());
+path(getrecpath('%(user_path)s'), path());
+
 %(matlab_code)s
 MATLAB_CODE''' % {
             'matlab_call': self.matlab_call,
             'matlab_code': format_code(matlab_code, lang='matlab'),
+            'ibrain_lib_matlab_path': IBRAIN_LIB_MATLAB_PATH,
             'user_path': self.get_user_code_path(lang='matlab'),
         }
 
