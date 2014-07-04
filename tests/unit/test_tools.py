@@ -153,7 +153,6 @@ class TestFileLinking(BrainyTest):
         # file system.
         batch_path, old_batch_path, expected_files = \
             self.fetch_expected_files(pipes_module)
-
         # Run the pipes.
         pipes_module.process_pipelines()
         # Check output.
@@ -161,7 +160,7 @@ class TestFileLinking(BrainyTest):
         #print self.captured_output
         print self.get_report_content()
         assert 'Linking ' in self.get_report_content()
-        assert os.path.exists(pipes_module.env['plate_path'])\
-            and os.path.islink(pipes_module.env['plate_path'])
+        result_link = os.path.join(pipes_module.env['plate_path'], 'BATCH_old')
+        assert os.path.exists(result_link) and os.path.islink(result_link)
         #assert False
 
