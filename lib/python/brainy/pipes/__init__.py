@@ -243,7 +243,7 @@ class PipesModule(BrainyModule):
                     'pipeline_name': pipeline.name,
                 })
                 # If previous pipeline we are dependent on has failed, then
-                # mark pipline as failed too to inform the next dependent
+                # mark pipeline as failed too to inform the next dependent
                 # pipeline about the failure.
                 pipeline.has_failed = True
                 continue
