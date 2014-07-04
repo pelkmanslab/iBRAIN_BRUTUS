@@ -148,6 +148,11 @@ class LinkFiles(PythonCodeProcess):
     def target_location(self):
         pass
 
+    @property
+    def file_type(self):
+        '''By default, we link files, not folders. Use 'd' for folders.'''
+        return self.description.get('file_type', 'f')
+
     def put_on(self):
         super(LinkFiles, self).put_on()
         # Create missing process folder path.
@@ -155,7 +160,8 @@ class LinkFiles(PythonCodeProcess):
             os.makedirs(self.batch_path)
 
     @staticmethod
-    def link(source_path, target_path, patterns, link_type='hard'):
+    def link(source_path, target_path, patterns, link_type='hard',
+             file_type='f'):
         '''
         Expect keys 'hardlink' and 'symlink' keys in
         description['file_patterns']. If pattern string starts and ends with
@@ -165,9 +171,9 @@ class LinkFiles(PythonCodeProcess):
         assert os.path.exists(target_path)
         file_matches = find_files(
             path=source_path,
-            match=MatchPatterns(filetype='f', names=patterns),
+            match=MatchPatterns(filetype=file_type, names=patterns),
         )
-        if link_type == 'hardlink':
+        if link_type == 'hardlink' and file_type == 'f':
             make_link = os.link
         elif link_type == 'symlink':
             make_link = os.symlink
@@ -181,7 +187,7 @@ class LinkFiles(PythonCodeProcess):
 
     @staticmethod
     def build_linking_args(source_location, target_location,
-                           nested_file_patterns):
+                           nested_file_patterns, file_type):
         for link_type in ['hardlink', 'symlink']:
             if link_type in nested_file_patterns:
                 if type(nested_file_patterns[link_type]) != list \
@@ -196,6 +202,7 @@ class LinkFiles(PythonCodeProcess):
                     'target_location': target_location,
                     'file_patterns': nested_file_patterns[link_type],
                     'link_type': link_type,
+                    'file_type': file_type,
                 }
                 yield args
 
@@ -214,12 +221,14 @@ from brainy.pipes.Tools import LinkFiles
 
         for args in LinkFiles.build_linking_args(self.source_location,
                                                  self.target_location,
-                                                 self.file_patterns):
+                                                 self.file_patterns,
+                                                 self.file_type):
             code += '''LinkFiles.link(
     '%(source_location)s',
     '%(target_location)s',
     %(file_patterns)s,
     link_type='%(link_type)s',
+    file_type='%(file_type)s',
 )
 ''' % args
         return code

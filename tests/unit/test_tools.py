@@ -62,6 +62,27 @@ def bake_a_working_mock_pipe():
     \n''')
 
 
+def bake_a_pipe_for_folder_linking():
+    return MockPipesModule('''
+{
+    // Define iBRAIN pipe type
+    "type": "CellProfiler.Pipe",
+    // Define chain of processes
+    "chain": [
+        {
+            "type": "Tools.LinkFiles",
+            "source_location": "{process_path}",
+            "target_location": "{plate_path}",
+            "file_patterns": {
+                "symlink": ["BATCH_*"]
+            },
+            "file_type": "d"
+        }
+    ]
+}
+    \n''')
+
+
 class TestFileLinking(BrainyTest):
 
     def test_failing_pipe(self):
@@ -97,7 +118,7 @@ class TestFileLinking(BrainyTest):
         self.start_capturing_output()
         # Run pipes.
         pipes_module = bake_a_working_mock_pipe()
-        # Do some mocking to make sure hard link is doen on /tmp - same
+        # Do some mocking to make sure hard link is done on /tmp - same
         # file system.
         batch_path, old_batch_path, expected_files = \
             self.fetch_expected_files(pipes_module)
@@ -122,3 +143,25 @@ class TestFileLinking(BrainyTest):
         assert '<status action="pipes-mock-linkfiles">completed</status>'\
             in self.captured_output
         #assert False
+
+    def test_folder_linking(self):
+        '''Test LinkFiles: for folder linking'''
+        self.start_capturing_output()
+        # Run pipes.
+        pipes_module = bake_a_pipe_for_folder_linking()
+        # Do some mocking to make sure hard link is done on /tmp - same
+        # file system.
+        batch_path, old_batch_path, expected_files = \
+            self.fetch_expected_files(pipes_module)
+
+        # Run the pipes.
+        pipes_module.process_pipelines()
+        # Check output.
+        self.stop_capturing_output()
+        #print self.captured_output
+        print self.get_report_content()
+        assert 'Linking ' in self.get_report_content()
+        assert os.path.exists(pipes_module.env['plate_path'])\
+            and os.path.islink(pipes_module.env['plate_path'])
+        #assert False
+
