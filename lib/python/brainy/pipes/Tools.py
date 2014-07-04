@@ -153,6 +153,10 @@ class LinkFiles(PythonCodeProcess):
         '''By default, we link files, not folders. Use 'd' for folders.'''
         return self.description.get('file_type', 'f')
 
+    @property
+    def recursively(self):
+        return bool(self.description.get('recursively', False))
+
     def put_on(self):
         super(LinkFiles, self).put_on()
         # Create missing process folder path.
@@ -161,7 +165,7 @@ class LinkFiles(PythonCodeProcess):
 
     @staticmethod
     def link(source_path, target_path, patterns, link_type='hard',
-             file_type='f'):
+             file_type='f', recursively=False):
         '''
         Expect keys 'hardlink' and 'symlink' keys in
         description['file_patterns']. If pattern string starts and ends with
@@ -172,6 +176,7 @@ class LinkFiles(PythonCodeProcess):
         file_matches = find_files(
             path=source_path,
             match=MatchPatterns(filetype=file_type, names=patterns),
+            recursive=recursively,
         )
         if link_type == 'hardlink' and file_type == 'f':
             make_link = os.link
@@ -196,7 +201,7 @@ class LinkFiles(PythonCodeProcess):
 
     @staticmethod
     def build_linking_args(source_location, target_location,
-                           nested_file_patterns, file_type):
+                           nested_file_patterns, file_type, recursively):
         for link_type in ['hardlink', 'symlink']:
             if link_type in nested_file_patterns:
                 if type(nested_file_patterns[link_type]) != list \
@@ -212,6 +217,7 @@ class LinkFiles(PythonCodeProcess):
                     'file_patterns': nested_file_patterns[link_type],
                     'link_type': link_type,
                     'file_type': file_type,
+                    'recursively': recursively,
                 }
                 yield args
 
@@ -231,13 +237,15 @@ from brainy.pipes.Tools import LinkFiles
         for args in LinkFiles.build_linking_args(self.source_location,
                                                  self.target_location,
                                                  self.file_patterns,
-                                                 self.file_type):
+                                                 self.file_type,
+                                                 self.recursively):
             code += '''LinkFiles.link(
     '%(source_location)s',
     '%(target_location)s',
     %(file_patterns)s,
     link_type='%(link_type)s',
     file_type='%(file_type)s',
+    recursively='%(recursively)s',
 )
 ''' % args
         return code
