@@ -256,11 +256,11 @@ for INCLUDEDPATH in $(sed -e 's/[[:cntrl:]]//g' $INCLUDEDPATHSFILE); do
 
             # [NEW BS THOUGHT]: To prevent endless resubmission of checking on iBRAIN projects that have errors, we can see if there are more than 4 project.xml files, if the oldest and newest were checked within 1h of each other, and if all of them reported 0 jobs running. If so, do not check this project again...
             # The following line will be empty if all project.xml reported no jobs running anywhere.
-            if [ $(ls $PROJECTXMLDIR/*_project.xml 2>/dev/null | wc -l) -gt 4 ] && [ $(find $PROJECTXMLDIR -maxdepth 1 -type f -mmin +90 -name "*_project.xml" | wc -l) -eq 0 ]; then
-                if [ $(grep "<job_count_total>" $PROJECTXMLDIR/*_project.xml | grep -v "<job_count_total>0</job_count_total>" -c) -eq 0 ]; then
-                    BOOLCHECKINGSEEMSFUTILE=1
-                fi
-            fi
+            # if [ $(ls $PROJECTXMLDIR/*_project.xml 2>/dev/null | wc -l) -gt 4 ] && [ $(find $PROJECTXMLDIR -maxdepth 1 -type f -mmin +90 -name "*_project.xml" | wc -l) -eq 0 ]; then
+            #     if [ $(grep "<job_count_total>" $PROJECTXMLDIR/*_project.xml | grep -v "<job_count_total>0</job_count_total>" -c) -eq 0 ]; then
+            #         BOOLCHECKINGSEEMSFUTILE=1
+            #     fi
+            # fi
 
         else
            ERRORCOUNT=0;
