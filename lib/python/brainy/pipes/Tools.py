@@ -182,8 +182,15 @@ class LinkFiles(PythonCodeProcess):
         for source_file in file_matches:
             link_path = os.path.join(target_path,
                                      os.path.basename(source_file))
-            print 'Linking "%s" -> "%s"' % (source_file, link_path)
-            make_link(source_file, link_path)
+            try:
+                print 'Linking "%s" -> "%s"' % (source_file, link_path)
+                make_link(source_file, link_path)
+            except IOError as error:
+                raise BrainyProcessError(
+                    warning='It looks like linking was already done. Maybe '
+                    'you are trying to re-run project incorrectly. Make sur'
+                    'e to clean previous results before retrying.',
+                    output=str(error))
 
     @staticmethod
     def build_linking_args(source_location, target_location,
