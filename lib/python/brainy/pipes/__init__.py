@@ -242,6 +242,9 @@ class PipesModule(BrainyModule):
                 ''' % {
                     'pipeline_name': pipeline.name,
                 })
+                # Mark pipline as failed too to inform the next dependent
+                # pipeline about the failure.
+                pipeline.has_failed = True
                 continue
 
             # Execute current pipeline.
