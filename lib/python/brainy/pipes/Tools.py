@@ -186,11 +186,13 @@ class LinkFiles(PythonCodeProcess):
                 print 'Linking "%s" -> "%s"' % (source_file, link_path)
                 make_link(source_file, link_path)
             except IOError as error:
-                raise BrainyProcessError(
-                    warning='It looks like linking was already done. Maybe '
-                    'you are trying to re-run project incorrectly. Make sur'
-                    'e to clean previous results before retrying.',
-                    output=str(error))
+                if 'File exists' in str(error):
+                    message = 'It looks like linking was already done. Maybe '\
+                        'you are trying to re-run project incorrectly. Make '\
+                        'sure to clean previous results before retrying.'
+                else:
+                    message = 'Unknown input-output error.'
+                raise BrainyProcessError(warning=message, output=str(error))
 
     @staticmethod
     def build_linking_args(source_location, target_location,
