@@ -77,6 +77,7 @@ def bake_a_pipe_for_folder_linking():
                 "symlink": ["BATCH_*"]
             },
             "file_type": "d"
+            //"recursively": 0
         }
     ]
 }
@@ -153,12 +154,15 @@ class TestFileLinking(BrainyTest):
         # file system.
         batch_path, old_batch_path, expected_files = \
             self.fetch_expected_files(pipes_module)
+        sub_old = os.path.join(old_batch_path, 'BATCH_old')
+        os.makedirs(sub_old)
         # Run the pipes.
         pipes_module.process_pipelines()
         # Check output.
         self.stop_capturing_output()
         #print self.captured_output
-        print self.get_report_content()
+        #print self.get_report_content()
+        #assert False
         assert 'Linking ' in self.get_report_content()
         result_link = os.path.join(pipes_module.env['plate_path'], 'BATCH_old')
         assert os.path.exists(result_link) and os.path.islink(result_link)

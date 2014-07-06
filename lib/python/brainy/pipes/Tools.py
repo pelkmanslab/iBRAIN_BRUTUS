@@ -245,7 +245,7 @@ from brainy.pipes.Tools import LinkFiles
     %(file_patterns)s,
     link_type='%(link_type)s',
     file_type='%(file_type)s',
-    recursively='%(recursively)s',
+    recursively=%(recursively)r,
 )
 ''' % args
         return code
@@ -261,20 +261,30 @@ from brainy.pipes.Tools import LinkFiles
 
         def get_name(root, name):
             return name
+        linking_per_file_type = {
+            'f': ['hardlink', 'symlink'],
+            'd': ['symlink'],
+        }
 
-        for link_type in ['hardlink', 'symlink']:
-            if link_type in self.file_patterns:
-                patterns = self.file_patterns[link_type]
-                source_matches = list(find_files(
-                    path=self.source_location,
-                    match=MatchPatterns(filetype='f', names=patterns),
-                    collect=get_name,
-                ))
-                target_matches = list(find_files(
-                    path=self.target_location,
-                    match=MatchPatterns(filetype='f', names=patterns),
-                    collect=get_name,
-                ))
-                if not source_matches == target_matches:
-                    return False
+        for file_type in linking_per_file_type:
+            linking = linking_per_file_type[file_type]
+            for link_type in linking:
+                if link_type in self.file_patterns:
+                    patterns = self.file_patterns[link_type]
+                    source_matches = list(find_files(
+                        path=self.source_location,
+                        match=MatchPatterns(filetype=file_type,
+                                            names=patterns),
+                        collect=get_name,
+                        recursive=self.recursively,
+                    ))
+                    target_matches = list(find_files(
+                        path=self.target_location,
+                        match=MatchPatterns(filetype=file_type,
+                                            names=patterns),
+                        collect=get_name,
+                        recursive=self.recursively,
+                    ))
+                    if not source_matches == target_matches:
+                        return False
         return True
