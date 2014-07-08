@@ -106,16 +106,19 @@ def move_microscope_metadata(tiff_path, metadata_path):
                 # e.g.: 140324-pilot-GFP-InSitu-gfp.wpi
                 '*.wpi',
                 # e.g.: DC_Andor #1_CAM1.tif
-                re.compile('DC_Andor\ \#.*_CAM\d\.(tif|png)$'),
+                r'/DC_Andor\ \#.*_CAM\d\.(tif|png)$/',
                 # e.g.: SC_BP445-45_40x_M10_CH01.tif
-                re.compile('SC_BP.*CH.*\.(tif|png)$'),
+                r'/SC_BP.*?CH\d*?\.(tif|png)$/',
             ]
-            metadata_files = list()
-            for mask in masks:
-                metadata_files += list(find_files(
+            metadata_files = list(
+                find_files(
                     path=tiff_path,
-                    match=Match(filetype='f', name=mask),
-                ))
+                    match=MatchAnyPatternsAndTypes(
+                        filetypes=['f'],
+                        names=masks,
+                    ),
+                )
+            )
             if len(metadata_files) > 0:
                 # Detected files for the microscope.
                 if not os.path.exists(microscope_metadata_path):
