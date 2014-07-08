@@ -2,12 +2,13 @@ import os
 import re
 import shutil
 from datetime import datetime
-from findtools.find_files import (find_files, Match, MatchPatterns)
+from findtools.find_files import (find_files, Match, MatchAnyPatternsAndTypes)
 from fnmatch import fnmatch, translate as fntranslate
 from brainy.process import BrainyProcessError
 from brainy.process.code import PythonCodeProcess
-from brainy.process.decorator import (format_with_params,
-    require_keys_in_description, require_key_in_description)
+from brainy.process.decorator import (
+    format_with_params, require_keys_in_description,
+    require_key_in_description)
 
 
 KNOWN_MICROSCOPES = ['CV7K']
@@ -175,7 +176,10 @@ class LinkFiles(PythonCodeProcess):
         assert os.path.exists(target_path)
         file_matches = find_files(
             path=source_path,
-            match=MatchPatterns(filetype=file_type, names=patterns),
+            match=MatchAnyPatternsAndTypes(
+                filetypes=[file_type],
+                names=patterns,
+            ),
             recursive=recursively,
         )
         if link_type == 'hardlink' and file_type == 'f':
@@ -273,15 +277,19 @@ from brainy.pipes.Tools import LinkFiles
                     patterns = self.file_patterns[link_type]
                     source_matches = list(find_files(
                         path=self.source_location,
-                        match=MatchPatterns(filetype=file_type,
-                                            names=patterns),
+                        match=MatchAnyPatternsAndTypes(
+                            filetypes=[file_type],
+                            names=patterns,
+                        ),
                         collect=get_name,
                         recursive=self.recursively,
                     ))
                     target_matches = list(find_files(
                         path=self.target_location,
-                        match=MatchPatterns(filetype=file_type,
-                                            names=patterns),
+                        match=MatchAnyPatternsAndTypes(
+                            filetypes=[file_type],
+                            names=patterns,
+                        ),
                         collect=get_name,
                         recursive=self.recursively,
                     ))
