@@ -146,10 +146,13 @@ cmt.loadPackages();
     log_msg('%s: stored stats of channel %d zstack %d: %s.\n',        mfilename, channelNum, zNum, filename);
     %illunimator.save_stat(filename, stats);
     % smart aggregate distributed statistics
-    stat_values = struct(        'mean', aggregate_stats(stats,'mean'),...        
-        'std', aggregate_stats(stats,'std')        ); %#ok<NASGU>
+    stat_values = struct('mean', aggregate_stats(stats,'mean'),...        
+        'std', aggregate_stats(stats,'std'),...
+        'count', aggregate_stats(stats,'count')); %#ok<NASGU>
         % If nesessary consider adding more statistics
-        %'var', aggregate_stats(stats,'var'),        %'count', aggregate_stats(stats,'count'),        %'min', aggregate_stats(stats,'min'),        %'max', aggregate_stats(stats,'max')...    
+        %'var', aggregate_stats(stats,'var'),                     
+        %'min', aggregate_stats(stats,'min'),        
+        %'max', aggregate_stats(stats,'max')...    
     save(filename, 'stat_values');
 end
 
