@@ -10,7 +10,7 @@ function data = loadjson(fname,varargin)
 %            date: 2011/09/09
 %         Nedialko Krouchev: http://www.mathworks.com/matlabcentral/fileexchange/25713
 %            date: 2009/11/02
-%         François Glineur: http://www.mathworks.com/matlabcentral/fileexchange/23393
+%         Fran??ois Glineur: http://www.mathworks.com/matlabcentral/fileexchange/23393
 %            date: 2009/03/22
 %         Joel Feenstra:
 %         http://www.mathworks.com/matlabcentral/fileexchange/20565
@@ -243,6 +243,11 @@ global pos inStr isoct
             parse_char(',');
          end
         end
+    end
+    % the step below (try) doesn't make any sense for cell array of strings
+    if any(cellfun(@ischar, object))
+        parse_char(']');
+        return
     end
     try
         object=cell2mat(object')';
