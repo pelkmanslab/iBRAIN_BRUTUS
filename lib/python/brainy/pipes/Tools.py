@@ -106,9 +106,9 @@ def move_microscope_metadata(tiff_path, metadata_path):
                 # e.g.: 140324-pilot-GFP-InSitu-gfp.wpi
                 '*.wpi',
                 # e.g.: DC_Andor #1_CAM1.tif
-                r'^DC_\w*\ \#.*_CAM\d\.(tiff?|png)$',
+                r'/^DC_\w*\ \#.*_CAM\d\.(tiff?|png)$/',
                 # e.g.: SC_BP445-45_40x_M10_CH01.tif
-                r'^SC_BP.*?CH\d*?\.(tiff?|png)$',
+                r'/^SC_BP.*?CH\d*?\.(tiff?|png)$/',
             ]
             metadata_files = list(
                 find_files(
