@@ -73,15 +73,20 @@ drawnow
 
 Filter = find(matObjectSizes < MinAreaSize);
 FinalLabelMatrixImage = LabelMatrixImage;
-for i=1:numel(Filter)
-    FinalLabelMatrixImage(FinalLabelMatrixImage == Filter(i)) = 0;
+
+if ~isempty(Filter)
+    % Do work only if there is actually anything to filter. This prevents
+    % weird bugs.
+    for i=1:numel(Filter)
+        FinalLabelMatrixImage(FinalLabelMatrixImage == Filter(i)) = 0;
+    end
+
+    x = sortrows(unique([LabelMatrixImage(:) FinalLabelMatrixImage(:)],'rows'),1);
+    x(x(:,2)>0,2)=1:sum(x(:,2)>0);
+    LookUpColumn = x(:,2);
+
+    FinalLabelMatrixImage = LookUpColumn(FinalLabelMatrixImage+1);
 end
-
-x = sortrows(unique([LabelMatrixImage(:) FinalLabelMatrixImage(:)],'rows'),1);
-x(x(:,2)>0,2)=1:sum(x(:,2)>0);
-LookUpColumn = x(:,2);
-
-FinalLabelMatrixImage = LookUpColumn(FinalLabelMatrixImage+1);
 % 
 % %%% Note: these outlines are not perfectly accurate; for some reason it
 % %%% produces more objects than in the original image.  But it is OK for
