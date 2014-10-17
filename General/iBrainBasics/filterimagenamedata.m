@@ -26,9 +26,11 @@ function [intRow, intColumn, strWellName, intTimepoint] = filterimagenamedata(st
     strWellName3 = char(strrep(regexp(strImageName,'Well [A-Z]\d{2,}','Match'),'_',''));
     
     % MD MICROEXPRESS
-    strNomenclature4 = regexp(strImageName,'_\w\d\d_s\d{1,}_w\d','Match');    
-        
-    
+    strNomenclature4 = regexp(strImageName,'_\w\d\d_s\d{1,}_w\d','Match');  
+
+    % VisiScope (slide scan mode)
+    strNomenclature5 = regexp(strImageName,'_s\d{04}_r\d{02}_c\d{02}_[A-Z]+_C\d{02}','Match');
+         
     % In case of time-points, perhaps override the well position and assign
     % different time points artificial well positions? (temp hack really)
     % match timepoint
@@ -77,6 +79,14 @@ function [intRow, intColumn, strWellName, intTimepoint] = filterimagenamedata(st
         intRow=double(strImageData{1})-64;
         intColumn=str2double(strImageData{2});
         strWellName=[strImageData{1},strImageData{2}];
+
+    elseif not(isempty(strNomenclature5))
+        %%% VisiScope
+        intRow = NaN;
+        intColumn = NaN;
+        strWellName = NaN;
+
+        fprintf('%s: VisiScope in slide scan mode -- no well data available\n', mfilename)
     else
         intRow = NaN;
         intColumn = NaN;
@@ -85,5 +95,5 @@ function [intRow, intColumn, strWellName, intTimepoint] = filterimagenamedata(st
         warning('filterimagenamedata: unable to get well data from image name %s',strImageName)
     end
 
-	
+    
 end
