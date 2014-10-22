@@ -56,7 +56,7 @@ function [intImagePosition,strMicroscopeType] = check_image_position(strImageNam
 	strNomenclature6 = regexp(strImageName,'_s\d{1,}_','Match');
 
     % VisiScope in slide scan mode
-    strNomenclature7 = regexp(strImageName,'_s\d{04}_r\d{02}_c\d{02}_[A-Z]+_C\d{02}','Match');
+    strNomenclature7 = regexp(strImageName,'_s\d{04}_r\d{02}_c\d{02}_[^_]+_C\d{02}','Match');
     
     if not(isempty(strNomenclature1))
         strMicroscopeType = 'CW';
@@ -125,7 +125,7 @@ function [intImagePosition,strMicroscopeType] = check_image_position(strImageNam
         intImagePosition = str2double(strImagePosition{1});
     elseif not(isempty(strNomenclature7))
         strMicroscopeType = 'Visi';
-        intImagePosition = tokens2num(regexp(strImageName, '_s(\d{04})_r\d{02}_c\d{02}_[A-Z]+_C\d{02}', 'tokens'));
+        intImagePosition = tokens2num(regexp(strImageName, '_s(\d{04})_r\d{02}_c\d{02}_[^_]+_C\d{02}', 'tokens'));
     else        
         
         error('unknown file name %s',strImageName)

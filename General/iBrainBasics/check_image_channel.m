@@ -40,7 +40,7 @@ function [intChannelNumber,intZstackNumber,intActionNumber] = check_image_channe
         '_([^_]{3})_(T\d{4})(F\d{3})(L\d{2})(A\d{2})(Z\d{2})(C\d{2})', 'Match');
 
     % VisiScope in slide scan mode
-    strNomenclature6 = regexp(strImageName,'_s\d{04}_r\d{02}_c\d{02}_[A-Z]+_C\d{02}','Match');
+    strNomenclature6 = regexp(strImageName,'_s\d{04}_r\d{02}_c\d{02}_[^_]+_C\d{02}','Match');
     
     strChannelWavelengths = {'_w460','_w530','_w595','_w685'};
     strChannelDescriptions = {'DAPI','FITC','TRITC','CY5'};
@@ -90,7 +90,7 @@ function [intChannelNumber,intZstackNumber,intActionNumber] = check_image_channe
         intActionNumber = str2double(strChannelMatch{1}(5));
     elseif not(isempty(strNomenclature6))
         %%% VisiScope in slide scan mode
-        intChannelNumber = tokens2num(regexp(strImageName, '_s\d{04}_r\d{02}_c\d{02}_[A-Z]+_C(\d{02})', 'tokens'));
+        intChannelNumber = tokens2num(regexp(strImageName, '_s\d{04}_r\d{02}_c\d{02}_[^_]+_C(\d{02})', 'tokens'));
         intZstackNumber = NaN; % we may wanna add this functionality!!!
         intActionNumber = NaN;
     else
