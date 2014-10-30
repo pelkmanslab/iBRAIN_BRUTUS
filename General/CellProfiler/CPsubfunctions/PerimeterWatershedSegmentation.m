@@ -1,4 +1,4 @@
-function imCutMask = PerimeterWatershedSegmentation(LabelImage,IntensityImage,PerimeterTrace,MaxEqivRadius,MinEquivAngle,ObjectSizeThres,AngleMethod,SelectionMethod,varargin)
+function imCutMask = PerimeterWatershedSegmentation(LabelImage,IntensityImage,PerimeterTrace,MaxEqivRadius,MinEquivAngle,ObjSizeThres,AngleMethod,SelectionMethod,varargin)
 
 % Obtain pixels at inner periphery of objects (note that this will reduce the computing time by more than 50% since much less membrane pixels have to be considered)
 % props = regionprops(imPrimaryLabel,'BoundingBox');
@@ -6,8 +6,13 @@ function imCutMask = PerimeterWatershedSegmentation(LabelImage,IntensityImage,Pe
 props = regionprops(LabelImage,'BoundingBox');
 BoxPerObj = cat(1,props.BoundingBox);
 
+if all(size(BoxPerObj)==0) % this can sometimes happen
+    imCutMask = zeros(size(LabelImage));
+    return
+end
+
 % Calculate allowed coordinates per object (to reduce computational cost)
-%-> recalculating objects is necesary because of a background bug!
+%-> recalculating objects is necessary because of a background bug!
 ObjectIDs = setdiff(unique(LabelImage(:)),0);%just to make sure
 
 % Get outer coordinates of bounding box of each object (note that
@@ -24,12 +29,11 @@ imCutMask  = zeros(size(LabelImage));
 % set up debug mode
 if strcmpi(varargin,'debugON')
     debug = true;
+    figure
     h=gcf;
     dbclear in PerimeterWatershedSegmentation
-    dbstop in PerimeterWatershedSegmentation.m if error
-    dbstop in PerimeterWatershedSegmentation.m at 255
-    dbstop in PerimeterWatershedSegmentation.m at 473
-    dbstop in PerimeterWatershedSegmentation.m at 516
+    dbstop in PerimeterWatershedSegmentation.m at 499
+    dbstop in PerimeterWatershedSegmentation.m at 544
 else
     debug = false;
 end
@@ -82,9 +86,17 @@ if ~isempty(ObjectIDs)
             % use only the pixels of the concave regions with mean/max gradient
             %CutCoordList = SelectedRegions(:,[9,10]);%mean gradient of regions
             CutCoordList = SelectedRegions(:,[7,8]);%maximum gradient of regions
+            regionIndex = (1:length(CutCoordList))';
         elseif strcmpi(SelectionMethod,'niceNslow')
             % use all pixels of the concave regions (meeting above radius/angle criteria)
             CutCoordList = pixelsConcaveRegions(QualifyingRegionsMask);
+            CutCoordList = cell2mat(CutCoordList);
+            pixelsPerRegion = cellfun(@(x) size(x,1), pixelsConcaveRegions(QualifyingRegionsMask));
+            tmp = cell(size(pixelsPerRegion,1),1);
+            for region = 1:size(pixelsPerRegion,1)
+                tmp{region} = repmat(region, pixelsPerRegion(region), 1);
+            end
+            regionIndex = cell2mat(tmp);
         else
             error('%s: ''SelectionMethod'' not specified correctly',mfilename)
         end
@@ -98,27 +110,26 @@ if ~isempty(ObjectIDs)
 
             %%% Map CutCoordList
             % (follow the reverse strategy as below for mapping back)
-            if strcmpi(SelectionMethod,'quickNdirty')
+%             if strcmpi(SelectionMethod,'quickNdirty')
                 % for pixels within concave region with mean/max gradient
                 rCut = CutCoordList(:,1)+1-N(i);
                 cCut = CutCoordList(:,2)+1-W(i);
                 miniCutCoordList = [rCut,cCut];
-                regionIndex = (1:size(CutCoordList,1))';
-            elseif strcmpi(SelectionMethod,'niceNslow')
-                % for all pixels within concave region
-                % => super-heavy for large objects with many concave regions
-                miniCutCoordList = cell(size(CutCoordList,1),1);
-                regionIndex = cell(size(CutCoordList,1),1);
-                for j = 1:size(CutCoordList,1)
-                    rCut = CutCoordList{j}(:,1)+1-N(i);
-                    cCut = CutCoordList{j}(:,2)+1-W(i);
-                    miniCutCoordList{j} = [rCut,cCut];
-                    tmp = size(CutCoordList{j},1);
-                    regionIndex{j}(1:tmp,1) = j;
-                end
-                miniCutCoordList = cell2mat(miniCutCoordList);
-                regionIndex = cell2mat(regionIndex);
-            end
+%             elseif strcmpi(SelectionMethod,'niceNslow')
+%                 % for all pixels within concave region
+%                 % => super-heavy for large objects with many concave regions
+%                 miniCutCoordList = cell(size(CutCoordList,1),1);
+%                 regionIndex = cell(size(CutCoordList,1),1);
+%                 for j = 1:size(CutCoordList,1)
+%                     rCut = CutCoordList{j}(:,1)+1-N(i);
+%                     cCut = CutCoordList{j}(:,2)+1-W(i);
+%                     miniCutCoordList{j} = [rCut,cCut];
+%                     tmp = size(CutCoordList{j},1);
+%                     regionIndex{j}(1:tmp,1) = j;
+%                 end
+%                 miniCutCoordList = cell2mat(miniCutCoordList);
+%                 regionIndex = cell2mat(regionIndex);
+%             end
 
 
             %%% Create mini images
@@ -228,9 +239,9 @@ if ~isempty(ObjectIDs)
                 NodeCoordList(:,2) = PotentialNodesCoordinates(:,1);
                 % Calculate distances between potential cut points and nodes and determine closest nodes/cut points and the respective indexes
                 if strcmpi(SelectionMethod,'quickNdirty')
-                    numNeighbours = 2;
+                    numNeighbours = 4;
                 elseif strcmpi(SelectionMethod,'niceNslow')
-                    numNeighbours = 2;
+                    numNeighbours = 1;
                 end
                 [ClosestNodesDist,ClosestNodesIndex] = pdist2(NodeCoordList,miniCutCoordList,'euclidean','Smallest',numNeighbours);%selecting more than one node may result in small cut fragments when lines between neighboring nodes are selected !!!
                 ClosestNodesIndex = ClosestNodesIndex(ClosestNodesDist<50);
@@ -280,16 +291,16 @@ if ~isempty(ObjectIDs)
                     NodeTCoordList = round(NodeTCoordList);
 
                     %%% Get index of cut points closest to source and target nodes, respectively (necessary to retrieve normal vectors)
-                    [~,ClosestCutPointsSIndex] = pdist2(miniCutCoordList,NodeSCoordList,'euclidean','Smallest',1);
+                    [~,ClosestCutPointsSIndex] = pdist2(miniCutCoordList,fliplr(NodeSCoordList),'euclidean','Smallest',1);
                     ClosestCutPointsSIndex = ClosestCutPointsSIndex(:);
-                    [~,ClosestCutPointsTIndex] = pdist2(miniCutCoordList,NodeTCoordList,'euclidean','Smallest',1);
+                    [~,ClosestCutPointsTIndex] = pdist2(miniCutCoordList,fliplr(NodeTCoordList),'euclidean','Smallest',1);
                     ClosestCutPointsTIndex = ClosestCutPointsTIndex(:);
 
                     AllLines = struct();
 
                     % ---------------------------------------------------------------------------------------------------------------------------------------
                     % ---- Bottleneck -- start ----------------------------------------------------------------------------------------------------------------
-                    tic
+%                     tic
 
                     for n = 1:length(NodeixT2)
 
@@ -301,16 +312,18 @@ if ~isempty(ObjectIDs)
                         %%% Built path image
                         for j = 1:length(tmppath)-1
                             tmpImage(imCurrentLines==matNodesNodesLabel(tmppath(j),tmppath(j+1))) = 1;
-                            %figure,imagesc(tmpimage)
+                            %figure,imagesc(tmpImage)
                         end
-                        %figure,imagesc(tmpimage)
+                        %figure,imagesc(tmpImage)
 
-                        %=============debug=============
-%                         % Display current line over intensity image
-%                         LineOverlay = padInt;
-%                         LineOverlay(tmpImage>0) = quantile(padInt(:),0.998);
-%                         figure(h),imagesc(LineOverlay), colormap('jet')
-                        %===========debug-end===========
+%                         %=============debug=============
+%                         if debug
+%                             % Display current line over intensity image
+%                             LineOverlay = padInt;
+%                             LineOverlay(tmpImage>0) = quantile(padInt(:),0.998);
+%                             figure(h),imagesc(LineOverlay), colormap('jet')
+%                         end
+%                         %===========debug-end===========
 
 
                         %% Simulate segmentation using watershed lines and characterize cut line and resulting objects
@@ -322,23 +335,24 @@ if ~isempty(ObjectIDs)
                         tmpNumObjects = tmpSubSegmentation.NumObjects;
                         tmpSubAreas = cell2mat(cellfun(@numel, tmpSubSegmentation.PixelIdxList,'UniformOutput',false));
 
-                        if tmpNumObjects==2 && min(tmpSubAreas)>ObjectSizeThres
+                        if tmpNumObjects==2 && min(tmpSubAreas)>ObjSizeThres
 
-                            % do not use line if segmentation would
-                            % result in more than 2 objects!
-                            AllLines(n).lineimage = tmpImage;
-                            AllLines(n).segmimage = tmpSegmentation;
-
+                            % do not use line if segmentation would result
+                            % in more than 2 objects or too small objects
+                            
                             %%% Get object measurements
                             tmpSubprops = regionprops(tmpSegmentation,'Solidity','Area','Perimeter');
                             tmpSubSolidity = cat(2,tmpSubprops.Solidity);
                             tmpSubAreas = cat(2,tmpSubprops.Area);
-                            tmpSubFormFactor = (log((4*pi*cat(1,tmpSubprops.Area)) ./ ((cat(1,tmpSubprops.Perimeter)+1).^2))*(-1))';%make values positive for easier interpretation of parameter values
+                            [~,ix] = min(tmpSubAreas);
+                            tmpSubFormFactor = (log((4*pi*cat(1,tmpSubprops.Area)) ./ ((cat(1,tmpSubprops.Perimeter)+1).^2))*(-1))';%make values positive for easier interpretation of parameter values                                
                             % store measurements
                             AllLines(n).areasobj = tmpSubAreas;
                             AllLines(n).solobj = tmpSubSolidity;
-                            AllLines(n).formobj = tmpSubFormFactor;
-
+                            AllLines(n).formobj = tmpSubFormFactor;                         
+                            AllLines(n).lineimage = tmpImage;
+                            AllLines(n).segmimage = tmpSegmentation;
+                                                    
                             %%% Get line measurements
                             % Intensity along the line
                             tmpintimage = tmpImage>0;
@@ -353,7 +367,7 @@ if ~isempty(ObjectIDs)
                             AllLines(n).quantint = tmpQuantInt;
                             AllLines(n).stdint = tmpStdInt;
                             AllLines(n).length = tmpLength;
-
+                            
                             % Straightness of the line
                             tmpcentroid1 = round(NodesCentroids(ClosestNodesIds(ClosestNodesIds==NodeixS2(n)),:));%tmpcentroid1 = round(NodesCentroids(NodeToTest(NodeToTest==NodeixS2(n)),:));
                             tmpcentroid2 = round(NodesCentroids(ClosestNodesIds(ClosestNodesIds==NodeixT2(n)),:));
@@ -379,24 +393,23 @@ if ~isempty(ObjectIDs)
                             tmpRatio = sum(tmprim(:))/length(unique(StraigtLineix));
                             % store measurements
                             AllLines(n).straightness = tmpRatio;
-
-                            % Distances between source node and target node
-                            CurrentSourceNode = regionIndex(ClosestCutPointsSIndex(n));
-                            CurrentTargetNode = regionIndex(ClosestCutPointsTIndex(n));
-                            %CurrentDistance=norm(SelectedRegions(j,9:10)-SelectedRegions(k,9:10));%default?
-                            RegionA=CurrentPreimProps(ConcaveRegions==SelectedRegions(CurrentSourceNode,13),1:2);%load both regions: coordinates ONLY
-                            RegionB=CurrentPreimProps(ConcaveRegions==SelectedRegions(CurrentTargetNode,13),1:2);%load both regions: coordinates ONLY
-                            [MeshARow,MeshBRow]=meshgrid(RegionA(:,1),RegionB(:,1));
-                            [MeshACol,MeshBCol]=meshgrid(RegionA(:,2),RegionB(:,2));
-                            RowDist=MeshARow-MeshBRow;
-                            ColDist=MeshACol-MeshBCol;
-                            %Region dist: RegionA: columns, RegionB: rows
-                            RegionDist=sqrt(RowDist.*RowDist+ColDist.*ColDist);%euclidian distance for all possible cuts.
-                            tmpDistance=min(RegionDist(:));
-                            % store measurements
-                            AllLines(n).distance = tmpDistance;
-
-
+                            
+%                                 % Distances between source node and target node
+%                                 CurrentSourceNode = regionIndex(ClosestCutPointsSIndex(n));
+%                                 CurrentTargetNode = regionIndex(ClosestCutPointsTIndex(n));
+%                                 %CurrentDistance=norm(SelectedRegions(j,9:10)-SelectedRegions(k,9:10));%default?
+%                                 RegionA=CurrentPreimProps(ConcaveRegions==SelectedRegions(CurrentSourceNode,13),1:2);%load both regions: coordinates ONLY
+%                                 RegionB=CurrentPreimProps(ConcaveRegions==SelectedRegions(CurrentTargetNode,13),1:2);%load both regions: coordinates ONLY
+%                                 [MeshARow,MeshBRow]=meshgrid(RegionA(:,1),RegionB(:,1));
+%                                 [MeshACol,MeshBCol]=meshgrid(RegionA(:,2),RegionB(:,2));
+%                                 RowDist=MeshARow-MeshBRow;
+%                                 ColDist=MeshACol-MeshBCol;
+%                                 %Region dist: RegionA: columns, RegionB: rows
+%                                 RegionDist=sqrt(RowDist.*RowDist+ColDist.*ColDist);%euclidian distance for all possible cuts.
+%                                 tmpDistance=min(RegionDist(:));
+%                                 % store measurements
+%                                 AllLines(n).distance = tmpDistance;
+                            
                             % Angle between normal vectors of source node and target node
                             CurrentSourceNode = regionIndex(ClosestCutPointsSIndex(n));
                             CurrentTargetNode = regionIndex(ClosestCutPointsTIndex(n));
@@ -434,11 +447,11 @@ if ~isempty(ObjectIDs)
                             end
                             % store measurements
                             AllLines(n).angle = tmpAngle;
-
+                                                                                                                                                 
                         end
                     end
 
-                    toc
+%                     toc
                     % ---- Bottleneck -- end ----------------------------------------------------------------------------------------------------------------
                     % ---------------------------------------------------------------------------------------------------------------------------------------
                 end
@@ -450,7 +463,7 @@ if ~isempty(ObjectIDs)
             if ~isempty(struct2cell(AllLines(:)))
                 
                 % Remove lines that didn't satisfy criteria - "is empty"
-                celltmp = struct2cell(AllLines(:));
+                celltmp = struct2cell(AllLines');
                 indexEmpty = cellfun(@isempty,celltmp(1,:));
                 AllLines = AllLines(~indexEmpty);
                 
@@ -472,6 +485,7 @@ if ~isempty(ObjectIDs)
                         LinesOnIntImage = padInt;
                         LinesOnIntImage(LineOverlay>0) = quantile(padInt(:),0.998);
                         figure(h),imagesc(LinesOnIntImage)
+                        pause(3)
                     end
                     %===========debug-end===========
 
@@ -479,17 +493,17 @@ if ~isempty(ObjectIDs)
                     %% Select best line and create cut mask
 
                     %%% Optimization function
-                    optfunc = @(a,b,c,d,e,f,g,h) a - b - c - d - e + f + g - h;
+                    optfunc = @(a,b,c,d,e,f,g,h) a - 2*b - c - d - e + 2*f - g - 2*h;
 
                     %%% Normalize measurements
                     % for line
-                    lineMaxInt = zscore(cat(1,AllLines.maxint));
-                    lineMeanInt = zscore(cat(1,AllLines.meanint));
-                    lineStraight = zscore(cat(1,AllLines.straightness));
-                    lineAngle = zscore(cat(1,AllLines.angle));
+                    lineMaxInt = cat(1,AllLines.maxint);
+                    lineMeanInt = cat(1,AllLines.meanint);
+                    lineStraight = cat(1,AllLines.straightness);
+                    lineAngle = cat(1,AllLines.angle);
                     %lineDistance = zscore(cat(1,AllLines.distance));
-                    lineLength = zscore(cat(1,AllLines.length));
-                    lineQuantInt = zscore(cat(1,AllLines.quantint));
+                    lineLength = cat(1,AllLines.length);
+                    lineQuantInt = cat(1,AllLines.quantint);
 
                     % for resulting objects
                     solobjs = cat(1,AllLines.solobj);
@@ -501,11 +515,12 @@ if ~isempty(ObjectIDs)
                         solobj(k,1) = solobjs(k,smallindex(k));% solidity of the smaller object
                         formobj(k,1) = formobjs(k,smallindex(k));% "form factor" (transformed) of the smaller object
                     end
-                    solobj = zscore(solobj);
-                    formobj = zscore(formobj);
+%                     solobj = zscore(solobj);
+%                     formobj = zscore(formobj);
 
                     %%% Select best line
-                    BestLines = optfunc(2*solobj,2*formobj,lineMeanInt,lineMaxInt,lineQuantInt,2*lineAngle,lineStraight,lineLength);
+%                     BestLines = optfunc(solobj,formobj,lineMeanInt,lineMaxInt,lineQuantInt,lineAngle,lineStraight,lineLength);
+                    BestLines = optfunc(solobj,formobj,lineMeanInt.*100,lineMaxInt.*10,lineQuantInt.*10,lineAngle,lineStraight./10,lineLength./10);
                     [~,BestLinesIndex] = sort(BestLines,'descend');
                 end
 
@@ -519,12 +534,13 @@ if ~isempty(ObjectIDs)
                     BestLineOnIntImage = padInt;
                     BestLineOnIntImage(AllLines(BestLinesIndex(1)).lineimage>0) = max(padInt(:));
                     figure(h),imagesc(BestLineOnIntImage)
+                    pause(3)
                 end
                 %===========debug-end===========
 
                 %%% Create cut mask
                 if numel(BestLinesIndex) > numel(AllLines)
-                    fprintf('Failed to find a more optimal cut for object # %d\n',i)
+                    fprintf('Failed to find a more optimal cut for object # %d\n',i)        
                 else
                     % Choose the best line for cutting.
                     imBestLine = AllLines(BestLinesIndex(1)).lineimage;
@@ -550,8 +566,7 @@ if ~isempty(ObjectIDs)
                 end
             end
         end
-
-        fprintf('Object # %d\n',i)
+%           fprintf('Object # %d\n',i)
     end
 end
 

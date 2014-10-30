@@ -57,7 +57,8 @@ function handles = SeparatePrimaryTissue(handles)
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%
 
-%drawnow
+drawnow
+
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
 %textVAR01 = What did you call the primary objects you want to process?
@@ -76,7 +77,7 @@ IntImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu
 
 %textVAR04 = Cutting passes (0 = no cutting)
-%defaultVAR04 = 1
+%defaultVAR04 = 2
 CuttingPasses = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,4}));
 
 %textVAR05 = Provide relative path to classify_gui output file (SVM model):
@@ -84,52 +85,58 @@ CuttingPasses = str2double(char(handles.Settings.VariableValues{CurrentModuleNum
 SVMFilename = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
 %textVAR06 = Maximal SOLIDITY of objects, which should be cut (1 = solidity independent)
-%defaultVAR06 = 0.92
+%defaultVAR06 = 0.90
 SolidityThres = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
 
 %textVAR07 = Minimal FORM FACTOR of objects, which should be cut (0 = form factor independent)
-%defaultVAR07 = 0.5
+%defaultVAR07 = 0.45
 FormFactorThres = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,7}));
 
-%textVAR08 = Minimal AREA  that cut objects should have (0 = area independent)
-%defaultVAR08 = 50
-LowerSizeThres = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,8}));
+%textVAR08 = Maximal AREA of objects, which should be cut (0 = area independent)
+%defaultVAR08 = 50000
+UpperSizeThres = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,8}));
 
-%textVAR09 = Test mode for selection: solidity, area, form factor
-%choiceVAR09 = No
-%choiceVAR09 = Yes
-TestMode2 = char(handles.Settings.VariableValues{CurrentModuleNum,9});
-%inputtypeVAR09 = popupmenu
+%textVAR09 = Minimal AREA of objects, which should be cut (0 = area independent)
+%defaultVAR09 = 5000
+LowerSizeThres = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,9}));
 
-%textVAR10 = Perimeter analysis: SLIDING WINDOW size for curvature calculation
-%defaultVAR10 = 8
-WindowSize = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,10}));
+%textVAR10 = Minimal area that cut objects should have.
+%defaultVAR10 = 1000
+LowerSizeThres2 = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,10}));
 
-%textVAR11 = Perimeter analysis: FILTER SIZE for smoothing objects
-%defaultVAR11 = 1
-smoothingDiskSize = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,11}));
+%textVAR11 = Test mode for selection: solidity, area, form factor
+%choiceVAR11 = No
+%choiceVAR11 = Yes
+TestMode2 = char(handles.Settings.VariableValues{CurrentModuleNum,11});
+%inputtypeVAR11 = popupmenu
 
-%textVAR12 = Perimeter analysis: Maximum concave region equivalent RADIUS
-%defaultVAR12 = 30
-PerimSegEqRadius = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,12}));
+%textVAR12 = Perimeter analysis: SLIDING WINDOW size for curvature calculation
+%defaultVAR12 = 8
+WindowSize = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,12}));
 
-%textVAR13 = Perimeter analysis: Minimum concave region equivalent CIRCULAR SEGMENT (degree)
-%defaultVAR13 = 6
-PerimSegEqSegment = degtorad(str2double(char(handles.Settings.VariableValues{CurrentModuleNum,13})));
+%textVAR13 = Perimeter analysis: FILTER SIZE for smoothing objects
+%defaultVAR13 = 1
+smoothingDiskSize = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,13}));
 
-%textVAR14 = Perimeter analysis: ANGLE metric method angle between regions
-%choiceVAR14 = best_inline
-%choiceVAR14 = best
-%choiceVAR14 = center
-%choiceVAR14 = curvature
-PerimSegAngMethod = handles.Settings.VariableValues{CurrentModuleNum,14};
-%inputtypeVAR14 = popupmenu
+%textVAR14 = Perimeter analysis: Maximum concave region equivalent RADIUS
+%defaultVAR14 = 30
+PerimSegEqRadius = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,14}));
 
-%textVAR15 = Test mode for perimeter analysis: overlay curvature etc. on objects
-%choiceVAR15 = No
-%choiceVAR15 = Yes
-TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,15});
-%inputtypeVAR15 = popupmenu
+%textVAR15 = Perimeter analysis: Minimum concave region equivalent CIRCULAR SEGMENT (degree)
+%defaultVAR15 = 6
+PerimSegEqSegment = degtorad(str2double(char(handles.Settings.VariableValues{CurrentModuleNum,15})));
+
+%textVAR16 = Test mode for perimeter analysis: overlay curvature etc. on objects
+%choiceVAR16 = No
+%choiceVAR16 = Yes
+TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,16});
+%inputtypeVAR16 = popupmenu
+
+%textVAR17 = Do you want to save the figure as .PDF files (don't do this on iBRAIN!!!)?
+%choiceVAR17 = No
+%choiceVAR17 = Yes
+savePDF = char(handles.Settings.VariableValues{CurrentModuleNum,17});
+%inputtypeVAR17 = popupmenu
 
 %%%VariableRevisionNumber = 15
 
@@ -161,6 +168,9 @@ imSelected = zeros([size(imInputObjects),CuttingPasses]);
 imCutMask = zeros([size(imInputObjects),CuttingPasses]);
 imCut = zeros([size(imInputObjects),CuttingPasses]);
 imNotCut = zeros([size(imInputObjects),CuttingPasses]);
+objFormFactor = cell(CuttingPasses,1);
+objSolidity = cell(CuttingPasses,1);
+objArea = cell(CuttingPasses,1);
 cellPerimeterProps = cell(CuttingPasses,1);
 
 for i = 1:CuttingPasses
@@ -253,20 +263,23 @@ for i = 1:CuttingPasses
         props = regionprops(logical(imObjects(:,:,i)),'Area','Solidity','Perimeter');
         
         % Features used for object selection
-        objSolidity = cat(1,props.Solidity);
-        objArea = cat(1,props.Area);
-        objFormFactor = log((4*pi*cat(1,props.Area)) ./ ((cat(1,props.Perimeter)+1).^2))*(-1);%make values positive for easier interpretation of parameter values
-        objFormFactor(objFormFactor<0) = 0;
+        objSolidity{i} = cat(1,props.Solidity);
+        objArea{i} = cat(1,props.Area);
+        tmp = log((4*pi*cat(1,props.Area)) ./ ((cat(1,props.Perimeter)+1).^2))*(-1);%make values positive for easier interpretation of parameter values
+        tmp(tmp<0) = 0;
+        objFormFactor{i} = tmp;
         
         % Select objects based on these features (user defined thresholds)
-        obj2cut = objSolidity<SolidityThres & objFormFactor>FormFactorThres;
+        obj2cut = objSolidity{i} < SolidityThres & objFormFactor{i} > FormFactorThres ...
+                    & objArea{i} > LowerSizeThres & objArea{i} < UpperSizeThres;
         objNot2cut = ~obj2cut;
-        objSelected = zeros(size(obj2cut));
-        objSelected(obj2cut) = 1;
-        objSelected(objNot2cut) = 2;
-        imSelected(:,:,i) = rplabel(logical(imObjects(:,:,i)),[],objSelected);
-        
+                
     end
+    
+    objSelected = zeros(size(obj2cut));
+    objSelected(obj2cut) = 1;
+    objSelected(objNot2cut) = 2;
+    imSelected(:,:,i) = rplabel(logical(imObjects(:,:,i)),[],objSelected);
     
     % Create mask image with objects selected for cutting
     imObj2Cut = zeros(size(OrigImage));
@@ -295,14 +308,15 @@ for i = 1:CuttingPasses
     % maximal size of the sliding window and thus sensitivity of the
     % perimeter analysis.
     
-    % could become an additional input parameter
+    % for now hard-coded, but could become additional input parameter
     SelectionMethod = 'quickNdirty'; %'niceNslow'
+    PerimSegAngMethod = 'best_inline';
     
     % perform perimeter analysis
     cellPerimeterProps{i} = PerimeterAnalysis(imObj2Cut,WindowSize);
     
     % perform the actual segmentation
-    imCutMask(:,:,i) = PerimeterWatershedSegmentation(imObj2Cut,OrigImage,cellPerimeterProps{i},PerimSegEqRadius,PerimSegEqSegment,LowerSizeThres,PerimSegAngMethod,SelectionMethod);
+    imCutMask(:,:,i) = PerimeterWatershedSegmentation(imObj2Cut,OrigImage,cellPerimeterProps{i},PerimSegEqRadius,PerimSegEqSegment,LowerSizeThres2,PerimSegAngMethod,SelectionMethod);
     imCut(:,:,i) = bwlabel(imObj2Cut.*~imCutMask(:,:,i));
        
     
@@ -315,11 +329,12 @@ for i = 1:CuttingPasses
     % Create overlay images
     imOutlineShapeSeparatedOverlay = OrigImage;
     B = bwboundaries(imCut(:,:,i),'holes');
-    imCutShapeObjectsLabel = label2rgb(bwlabel(imCut(:,:,i)),'jet',[1 1 1],'shuffle');
+    imCutShapeObjectsLabel = label2rgb(bwlabel(imCut(:,:,i)),'jet','k','shuffle');
     
     % GUI
     tmpSelected = (imSelected(:,:,i));
-    CPfigure(handles,'PrimObj: Perimeter segmentation');
+    ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
+    CPfigure(handles,'Image',ThisModuleFigureNumber);
     subplot(2,2,2), CPimagesc(logical(tmpSelected==1),handles),
     title(['Cut lines on selected original objects, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     hold on
@@ -351,8 +366,14 @@ end
 %-----------------------------------------------
 
 imCut = logical(imCut(:,:,CuttingPasses));
+
+if ~isempty(imCut)
+    imErodeMask = bwmorph(imCut,'shrink',inf);
+    imDilatedMask = IdentifySecPropagateSubfunction(double(imErodeMask),OrigImage,imCut,1);
+end
+
 imNotCut = logical(sum(imNotCut,3));% Retrieve objects that were not cut
-imFinalObjects = bwlabel(logical(imCut + imNotCut));
+imFinalObjects = bwlabel(logical(imDilatedMask + imNotCut));
 
 
 
@@ -366,19 +387,22 @@ drawnow
 % Create overlay images
 imOutlineShapeSeparatedOverlay = OrigImage;
 B = bwboundaries(logical(imFinalObjects),'holes');
-imCutShapeObjectsLabel = label2rgb(bwlabel(imFinalObjects),'jet',[1 1 1],'shuffle');
+imCutShapeObjectsLabel = label2rgb(bwlabel(imFinalObjects),'jet','k','shuffle');
 
 % GUI
-CPfigure(handles,'PrimObj: Perimeter segmentation');
-subplot(2,2,2), CPimagesc(logical(sum(imSelected(imSelected==1),3)),handles),
+% CPfigure(handles,'Image',ThisModuleFigureNumber);
+imDisplay = imSelected(:,:,1);
+subplot(2,2,2), CPimagesc(logical(imDisplay),handles),
 title(['Cut lines on selected original objects, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
 hold on
-red = cat(3, ones(size(imSelected(:,:,1))), zeros(size(imSelected(:,:,1))), zeros(size(imSelected(:,:,1))));
-h = imagesc(red);
-set(h, 'AlphaData', logical(sum(imCutMask,3)))
+L = bwboundaries(logical(sum(imCutMask,3)), 'noholes');
+for i = 1:length(L)
+    line = L{i};
+    plot(line(:,2), line(:,1), 'r', 'LineWidth', 1);
+end
 hold off
 freezeColors
-subplot(2,2,1), CPimagesc(imSelected(:,:,CuttingPasses),handles), colormap('jet'),
+subplot(2,2,1), CPimagesc(imDisplay,handles), colormap('jet'),
 title(['Selected original objects, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
 freezeColors
 subplot(2,2,3), CPimagesc(imOutlineShapeSeparatedOverlay,handles),
@@ -386,13 +410,31 @@ title(['Outlines of seperated objects, cycle # ',num2str(handles.Current.SetBein
 hold on
 for k = 1:length(B)
     boundary = B{k};
-    plot(boundary(:,2), boundary(:,1), 'r', 'LineWidth', 1)
+    plot(boundary(:,2), boundary(:,1), 'r', 'LineWidth', 1);
 end
 hold off
 freezeColors
 subplot(2,2,4), CPimagesc(imCutShapeObjectsLabel,handles),
 title(['Seperated objects, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
 freezeColors
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if strcmpi(savePDF, 'Yes')
+    [~, onCluster] = system(hostname);
+    onCluster = ~isempty(regexpi(onCluster, 'eth'));
+    if ~onCluster
+        % Save figure als PDF
+        strFigureName = sprintf('%s_Iteration%d',mfilename,handles.Current.SetBeingAnalyzed);
+        strPDFdir = strrep(handles.Current.DefaultOutputDirectory, 'BATCH', 'PDF');
+        if ~fileattrib(strPDFdir)
+            mkdir(strPDFdir);
+            fprintf('%s: creating directory: ''%s''\n', mfilename, strPDFdir);
+        end
+        gcf2pdf(strPDFdir, strFigureName)
+    end
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 %Plot shape analysis data
@@ -452,23 +494,26 @@ end
 if strcmp(TestMode2,'Yes')
     if ~classifier
         for h = 1:CuttingPasses
-            imSolidity = rplabel(logical(imObjects(:,:,h)),[],objSolidity);
-            imFormFactor = rplabel(logical(imObjects(:,:,h)),[],objFormFactor);
-            imArea = rplabel(logical(imObjects(:,:,h)),[],objArea);
+            imSolidity = rplabel(logical(imObjects(:,:,h)), [], objSolidity{h});
+            imFormFactor = rplabel(logical(imObjects(:,:,h)), [], objFormFactor{h});
+            imArea = rplabel(logical(imObjects(:,:,h)), [], objArea{h});
+            
+            % could be nicely done with cbrewer() but stupid 'freezeColors'
+            % erases the indices!!! note that colorbars could be preserved
+            % with 'cbfreeze'
+%             cmapR = cbrewer('seq', 'Reds', 9);
+%             cmapG = cbrewer('seq', 'Greens', 9);
+%             cmapB = cbrewer('seq', 'Blues', 9);
 
             CPfigure('Tag','Features for object selection')
-            subplot(2,2,1), CPimagesc(imSolidity,handles), colormap('jet'),
+            subplot(2,2,1), CPimagesc(imSolidity,handles), %colormap(cmapR),
             title(['Solidity of original objects, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
-            freezeColors
-            subplot(2,2,2), CPimagesc(imFormFactor,handles), colormap('jet'),
+            subplot(2,2,2), CPimagesc(imFormFactor,handles), %colormap(cmapG),
             title(['Form factor of original objects, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
-            freezeColors
-            subplot(2,2,3), CPimagesc(imArea,handles), colormap('jet'),
+            subplot(2,2,3), CPimagesc(imArea,handles), %colormap(cmapB),
             title(['Area of original objects, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
-            freezeColors
             subplot(2,2,4), CPimagesc(imSelected(:,:,h),handles), colormap('jet'),
             title(['Selected original objects, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
-            freezeColors
         end
     end
 end
