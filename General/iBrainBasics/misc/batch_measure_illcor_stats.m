@@ -153,7 +153,7 @@ cmt.loadPackages();
         %'var', aggregate_stats(stats,'var'),                     
         %'min', aggregate_stats(stats,'min'),        
         %'max', aggregate_stats(stats,'max')...    
-    save(filename, 'stat_values');
+    save(filename, 'stat_values', '-v7.3');
 end
 
 %--------------------------------------------------------------------------
