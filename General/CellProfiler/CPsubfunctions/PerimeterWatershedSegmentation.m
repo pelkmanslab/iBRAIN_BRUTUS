@@ -1,29 +1,61 @@
-function imCutMask = PerimeterWatershedSegmentation(LabelImage,IntensityImage,PerimeterTrace,MaxEqivRadius,MinEquivAngle,ObjSizeThres,AngleMethod,SelectionMethod,varargin)
+function CutMask = PerimeterWatershedSegmentation(LabelImage,IntensityImage,PerimeterTrace,MaxEqivRadius,MinEquivAngle,ObjSizeThres,varargin)
+%PERIMETERWATERSHEDSEGMENTATION separates clumped objects along watershed lines between concave regions.
+%
+%   CUTMASK = PERIMETERWATERSHEDSEGMENTATION(LABELIMAGE, INTENSITYIMAGE, PERIMETERTRACE, ...
+%                                            MAXEQIVRADIUS, MINEQIVANGLE, OBJSIZETHRES)
+%
+%   Objects in LABELIMAGE are separated along watershed lines in INTENSITYIMAGE
+%   between concave regions specified by PERIMETERTRACE. Note that all image operations 
+%   are carried out on small 'mini' images the size of each object's bounding box. 
+%   This approach dramatically reduces computation time!
+%   
+%   LABELIMAGE is a labeled image (output of bwlabel.m) containing the objects
+%   that should be separated.
+%
+%   INTENSITYIMAGE is a grayscale image of class 'double' of the same size as LABELIMAGE.
+%
+%   PERIMETERTRACE is a cell array of curvature measurements (output of PerimeterAnalysis.m)
+%   with entries for each object in LABELIMAGE.
+%   
+%   MAXEQIVRADIUS and MINEQIVANGLE are the maximal equivalent radius and the minimal 
+%   equivalent angle concave regions should have to be eligible for cutting.
+%   For details see IdentifyPrimaryIterative.m and PerimeterAnalysis.m.
+%
+%   OBJSIZETHRES is the minimal size cut objects should have. Potential cut lines
+%   will be discarded in case the resulting objects would fall below this threshold.
+%
+%   Optional input arguments: 'debugON' command results in the display of all intermediate
+%   processing steps (selected pixels within concave regions -> green points,
+%   selected watershed nodes -> red points, selected watershed lines -> yellow lines)
+%   on the intensity image of each object.
+%
+%   Authors:
+%       Markus Herrmann
+%       Nicolas Battich
+%
+%   (c) Pelkmans Lab 2013
 
-% Obtain pixels at inner periphery of objects (note that this will reduce the computing time by more than 50% since much less membrane pixels have to be considered)
-% props = regionprops(imPrimaryLabel,'BoundingBox');
-% BoxPerObj = cat(1,props.BoundingBox);
+% Obtain pixels at inner periphery of objects
 props = regionprops(LabelImage,'BoundingBox');
 BoxPerObj = cat(1,props.BoundingBox);
 
 if all(size(BoxPerObj)==0) % this can sometimes happen
-    imCutMask = zeros(size(LabelImage));
+    CutMask = zeros(size(LabelImage));
     return
 end
 
-% Calculate allowed coordinates per object (to reduce computational cost)
-%-> recalculating objects is necessary because of a background bug!
-ObjectIDs = setdiff(unique(LabelImage(:)),0);%just to make sure
+% Calculate allowed coordinates per object
+% -> recalculating objects is necessary because of a background bug!
+ObjectIDs = setdiff(unique(LabelImage(:)),0);
 
-% Get outer coordinates of bounding box of each object (note that
-% bounding boxes will speed up morphological image operations)
+% Get outer coordinates of bounding box of each object
 distanceToObjectMax = 3;
 N = floor(BoxPerObj(:,2)-distanceToObjectMax-1);                    f = N < 1;                            N(f) = 1;
 S = ceil(BoxPerObj(:,2)+BoxPerObj(:,4)+distanceToObjectMax+1);   	f = S > size(LabelImage,1);           S(f) = size(LabelImage,1);
 W = floor(BoxPerObj(:,1)-distanceToObjectMax-1);                    f = W < 1;                            W(f) = 1;
 E = ceil(BoxPerObj(:,1)+BoxPerObj(:,3)+distanceToObjectMax+1);      f = E > size(LabelImage,2);           E(f) = size(LabelImage,2);
 
-imCutMask  = zeros(size(LabelImage));
+CutMask  = zeros(size(LabelImage));
 
 %=============debug=============
 % set up debug mode
@@ -31,9 +63,11 @@ if strcmpi(varargin,'debugON')
     debug = true;
     figure
     h=gcf;
-    dbclear in PerimeterWatershedSegmentation
-    dbstop in PerimeterWatershedSegmentation.m at 499
-    dbstop in PerimeterWatershedSegmentation.m at 544
+%     dbclear in PerimeterWatershedSegmentation
+%     dbstop in PerimeterWatershedSegmentation.m at 270
+%     dbstop in PerimeterWatershedSegmentation.m at 287
+%     dbstop in PerimeterWatershedSegmentation.m at 521
+%     dbstop in PerimeterWatershedSegmentation.m at 573
 else
     debug = false;
 end
@@ -47,9 +81,9 @@ if ~isempty(ObjectIDs)
 
         %% Load concave regions for current object
         CurrentPreimProps = PerimeterTrace{i};
-        ConcaveRegions = bwlabel((CurrentPreimProps(:,11)==-1));%bwlabel also works nicely in 1D!
+        ConcaveRegions = bwlabel((CurrentPreimProps(:,11)==-1));
         numConcave = length(setdiff(unique(ConcaveRegions),0));
-        propsConcaveRegion = zeros(numConcave,12,'double');%summary of properties for each concave region:
+        propsConcaveRegion = zeros(numConcave,12,'double');  % summary of properties for each concave region:
         pixelsConcaveRegions = cell(numConcave,1);
 
         %% Characterize concave regions of current object
@@ -59,9 +93,9 @@ if ~isempty(ObjectIDs)
             NormCurvature = propsCurrentRegion(:,9);
             propsConcaveRegion(j,1) = max(NormCurvature);
             propsConcaveRegion(j,2) = mean(NormCurvature);
-            MaximaIndices = (NormCurvature==propsConcaveRegion(j,1));%indices of pixels where the curvature is maximal
-            propsConcaveRegion(j,3:4) = mean(NormalVectors(MaximaIndices,:),1);%normal vector at pixels where the norm of the curvature is maximal (the maximum may apper multiple times in few cases ->mean)
-            propsConcaveRegion(j,5:6) = mean(NormalVectors,1);%mean normal vector
+            MaximaIndices = (NormCurvature==propsConcaveRegion(j,1));  % indices of pixels where the curvature is maximal
+            propsConcaveRegion(j,3:4) = mean(NormalVectors(MaximaIndices,:),1);  % normal vector at pixels where the norm of the curvature is maximal (the maximum may apper multiple times in few cases ->mean)
+            propsConcaveRegion(j,5:6) = mean(NormalVectors,1);  % mean normal vector
             FirstMaximumIndex = find(MaximaIndices,1,'first');
             LastMaximumIndex = find(MaximaIndices,1,'last');
             MeanMaximumIndex = round((LastMaximumIndex+FirstMaximumIndex)/2);%index of the pixel at which the curvature is maximal, if there are more than one maxima, a pixel inbetween the maxima is picked.
@@ -70,8 +104,8 @@ if ~isempty(ObjectIDs)
             %The sum of curvature has a maximum of 2*pi (object shape=circle)
             %exceptions are very small object sizes or very large objects in
             %combination with a too small sliding window (eg window<r/15)
-            %the total curvature is the equvalent angle(radian) of the curve!!!
-            propsConcaveRegion(j,11) = sum(NormCurvature);%total curvature of region = EQUIVALENT ANGLE of circle segemnt
+            %the total curvature is the equivalent angle (radian) of the curve!!!
+            propsConcaveRegion(j,11) = sum(NormCurvature);%total curvature of region = EQUIVALENT ANGLE of circle segment
             propsConcaveRegion(j,12) = length(NormCurvature)/sum(NormCurvature);%EQUIVALENT RADIUS
             propsConcaveRegion(j,13) = j;%save region ID so we can later quickly refer to information in CurrentPreimProps (see start of loop)
             pixelsConcaveRegions{j} = propsCurrentRegion(:,1:2);
@@ -82,24 +116,15 @@ if ~isempty(ObjectIDs)
         SelectedRegions = propsConcaveRegion(QualifyingRegionsMask,:);
 
         %% Define cut points
-        if strcmpi(SelectionMethod,'quickNdirty')
-            % use only the pixels of the concave regions with mean/max gradient
-            %CutCoordList = SelectedRegions(:,[9,10]);%mean gradient of regions
-            CutCoordList = SelectedRegions(:,[7,8]);%maximum gradient of regions
-            regionIndex = (1:length(CutCoordList))';
-        elseif strcmpi(SelectionMethod,'niceNslow')
-            % use all pixels of the concave regions (meeting above radius/angle criteria)
-            CutCoordList = pixelsConcaveRegions(QualifyingRegionsMask);
-            CutCoordList = cell2mat(CutCoordList);
-            pixelsPerRegion = cellfun(@(x) size(x,1), pixelsConcaveRegions(QualifyingRegionsMask));
-            tmp = cell(size(pixelsPerRegion,1),1);
-            for region = 1:size(pixelsPerRegion,1)
-                tmp{region} = repmat(region, pixelsPerRegion(region), 1);
-            end
-            regionIndex = cell2mat(tmp);
-        else
-            error('%s: ''SelectionMethod'' not specified correctly',mfilename)
+        % use all pixels of the concave regions (meeting above radius/angle criteria)
+        CutCoordList = pixelsConcaveRegions(QualifyingRegionsMask);
+        CutCoordList = cell2mat(CutCoordList);
+        pixelsPerRegion = cellfun(@(x) size(x,1), pixelsConcaveRegions(QualifyingRegionsMask));
+        tmp = cell(size(pixelsPerRegion,1),1);
+        for region = 1:size(pixelsPerRegion,1)
+            tmp{region} = repmat(region, pixelsPerRegion(region), 1);
         end
+        regionIndex = cell2mat(tmp);
 
 % ======================================================================================================================================
 % === object image -- start ==============================================================================================================
@@ -110,27 +135,9 @@ if ~isempty(ObjectIDs)
 
             %%% Map CutCoordList
             % (follow the reverse strategy as below for mapping back)
-%             if strcmpi(SelectionMethod,'quickNdirty')
-                % for pixels within concave region with mean/max gradient
-                rCut = CutCoordList(:,1)+1-N(i);
-                cCut = CutCoordList(:,2)+1-W(i);
-                miniCutCoordList = [rCut,cCut];
-%             elseif strcmpi(SelectionMethod,'niceNslow')
-%                 % for all pixels within concave region
-%                 % => super-heavy for large objects with many concave regions
-%                 miniCutCoordList = cell(size(CutCoordList,1),1);
-%                 regionIndex = cell(size(CutCoordList,1),1);
-%                 for j = 1:size(CutCoordList,1)
-%                     rCut = CutCoordList{j}(:,1)+1-N(i);
-%                     cCut = CutCoordList{j}(:,2)+1-W(i);
-%                     miniCutCoordList{j} = [rCut,cCut];
-%                     tmp = size(CutCoordList{j},1);
-%                     regionIndex{j}(1:tmp,1) = j;
-%                 end
-%                 miniCutCoordList = cell2mat(miniCutCoordList);
-%                 regionIndex = cell2mat(regionIndex);
-%             end
-
+            rCut = CutCoordList(:,1)+1-N(i);
+            cCut = CutCoordList(:,2)+1-W(i);
+            miniCutCoordList = [rCut,cCut];
 
             %%% Create mini images
             imMini = LabelImage(N(i):S(i),W(i):E(i));
@@ -169,13 +176,12 @@ if ~isempty(ObjectIDs)
 
             %%% Define lines and measure area
             imCurrentLines = bwlabel(imCurrentLinesAndNodes<3 & imCurrentLinesAndNodes>0,4);
-            %figure;imagesc(imCurrentLines)
+            %figure, imagesc(imCurrentLines)
 
             LineAreas = regionprops(imCurrentLines,'area');
             LineAreas = cat(1,LineAreas(:).Area);
             LineIds = unique(imCurrentLines(:));
             LineIds(LineIds==0) = [];
-            %LineMeanInt=arrayfun(@(a,b) sum(sum(IntTemp(matLines==a)))/b,LineIds,LineAreas);
 
             %%% Define nodes and measure their centroids
             imCurrentNodes = bwlabel(imCurrentLinesAndNodes>2,4);
@@ -183,8 +189,8 @@ if ~isempty(ObjectIDs)
             NodesCentroids = cat(1,NodesCentroids(:).Centroid);
             NodesIds = unique(imCurrentNodes(:));
             NodesIds = NodesIds(2:end)';
-            %figure,imagesc(imCurrentNodes)
-
+            %figure, imagesc(imCurrentNodes) 
+                
             %%% Build connection matrix used to measure paths
             f = {[0 1 0; 0 0 0; 0 0 0;] [0 0 0; 1 0 0; 0 0 0;] [0 0 0; 0 0 1; 0 0 0;] [0 0 0; 0 0 0; 0 1 0;]};
             DisplacedLines = cellfun(@(x) imfilter(imCurrentLines,x),f,'uniformoutput',false);%what are DisplacedLines?
@@ -213,7 +219,6 @@ if ~isempty(ObjectIDs)
                 for l = tmplines
                     tmpnodes = find(matNodesLines(:,l));
                     matNodesNodes(iNode,tmpnodes) = LineAreas(l);
-                    %matNodesNodesInt=LineMeanInt(l);
                     matNodesNodesLabel(iNode,tmpnodes) = l;
                 end
 
@@ -222,10 +227,24 @@ if ~isempty(ObjectIDs)
             matNodesNodesLabel(sub2ind([length(NodesIds) length(NodesIds)],NodesIds,NodesIds)) = 0;
 
 
-            %% Define border nodes, sourse nodes and target nodes
+            %% Define border, source and target nodes
 
             %%% Determine border nodes
             NodeToTest = NodesIds(logical(NodeType));
+            
+            %=============debug=============
+            if debug
+                [I, J] = find(imCurrentLines>0);
+                figure(h), imagesc(padInt)
+                colormap(gray)
+                freezeColors
+                hold on
+                scatter(J, I, 150, 'y', 's', 'MarkerFaceColor','y')
+                scatter(NodesCentroids(NodeToTest,1), NodesCentroids(NodeToTest,2), 2000, 'r', '.');
+                hold off
+                pause(1)
+            end
+            %===========debug-end===========
 
             %%% Determine which border nodes lie in closest proximity to potential cut points
             PotentialNodesCoordinates = NodesCentroids(NodeToTest,:);
@@ -238,29 +257,27 @@ if ~isempty(ObjectIDs)
                 NodeCoordList(:,1) = PotentialNodesCoordinates(:,2);
                 NodeCoordList(:,2) = PotentialNodesCoordinates(:,1);
                 % Calculate distances between potential cut points and nodes and determine closest nodes/cut points and the respective indexes
-                if strcmpi(SelectionMethod,'quickNdirty')
-                    numNeighbours = 4;
-                elseif strcmpi(SelectionMethod,'niceNslow')
-                    numNeighbours = 1;
-                end
-                [ClosestNodesDist,ClosestNodesIndex] = pdist2(NodeCoordList,miniCutCoordList,'euclidean','Smallest',numNeighbours);%selecting more than one node may result in small cut fragments when lines between neighboring nodes are selected !!!
-                ClosestNodesIndex = ClosestNodesIndex(ClosestNodesDist<50);
-                ClosestNodesIndex = ClosestNodesIndex(:);
-
+                [~,ClosestNodesIndex] = pdist2(NodeCoordList,miniCutCoordList,'euclidean','Smallest',1);
+                ClosestNodesIndex = unique(ClosestNodesIndex(:));
+                
                 %=============debug=============
                 if debug
                     % Display selected regions over intensity image
-                    RegionsImIndex = sub2ind(size(padInt),miniCutCoordList(:,1),miniCutCoordList(:,2));
-                    padRegionsOverlay = double(padbw);%padint
-                    padRegionsOverlay(RegionsImIndex) = 2;%quantile(padInt(:),0.998);
-                    figure(h),imagesc(padRegionsOverlay)
+                    figure(h),imagesc(padInt)
+                    colormap(gray)
+                    hold on
+                    scatter(miniCutCoordList(:,2), miniCutCoordList(:,1), 2000, 'g', '.');
+                    hold off 
+                    pause(1)
 
                     % Display selected nodes over intensity image
                     SelectedNodeCoordList = NodeCoordList(ClosestNodesIndex,:);
-                    NodeImIndex = sub2ind(size(padInt),SelectedNodeCoordList(:,1),SelectedNodeCoordList(:,2));
-                    padNodesOverlay = double(padbw);%padint
-                    padNodesOverlay(NodeImIndex) = 2;%quantile(padInt(:),0.998);
-                    figure(h),imagesc(padNodesOverlay)
+                    figure(h),imagesc(padInt)
+                    colormap(gray)
+                    hold on
+                    scatter(SelectedNodeCoordList(:,2), SelectedNodeCoordList(:,1), 2000, 'r', '.');
+                    hold off
+                    pause(1)
                 end
                 %===========debug-end===========
 
@@ -387,64 +404,32 @@ if ~isempty(ObjectIDs)
                                 StraigtLineix = NaN;
                             end
                             tmprim = tmpImage;
-                            %fprintf('%d\n',n)
                             tmprim(StraigtLineix(~isnan(StraigtLineix))) = 1;
                             tmprim = imfill(tmprim);
                             tmpRatio = sum(tmprim(:))/length(unique(StraigtLineix));
                             % store measurements
                             AllLines(n).straightness = tmpRatio;
                             
-%                                 % Distances between source node and target node
-%                                 CurrentSourceNode = regionIndex(ClosestCutPointsSIndex(n));
-%                                 CurrentTargetNode = regionIndex(ClosestCutPointsTIndex(n));
-%                                 %CurrentDistance=norm(SelectedRegions(j,9:10)-SelectedRegions(k,9:10));%default?
-%                                 RegionA=CurrentPreimProps(ConcaveRegions==SelectedRegions(CurrentSourceNode,13),1:2);%load both regions: coordinates ONLY
-%                                 RegionB=CurrentPreimProps(ConcaveRegions==SelectedRegions(CurrentTargetNode,13),1:2);%load both regions: coordinates ONLY
-%                                 [MeshARow,MeshBRow]=meshgrid(RegionA(:,1),RegionB(:,1));
-%                                 [MeshACol,MeshBCol]=meshgrid(RegionA(:,2),RegionB(:,2));
-%                                 RowDist=MeshARow-MeshBRow;
-%                                 ColDist=MeshACol-MeshBCol;
-%                                 %Region dist: RegionA: columns, RegionB: rows
-%                                 RegionDist=sqrt(RowDist.*RowDist+ColDist.*ColDist);%euclidian distance for all possible cuts.
-%                                 tmpDistance=min(RegionDist(:));
-%                                 % store measurements
-%                                 AllLines(n).distance = tmpDistance;
-                            
                             % Angle between normal vectors of source node and target node
                             CurrentSourceNode = regionIndex(ClosestCutPointsSIndex(n));
                             CurrentTargetNode = regionIndex(ClosestCutPointsTIndex(n));
-                            if strcmp(AngleMethod,'center')%angle between mean gradient of regions
-                                tmpAngle = acos(dot(SelectedRegions(CurrentSourceNode,5:6),SelectedRegions(CurrentTargetNode,5:6))/(norm(SelectedRegions(CurrentSourceNode,5:6))*norm(SelectedRegions(CurrentTargetNode,5:6))));%mean
-                                tmpAngle = real(tmpAngle);
-                            elseif strcmp(AngleMethod,'curvature')%angle between maximum gradient of regions
-                                tmpAngle = acos(dot(SelectedRegions(CurrentSourceNode,3:4),SelectedRegions(CurrentTargetNode,3:4))/(norm(SelectedRegions(CurrentSourceNode,3:4))*norm(SelectedRegions(CurrentTargetNode,3:4))));%max
-                                tmpAngle = real(tmpAngle);
-                            elseif strcmp(AngleMethod,'best')||strcmp(AngleMethod,'best_inline')%best angle between regions
-                                RegionA = CurrentPreimProps(ConcaveRegions==SelectedRegions(CurrentSourceNode,13),[1 2 3 4]);%load both regions: coordinates AND normal vectors!
-                                RegionB = CurrentPreimProps(ConcaveRegions==SelectedRegions(CurrentTargetNode,13),[1 2 3 4]);%load both regions: coordinates AND normal vectors!
-                                AllAngles = zeros(size(RegionA,1),size(RegionB,1),'double');%A=row, B=colums (opposite for distance calc!)
-                                for l = 1:size(RegionA,1)%full loop over all combinations of cutting between region A and B!
-                                    for m = 1:size(RegionB,1)
-                                        if strcmp(AngleMethod,'best')
-                                            %'best' only optimizes for 180 degree vector alignment but not that vectors actually point at each other!
-                                            AllAngles(l,m) = acos(dot(RegionA(l,3:4),RegionB(m,3:4))/(norm(RegionA(l,3:4))*norm(RegionB(m,3:4))));
-                                        elseif strcmp(AngleMethod,'best_inline')
-                                            %'best inline' optimizes for the smallest angle of two vectors to the connecting line!
-                                            ConnectingVectorAB = RegionB(m,1:2)-RegionA(l,1:2);%vector from pixel in region A to B
-                                            ConnectingVectorAB = ConnectingVectorAB/norm(ConnectingVectorAB);
-                                            ConnectingVectorBA = -ConnectingVectorAB;
-                                            AngleDeviationA = acos(dot(RegionA(l,3:4),ConnectingVectorAB));%Angle between the normal vector and the connectiong vector=deviation from ideal geometry
-                                            AngleDeviationB = acos(dot(RegionB(m,3:4),ConnectingVectorBA));%Angle between the normal vector and the connectiong vector=deviation from ideal geometry
-                                            MeanAngleDeviation = (AngleDeviationA+AngleDeviationB)/2;%ranges between 0 and 180 degree, 0 being the ideal geometry
-                                            AllAngles(l,m) = pi-MeanAngleDeviation;%this is done just to conform with the further angle scoring where 180 is considered best, 0 worst
-                                        end
-                                    end
+                            RegionA = CurrentPreimProps(ConcaveRegions==SelectedRegions(CurrentSourceNode,13),[1 2 3 4]);%load both regions: coordinates AND normal vectors!
+                            RegionB = CurrentPreimProps(ConcaveRegions==SelectedRegions(CurrentTargetNode,13),[1 2 3 4]);%load both regions: coordinates AND normal vectors!
+                            AllAngles = zeros(size(RegionA,1),size(RegionB,1),'double');%A=row, B=colums (opposite for distance calc!)
+                            for l = 1:size(RegionA,1)%full loop over all combinations of cutting between region A and B!
+                                for m = 1:size(RegionB,1)
+                                        % optimizes for the smallest angle of two vectors to the connecting line!
+                                        ConnectingVectorAB = RegionB(m,1:2)-RegionA(l,1:2);  % vector from pixel in region A to B
+                                        ConnectingVectorAB = ConnectingVectorAB/norm(ConnectingVectorAB);
+                                        ConnectingVectorBA = -ConnectingVectorAB;
+                                        AngleDeviationA = acos(dot(RegionA(l,3:4),ConnectingVectorAB));  % Angle between the normal vector and the connectiong vector=deviation from ideal geometry
+                                        AngleDeviationB = acos(dot(RegionB(m,3:4),ConnectingVectorBA));  % Angle between the normal vector and the connectiong vector=deviation from ideal geometry
+                                        MeanAngleDeviation = (AngleDeviationA+AngleDeviationB)/2;  % ranges between 0 and 180 degree, 0 being the ideal geometry
+                                        AllAngles(l,m) = pi-MeanAngleDeviation;  % this is done just to conform with the further angle scoring where 180 is considered best, 0 worst
                                 end
-                                AllAngles = real(AllAngles);%maybe not necessary
-                                tmpAngle = max(AllAngles(:));%max(acos)=pi, exactly what we are looking for (180 degree geometry)
-                            else
-                                error('%s: Angle score method unspecified, use either ''center'', ''curvature'', ''best'' or ''best_inline''\n',mfilename);
                             end
+                            AllAngles = real(AllAngles);
+                            tmpAngle = max(AllAngles(:));  % max(acos)=pi, exactly what we are looking for (180 degree geometry)
                             % store measurements
                             AllLines(n).angle = tmpAngle;
                                                                                                                                                  
@@ -476,16 +461,19 @@ if ~isempty(ObjectIDs)
                     %=============debug=============
                     if debug
                         % Display lines on top of object intensity image
-                        LineOverlay = zeros(size(padInt));
+                        AllLinesImage = zeros(size(padInt));
                         for d = 1:length(AllLines)
-                            tmpImage = AllLines(d).lineimage>0;
-                            tmpImage(tmpImage>0) = d;
-                            LineOverlay = LineOverlay+tmpImage;
+                            AllLinesImage(AllLines(d).lineimage>0) = 1;
                         end
-                        LinesOnIntImage = padInt;
-                        LinesOnIntImage(LineOverlay>0) = quantile(padInt(:),0.998);
-                        figure(h),imagesc(LinesOnIntImage)
-                        pause(3)
+                        [I, J] = find(logical(AllLinesImage));
+                        
+                        figure(h), imagesc(padInt)
+                        colormap(gray)
+                        hold on
+                        scatter(J, I, 150, 'y', 's', 'MarkerFaceColor', 'y')
+                        scatter(SelectedNodeCoordList(:,2), SelectedNodeCoordList(:,1), 3000, 'r', '.')
+                        hold off
+                        pause(1)
                     end
                     %===========debug-end===========
 
@@ -495,13 +483,12 @@ if ~isempty(ObjectIDs)
                     %%% Optimization function
                     optfunc = @(a,b,c,d,e,f,g,h) a - 2*b - c - d - e + 2*f - g - 2*h;
 
-                    %%% Normalize measurements
+                    %%% Combine measurements
                     % for line
                     lineMaxInt = cat(1,AllLines.maxint);
                     lineMeanInt = cat(1,AllLines.meanint);
                     lineStraight = cat(1,AllLines.straightness);
                     lineAngle = cat(1,AllLines.angle);
-                    %lineDistance = zscore(cat(1,AllLines.distance));
                     lineLength = cat(1,AllLines.length);
                     lineQuantInt = cat(1,AllLines.quantint);
 
@@ -515,12 +502,13 @@ if ~isempty(ObjectIDs)
                         solobj(k,1) = solobjs(k,smallindex(k));% solidity of the smaller object
                         formobj(k,1) = formobjs(k,smallindex(k));% "form factor" (transformed) of the smaller object
                     end
-%                     solobj = zscore(solobj);
-%                     formobj = zscore(formobj);
 
                     %%% Select best line
-%                     BestLines = optfunc(solobj,formobj,lineMeanInt,lineMaxInt,lineQuantInt,lineAngle,lineStraight,lineLength);
-                    BestLines = optfunc(solobj,formobj,lineMeanInt.*100,lineMaxInt.*10,lineQuantInt.*10,lineAngle,lineStraight./10,lineLength./10);
+                    % scale variables
+                    BestLines = optfunc(solobj, formobj, ...
+                                        lineMeanInt.*100, lineMaxInt.*10, lineQuantInt.*10, ...
+                                        lineAngle, lineStraight./10, lineLength./10);
+                    % take highest scoring line
                     [~,BestLinesIndex] = sort(BestLines,'descend');
                 end
 
@@ -531,10 +519,15 @@ if ~isempty(ObjectIDs)
 %                     figure(h),imagesc(BestLineOnIntImage)
 %                 end
                 if debug
-                    BestLineOnIntImage = padInt;
-                    BestLineOnIntImage(AllLines(BestLinesIndex(1)).lineimage>0) = max(padInt(:));
-                    figure(h),imagesc(BestLineOnIntImage)
-                    pause(3)
+                    BestLineImage = zeros(size(padInt));
+                    BestLineImage(AllLines(BestLinesIndex(1)).lineimage>0) = 1;
+                    [I, J] = find(logical(BestLineImage));
+                    figure(h),imagesc(padInt)
+                    colormap(gray)
+                    hold on
+                    scatter(J, I, 150, 'y', 's', 'MarkerFaceColor','y')
+                    hold off
+                    pause(1)
                 end
                 %===========debug-end===========
 
@@ -558,10 +551,10 @@ if ~isempty(ObjectIDs)
                         wMini = sub2ind(size(imBwMini),rMini,cMini);
                         r = rMini-1+N(i);
                         c = cMini-1+W(i);
-                        w = sub2ind(size(imCutMask),r,c);
+                        w = sub2ind(size(CutMask),r,c);
 
-                        imCutMask(w) = imBestLine(wMini);
-                        %figure,imagesc(imCutMask)
+                        CutMask(w) = imBestLine(wMini);
+                        %figure,imagesc(CutMask)
                     end
                 end
             end
@@ -570,9 +563,9 @@ if ~isempty(ObjectIDs)
     end
 end
 
-imCutMask = imCutMask>0;
+CutMask = CutMask>0;
 LineStrel = strel('disk',1,0);
-imCutMask = imdilate(imCutMask,getnhood(LineStrel));
+CutMask = imdilate(CutMask,getnhood(LineStrel));
 
 end
 
