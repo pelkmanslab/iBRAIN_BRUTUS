@@ -1,0 +1,20 @@
+#! /bin/sh
+if [ ! -d $IBRAIN_ROOT ]; then
+    echo "Error, missing ROOT folder definition.." >/dev/stderr
+    exit
+fi
+
+export IBRAIN_BIN_PATH=$IBRAIN_ROOT/bin
+export IBRAIN_ETC_PATH=$IBRAIN_ROOT/etc
+export IBRAIN_VAR_PATH=$IBRAIN_ROOT/var
+export IBRAIN_LOG_PATH=$IBRAIN_VAR_PATH/log
+export IBRAIN_DATABASE_PATH=$IBRAIN_VAR_PATH/database
+
+export IBRAIN_USER=$(whoami)
+export IBRAIN_ADMIN_EMAIL=yauhen.yakimovich@uzh.ch
+
+export PYTHON_CMD="/usr/bin/env python2.7"
+export CELLPROFILER2_PATH=~/CellProfiler2
+
+export PATH=$IBRAIN_BIN_PATH:$PATH
+

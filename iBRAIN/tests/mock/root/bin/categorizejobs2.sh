@@ -1,0 +1,1 @@
+../../../../bin/categorizejobs2.sh

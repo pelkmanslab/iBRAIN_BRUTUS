@@ -1,0 +1,61 @@
+/* Put this inside a @media qualifier so Netscape 4 ignores it */
+@media screen, print { 
+
+/* some holy truths */
+.clear {
+    clear: both;
+    display: block;
+    height: 1px;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+}
+
+div#column2 {
+    margin: 0;
+    padding: 0;
+    background-image: url(side2.gif);
+    background-position: right;
+    background-repeat: repeat-y;
+    width: 100%;
+    
+}
+div#column1 {
+    margin: 0px;
+    padding: 0px;
+    background-image: url(side1.gif);
+    background-repeat: repeat-y;
+    width: 100%;
+   
+}
+
+div#header {
+    text-align: center;
+    background-color: #CCCCCC;
+    height: 60px;
+    margin: 0px;
+    padding: 1px;
+}
+div#navcol {
+    padding: 10px;
+    width: 400px;
+	overflow: scroll;
+    float: left;
+}
+div#main {
+    padding: 10px;
+    margin-left: 410px;
+    margin-right: 160px;
+}
+div#sidecol {
+    padding: 10px;
+    width: 130px;
+    float: right;
+}
+div#foot {
+    border-top: solid #000 1px;
+    background-color: #CCCCCC;
+    padding: 10px;
+    text-align: center;
+    clear: both;
+}

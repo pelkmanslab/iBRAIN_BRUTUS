@@ -1,0 +1,27 @@
+Hi, I am an "ok iBRAIN" interface.
+
+You can ask me about your project and I can help you to control and monitor it
+better.
+
+TIP: you can start with creating an empty file saying help.
+
+  cd ok
+  touch help
+
+Other examples are:
+
+  cd ok
+  echo list_jobs > help
+
+iBRAIN will respond by creating a file called "ok_help" providing more info.
+
+More examples:
+
+You can try another command:
+
+  cd ok
+  touch list_jobs
+
+iBRAIN will respond by creating a file called ok_job_list containing info about
+currently running jobs for this project.
+

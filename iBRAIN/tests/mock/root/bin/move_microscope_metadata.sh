@@ -1,0 +1,1 @@
+../../../../bin/move_microscope_metadata.sh

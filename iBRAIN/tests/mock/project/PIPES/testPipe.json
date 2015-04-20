@@ -1,0 +1,16 @@
+{
+    // Define iBRAIN pipe type
+    "type": "CellProfiler.Pipe",
+    "shared_project_folders": true,
+    // Define chain of processes
+    "chain": [
+        {
+            "type": "CellProfiler.PreCluster",
+            "filename": "PreCluster_*.mat",
+            "default_parameters": {
+                "submission_queue": "8:00",
+                "resubmission_queue": "36:00"
+            }
+        }
+    ]
+}

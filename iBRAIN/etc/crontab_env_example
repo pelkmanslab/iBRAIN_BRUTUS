@@ -1,0 +1,74 @@
+MANPATH=/cluster/apps/modules/man:/cluster/apps/lsf/7.0/man:
+EGO_CONFDIR=/cluster/apps/lsf/conf/ego/brutus/kernel
+HOSTNAME=brutus3.ethz.ch
+EGO_TOP=/cluster/apps/lsf
+SHELL=/bin/bash
+TERM=screen
+HISTSIZE=1000
+SSH_CLIENT=129.132.209.107 41759 22
+EGO_SERVERDIR=/cluster/apps/lsf/7.0/linux2.6-glibc2.3-x86_64/etc
+LIBRARY_PATH=/cluster/apps/gotoblas2/1.06_seq/x86_64/gcc_4.1.2
+OLDPWD=/cluster/home/biol/yyauhen/iBRAIN/cfg
+LSF_SERVERDIR=/cluster/apps/lsf/7.0/linux2.6-glibc2.3-x86_64/etc
+SSH_TTY=/dev/pts/126
+LSF_LIBDIR=/cluster/apps/lsf/7.0/linux2.6-glibc2.3-x86_64/lib
+USER=yyauhen
+LD_LIBRARY_PATH=/cluster/apps/ffmpeg/0.8.2/lib64:/cluster/apps/matlab/7.12/runtime/glnxa64:/cluster/apps/matlab/7.12/bin/glnxa64:/cluster/apps/matlab/7.12/sys/os/glnxa64:/cluster/apps/python/2.7.2/x86_64/lib64:/cluster/apps/lsf/7.0/linux2.6-glibc2.3-x86_64/lib
+LS_COLORS=no=00:fi=00:di=01;34:ln=01;36:pi=40;33:so=01;35:bd=40;33;01:cd=40;33;01:or=01;05;37;41:mi=01;05;37;41:ex=01;32:*.cmd=01;32:*.exe=01;32:*.com=01;32:*.btm=01;32:*.bat=01;32:*.sh=01;32:*.csh=01;32:*.tar=01;31:*.tgz=01;31:*.arj=01;31:*.taz=01;31:*.lzh=01;31:*.zip=01;31:*.z=01;31:*.Z=01;31:*.gz=01;31:*.bz2=01;31:*.bz=01;31:*.tz=01;31:*.rpm=01;31:*.cpio=01;31:*.jpg=01;35:*.gif=01;35:*.bmp=01;35:*.xbm=01;35:*.xpm=01;35:*.png=01;35:*.tif=01;35:
+EGO_LIBDIR=/cluster/apps/lsf/7.0/linux2.6-glibc2.3-x86_64/lib
+TERMCAP=SC|screen|VT 100/ANSI X3.64 virtual terminal:\
+	:DO=\E[%dB:LE=\E[%dD:RI=\E[%dC:UP=\E[%dA:bs:bt=\E[Z:\
+	:cd=\E[J:ce=\E[K:cl=\E[H\E[J:cm=\E[%i%d;%dH:ct=\E[3g:\
+	:do=^J:nd=\E[C:pt:rc=\E8:rs=\Ec:sc=\E7:st=\EH:up=\EM:\
+	:le=^H:bl=^G:cr=^M:it#8:ho=\E[H:nw=\EE:ta=^I:is=\E)0:\
+	:li#56:co#212:am:xn:xv:LP:sr=\EM:al=\E[L:AL=\E[%dL:\
+	:cs=\E[%i%d;%dr:dl=\E[M:DL=\E[%dM:dc=\E[P:DC=\E[%dP:\
+	:im=\E[4h:ei=\E[4l:mi:IC=\E[%d@:ks=\E[?1h\E=:\
+	:ke=\E[?1l\E>:vi=\E[?25l:ve=\E[34h\E[?25h:vs=\E[34l:\
+	:ti=\E[?1049h:te=\E[?1049l:us=\E[4m:ue=\E[24m:so=\E[3m:\
+	:se=\E[23m:mb=\E[5m:md=\E[1m:mr=\E[7m:me=\E[m:ms:\
+	:Co#8:pa#64:AF=\E[3%dm:AB=\E[4%dm:op=\E[39;49m:AX:\
+	:vb=\Eg:G0:as=\E(0:ae=\E(B:\
+	:ac=\140\140aaffggjjkkllmmnnooppqqrrssttuuvvwwxxyyzz{{||}}~~..--++,,hhII00:\
+	:po=\E[5i:pf=\E[4i:Z0=\E[?3h:Z1=\E[?3l:k0=\E[10~:\
+	:k1=\EOP:k2=\EOQ:k3=\EOR:k4=\EOS:k5=\E[15~:k6=\E[17~:\
+	:k7=\E[18~:k8=\E[19~:k9=\E[20~:k;=\E[21~:F1=\E[23~:\
+	:F2=\E[24~:F3=\EO2P:F4=\EO2Q:F5=\EO2R:F6=\EO2S:\
+	:F7=\E[15;2~:F8=\E[17;2~:F9=\E[18;2~:FA=\E[19;2~:kb=:\
+	:K2=\EOE:kB=\E[Z:kF=\E[1;2B:kR=\E[1;2A:*4=\E[3;2~:\
+	:*7=\E[1;2F:#2=\E[1;2H:#3=\E[2;2~:#4=\E[1;2D:%c=\E[6;2~:\
+	:%e=\E[5;2~:%i=\E[1;2C:kh=\E[1~:@1=\E[1~:kH=\E[4~:\
+	:@7=\E[4~:kN=\E[6~:kP=\E[5~:kI=\E[2~:kD=\E[3~:ku=\EOA:\
+	:kd=\EOB:kr=\EOC:kl=\EOD:km:
+TMOUT=86400
+PATH=/cluster/apps/ffmpeg/0.8.2/bin:/cluster/apps/matlab/7.12/bin:/cluster/apps/lsf/7.0/linux2.6-glibc2.3-x86_64/etc:/cluster/apps/lsf/7.0/linux2.6-glibc2.3-x86_64/bin:/cluster/apps/python/2.7.2/x86_64/bin:/cluster/apps/modules/bin:/usr/kerberos/bin:/usr/local/bin:/bin:/usr/bin:/cluster/home/biol/yyauhen/bin:/cluster/home/biol/yyauhen/bin
+MAIL=/var/spool/mail/yyauhen
+STY=3291.pts-126.brutus3
+PWD=/cluster/home/biol/yyauhen/iBRAIN
+INPUTRC=/etc/inputrc
+_LMFILES_=/cluster/apps/modules/modulefiles/modules:/cluster/apps/modules/modulefiles/goto2/1.06_seq:/cluster/apps/modules/modulefiles/python/2.7.2:/cluster/apps/modules/modulefiles/matlab/7.12:/cluster/apps/modules/modulefiles/ffmpeg/0.8.2
+LANG=en_US.UTF-8
+MODULEPATH=/cluster/apps/Modules/modulefiles:/cluster/apps/modules/modulefiles:/cluster/apps/modules/obsolete-modules
+LOADEDMODULES=modules:goto2/1.06_seq:python/2.7.2:matlab/7.12:ffmpeg/0.8.2
+GOTOBLAS2=/cluster/apps/gotoblas2/1.06_seq/x86_64/gcc_4.1.2
+MATLAB_BASEDIR=/cluster/apps/matlab/7.12
+LSF_BINDIR=/cluster/apps/lsf/7.0/linux2.6-glibc2.3-x86_64/bin
+SSH_ASKPASS=/usr/libexec/openssh/gnome-ssh-askpass
+HOME=/cluster/home/biol/yyauhen
+SHLVL=2
+BINARY_TYPE_HPC=
+EGO_LOCAL_CONFDIR=/cluster/apps/lsf/conf/ego/brutus/kernel
+MATLAB=/cluster/apps/matlab/7.12
+LOGNAME=yyauhen
+CVS_RSH=ssh
+WINDOW=0
+SSH_CONNECTION=129.132.209.107 41759 129.132.8.63 22
+XLSF_UIDDIR=/cluster/apps/lsf/7.0/linux2.6-glibc2.3-x86_64/lib/uid
+MODULESHOME=/cluster/apps/modules
+LESSOPEN=|/usr/bin/lesspipe.sh %s
+EGO_ESRVDIR=/cluster/apps/lsf/conf/ego/brutus/eservice
+INCLUDE=/cluster/apps/ffmpeg/0.8.2/include
+LSF_ENVDIR=/cluster/apps/lsf/conf
+G_BROKEN_FILENAMES=1
+EGO_BINDIR=/cluster/apps/lsf/7.0/linux2.6-glibc2.3-x86_64/bin
+_=/bin/env

@@ -1,0 +1,323 @@
+h1, h2, h3, h4, h5 { margin: 0px; font-family: arial; }
+
+html, body { height: 100%; }
+
+body {
+	font-family: arial;
+	font-size: 90%; 
+	margin: 0px;
+	padding: 0px;
+	background: url(../../html/img/02original.gif); 
+}
+
+a {
+	text-decoration: none;
+}
+
+img {
+	border: none;
+	vertical-align: bottom;
+}
+
+img.percentImage {
+	vertical-align: text-top;
+}
+
+.percentText {
+	vertical-align: text-top;
+}
+
+img.statusIcon {
+	margin-left: 5px;
+}
+
+h2 { 
+	margin: 0px; 
+}
+
+h2.Message{
+	margin-top: 25px; 
+	font-family: arial; 
+	/* color: #4D6680; */
+	color: #556ba2;
+}
+
+.ibrain_meta { 
+	font-size: 70%; 
+	color: #000000; 
+}
+
+span.warningInfo { 
+	color: #000000; 
+	font-weight: bold;
+}
+
+/*tr {
+	display: table-row;
+				table-cell
+}*/
+
+div.reportStalePage2Online {
+	float: left; 
+	border: 1px #dddddd solid; 
+	background-color: #fff6c9; 
+	margin: 5px; 
+	margin-right: 10px; 
+	display: inline;
+}
+
+div.reportStalePage2Offline {
+	float: left; 
+	border: 1px #dddddd solid; 
+	background-color: #fff6c9; 
+	margin: 5px; 
+	margin-right: 10px; 
+	display: none;
+}
+
+tr.headerTrOnline {
+	background: url('../../html/img/ibrain_head_bg_2.png'); 
+	width: 100%;
+}
+
+tr.headerTrOffline {
+	background: url('../../html/img/ibrain_head_bg_2_offline.png'); 
+	width: 100%;
+}
+
+td.headerOnline {
+	background: url('../../html/img/ibrain_head_3.png') no-repeat; 
+	color: #fefefe; 
+	font-size: 8pt; 
+	padding-left: 75px; 
+	font-smooth: always; 
+	width: 30%;
+}
+
+td.headerOffline {
+	background: url('../../html/img/ibrain_head_3_offline.png') no-repeat; 
+	color: #fefefe; 
+	font-size: 8pt; 
+	padding-left: 75px; 
+	font-smooth: always; 
+	width: 30%;
+}
+
+tr#projectHeader {
+	/* background-color: #4D6680; */
+	/* background-color: #576587; */
+	background-color: #003366;
+	color: white;
+}
+
+tr#projectHeader td {
+	background-color: #003366;
+	border-bottom: 1px #EEEEFF solid;
+	color: white;
+}
+
+tr#columnTitle {
+	/* background: url(../../html/img/header_bg_lightblue3.gif) top left repeat-x;  */
+	background: url(../../html/img/firefox_background.png) top left repeat-x;
+	height: 19px;
+	font-size: 14px;
+	font-weight: bold;
+} 
+
+tr#projectHeader td { 
+	padding-left: 10px;
+	padding-right: 10px;
+	font-size: 11px;
+}
+
+tr#projectHeader a { 
+	color: white;
+	text-decoration: underline;
+}
+
+
+.navTable td {
+	padding-right: 4px;
+	padding-left: 4px;
+	border-right: 1px #D7D8DA solid;
+	font-size: 12px; 
+	border-bottom: 1px #EEEEFF solid; 
+}
+
+div#header {
+	text-align: center;
+	vertical-align: middle;
+	background-color: #FFFFFF;
+	border-bottom: 1px #666666 solid;
+	height: 60px;
+	margin: 0px;
+	padding: 1px;
+}
+div#column2 {
+	margin: 0;
+	padding: 0;
+	/* background-image: url(side2.gif);
+	background-position: right;
+	background-repeat: repeat-y; */
+	width: 100%;
+	/* background-color: #FFFF99; */
+	
+}
+div#column1 {
+	margin: 0px;
+	padding: 0px;
+	/* background-image: url(side1.gif);
+	background-repeat: repeat-y; */
+	width: 100%;
+}
+
+/* {
+	padding: 0px;
+	padding-left: 0px;	
+	width: 400px;
+	float: left;
+} */
+
+table#mainTable {
+	padding: 0px;
+	margin-left: 400px;
+	/* margin-right: 160px; */
+	background-color: #FFFFFF;
+	height: 100%;
+	border-left: 1px #000000 solid;
+}
+div#sidecol {
+	padding: 10px;
+	width: 130px;
+	float: right;
+}
+div#foot {
+	border-top: solid #000 1px;
+	background-color: #FFFFFF;
+	padding: 10px;
+	text-align: center;
+	clear: both;
+}
+.clear {
+	clear: both;
+	display: block;
+	height: 1px;
+	overflow: hidden;
+	margin: 0;
+	padding: 0;
+}
+
+
+table#plateList tr.oddRow td {
+	/* background-color: #EDF3FF; */
+	background-color: #ffffff;
+
+/*	border-bottom: 1px #BEC2CC solid; */
+}
+
+table#plateList tr.evenRow td {
+	background-color: #ffffff;
+/*	border-bottom: 1px #BEC2CC solid; */
+}
+
+table#plateList tr.oddRow_over td {
+	background-color: #69f;
+	color: white;
+	cursor: pointer;
+/*	border-bottom: 1px #BEC2CC solid; */
+}
+
+table#plateList tr.evenRow_over td {
+	background-color: #69f;
+	color: white;
+	cursor: pointer;
+/*	border-bottom: 1px #BEC2CC solid; */
+}
+
+table#plateList tr.statusItem td {
+	background-color: #fafafa;
+}
+
+table#plateList tr.statusItem_over td {
+	background-color: #FFFFCC;
+	/* border-bottom: 1px #BEC2CC solid;*/
+}
+
+tr.statusInfo td {
+	background-color: #f4f4f4;
+	font-size: 11px;
+	color: #888888;
+}
+
+tr.oddRow td {
+	background-color: #EDF3FF;
+/*	border-bottom: 1px #BEC2CC solid; */
+}
+
+tr.evenRow td {
+	background-color: #ffffff;
+/*	border-bottom: 1px #BEC2CC solid; */
+}
+
+tr.oddRow_over td {
+	background-color: #69f;
+	color: white;
+	cursor: pointer;
+/*	border-bottom: 1px #BEC2CC solid; */
+}
+
+tr.evenRow_over td {
+	background-color: #69f;
+	color: white;
+	cursor: pointer;
+/*	border-bottom: 1px #BEC2CC solid; */
+}
+
+tr.errorRow td {
+	background-color: #ffeeee;
+	cursor: pointer;
+/*	border-bottom: 1px #BEC2CC solid; */
+}
+
+tr.errorRow_over td {
+	background-color: #69f;
+	color: white;
+	cursor: pointer;
+/*	border-bottom: 1px #BEC2CC solid; */
+}
+
+tr#columnHeaders { 
+	background-color: #ffffff;
+}
+
+
+/*
+table#mainTable tr.oddRow td {
+	background-color: #EDF3FF;
+	border-bottom: 1px #D5DBE5 solid;
+}
+
+table#mainTable tr.evenRow td {
+	background-color: #ffffff;
+	border-bottom: 1px #D5DBE5 solid;
+}
+
+table#mainTable tr.oddRow_over td {
+	cursor: pointer;
+	background-color: #69f;
+	color: white;
+	border-bottom: 1px #D5DBE5 solid;
+}
+
+table#mainTable tr.evenRow_over td {
+	cursor: pointer;
+	background-color: #69f;
+	color: white;
+	border-bottom: 1px #D5DBE5 solid;
+}
+
+div tr#columnHeaders td { 
+	border-bottom: 1px #D5DBE5 solid;
+}
+
+*/

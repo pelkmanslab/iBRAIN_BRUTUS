@@ -1,0 +1,42 @@
+/* Put this inside a @media qualifier so Netscape 4 ignores it */
+@media screen, print { 
+	/* Turn off list bullets */
+	ul.mktree  li { list-style: none; } 
+	/* Control how "spaced out" the tree is */
+	ul.mktree, ul.mktree ul , ul.mktree li { margin-left:15px; padding:1px; padding-top:2px; }
+	/* Provide space for our own "bullet" inside the LI */
+	ul.mktree  li           .bullet { padding-left: 15px; }
+	/* Show "bullets" in the links, depending on the class of the LI that the link's in */
+	ul.mktree  li.liOpen    .bullet { cursor: pointer; background: url(../img/minus2.gif)  center left no-repeat; }
+	ul.mktree  li.liClosed  .bullet { cursor: pointer; background: url(../img/plus2.gif)   center left no-repeat; }
+
+	ul.mktree  li.liBullet  .bullet { cursor: default; background: url(../img/bullet.gif) center left no-repeat; }
+
+	/* Sublists are visible or not based on class of parent LI */
+	ul.mktree  li.liOpen    ul { display: block; }
+	ul.mktree  li.liClosed  ul { display: none; }
+
+	/* Format menu items differently depending on what level of the tree they are in */
+	/* Uncomment this if you want your fonts to decrease in size the deeper they are in the tree */
+	/* ul.mktree  li ul li { font-size: 90% } */
+	ul.mktree  li ul li { font-size: 95% }
+
+
+	/* STUFF ADDED BY BEREND */
+	ul.mktree img { vertical-align: bottom; }
+
+	/* make it such that deeper bullet-li elements do not get a bullet and do not jump in */
+	ul.mktree  li ul li.liBullet  .bullet { cursor: default; background: url(../img/empty.gif) center left no-repeat; }
+	ul.mktree  li ul li.liBullet { margin-left: 0px; !important }
+	ul.mktree  li ul li.liBullet ul { margin-left: 0px; !important }
+	ul.mktree  li ul li.liBullet li { padding-left: 15px; !important }
+	ul.mktree  li ul li.liBullet .bullet { padding-left: 15px; !important }
+
+	ul.mktree li.liOpen { background: url(../img/header_bg_lightblue3.gif) top left repeat-x; } /* color: #FFFFFF; font-weight: bold; */
+	ul.mktree li.liOpen ul li { background: none; color: #000000; font-weight: normal; }
+
+	/* ul.mktree  li.liOpen ul { background-color: #FFFFFF; }
+	ul.mktree  li.liOpen li { background-color: #FFFFFF; }
+	ul.mktree  li.liClosed { background-color: #DEFFFF; } */
+
+}
