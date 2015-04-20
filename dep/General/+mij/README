@@ -1,0 +1,20 @@
+
+ ImageJ for Matlab.
+ ==================
+
+A Java package for bi-directional communication and data exchange from Matlab to ImageJ/Fiji
+
+http://bigwww.epfl.ch/sage/soft/mij/
+
+ Usage
+ -----
+
+i. Configure mij by running mij.init or alternatively you can:
+
+** Extend the java classpath to mij.jar, e.g using the Matlab command: javaaddpath 'C:\Program Files\MATLAB\R2009b\java\mij.jar'.
+** Extend the java classpath to ij.jar, e.g using the Matlab command: javaaddpath 'C:\Program Files\MATLAB\R2009b\java\ij.jar'.
+
+ii. Start MIJ, e.g. MIJ.start;
+
+
+// wbr, yy
