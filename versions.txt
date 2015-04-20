@@ -1,0 +1,3 @@
+CellProfilerPelkmans 1.0.0
+PelkmansLibrary 0.1.0
+iBRAINShared 0.1.0
