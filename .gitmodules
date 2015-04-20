@@ -1,0 +1,9 @@
+[submodule "tools/CellProfilerPelkmans"]
+	path = tools/CellProfilerPelkmans
+	url = git@github.com:pelkmanslab/CellProfilerPelkmans
+[submodule "tools/PelkmansLibrary"]
+	path = tools/PelkmansLibrary
+	url = git@github.com:pelkmanslab/PelkmansLibrary
+[submodule "tools/iBRAINShared"]
+	path = tools/iBRAINShared
+	url = git@github.com:pelkmanslab/iBRAINShared
