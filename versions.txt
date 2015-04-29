@@ -1,3 +1,4 @@
-CellProfilerPelkmans 1.0.1
-PelkmansLibrary 0.3.0
-iBRAINShared 0.1.0
+CellProfilerPelkmans 1.0.2
+PelkmansLibrary 0.4.1
+iBRAINShared 0.2.0
+CellClassificationPelkmans v1.0

@@ -7,3 +7,6 @@
 [submodule "tools/iBRAINShared"]
 	path = tools/iBRAINShared
 	url = git@github.com:pelkmanslab/iBRAINShared
+[submodule "tools/CellClassificationPelkmans"]
+	path = tools/CellClassificationPelkmans
+	url = git@github.com:pelkmanslab/CellClassificationPelkmans

@@ -25,6 +25,7 @@ if __name__ == '__main__':
         os.path.join(ROOT, 'tools', 'CellProfilerPelkmans'),
         os.path.join(ROOT, 'tools', 'PelkmansLibrary'),
         os.path.join(ROOT, 'tools', 'iBRAINShared'),
+        os.path.join(ROOT, 'tools', 'CellClassificationPelkmans'),
     ]
     versions_path = os.path.join(ROOT, 'versions.txt')
     with open(versions_path, 'w+') as versions:
