@@ -1,11 +1,12 @@
 # iBRAIN_BRUTUS
+
+> Changes are **strongly discouraged** apart from necessary bugfixes.
+
 **This repository is for iBRAIN on BRUTUS infrastructure.** It is the *old* iBRAIN.
 
 Code for the new iBRAIN, that will become operational on UZH's Hobbes, is found in the [iBRAIN_UZH](https://github.com/pelkmanslab/iBRAIN_UZH) repository.
 
 This repository was originally extracted from iBRAIN on BRUTUS on Apr 20th 2015.
-
-Changes are **strongly discouraged** apart from necessary bugfixes.
 
 A [check-out](https://github.com/pelkmanslab/iBRAIN_BRUTUS/wiki/DEPLOY) of this repository is used to run iBRAIN on BRUTUS. Please make sure this is kept synchronized with this repository.
 
