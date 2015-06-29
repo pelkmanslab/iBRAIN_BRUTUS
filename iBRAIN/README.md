@@ -33,6 +33,7 @@ make update
 
 2. The context of ~/iBRAIN/etc should look like
 
+```
 config
 paths.txt -> /BIOL/sonas/biol_uzh_pelkmans_s4/Data/Code/iBRAINmaster/etc/paths.txt
 sedTransformLogWebUser.sed
@@ -136,7 +137,7 @@ umask 0007
 # According to brutus wiki, module load commands should be here
 #module load matlab/7.8
 module load matlab/7.12 ffmpeg/0.8.2
-
+```
 
 Tests
 -----
