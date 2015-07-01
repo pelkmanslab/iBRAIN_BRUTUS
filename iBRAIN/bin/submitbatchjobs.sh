@@ -58,16 +58,16 @@ do
 OLDRESULTFILERUNLIMITS=$(grep "TERM_RUNLIMIT" $(dirname $batchjob)/$(basename $batchjob .txt)_*.results) 2> /dev/null
 MATLABOUTOFMEMORY=$(grep "Out of memory. Type HELP MEMORY" $(dirname $batchjob)/$(basename $batchjob .txt)_*.results) 2> /dev/null
 if [ "${OLDRESULTFILERUNLIMITS}" ]; then 
-bsub -W 34:00 -o $(dirname $batchjob)/$REPORTFILE -R 'rusage[mem=8192]' "matlab -singleCompThread -nodisplay -nojvm << M_PROG
+bsub -W 34:00 -o $(dirname $batchjob)/$REPORTFILE -R 'rusage[mem=8192]' "matlab -singleCompThread -nodisplay << M_PROG
 CPCluster('$(dirname $batchjob)/Batch_data.mat','$(dirname $batchjob)/$(basename $batchjob .txt).mat');
 M_PROG"
 touch $(dirname $1)/SubmitBatchJobs_$(basename $batchjob .txt).runlimit
 elif [ "${MATLABOUTOFMEMORY}" ]; then
-bsub -W 8:00 -o $(dirname $batchjob)/$REPORTFILE -R 'rusage[mem=8192]' "matlab -singleCompThread -nodisplay -nojvm << M_PROG
+bsub -W 8:00 -o $(dirname $batchjob)/$REPORTFILE -R 'rusage[mem=8192]' "matlab -singleCompThread -nodisplay  << M_PROG
 CPCluster('$(dirname $batchjob)/Batch_data.mat','$(dirname $batchjob)/$(basename $batchjob .txt).mat');
 M_PROG"
 else
-bsub -W 8:00 -o $(dirname $batchjob)/$REPORTFILE -R 'rusage[mem=4096]' "matlab -singleCompThread -nodisplay -nojvm << M_PROG
+bsub -W 8:00 -o $(dirname $batchjob)/$REPORTFILE -R 'rusage[mem=4096]' "matlab -singleCompThread -nodisplay  << M_PROG
 CPCluster('$(dirname $batchjob)/Batch_data.mat','$(dirname $batchjob)/$(basename $batchjob .txt).mat');
 M_PROG"
 fi
