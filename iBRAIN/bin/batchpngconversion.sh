@@ -19,7 +19,7 @@ PNG="$(dirname $TIFF)/$(basename $TIFF .tif).png"
 # CONVERT FILE IF PNG DOES NOT EXIST
 if [ ! -e $PNG ]; then
    echo " -- converting to $PNG"
-   convert -quiet $TIFF -depth 16 -type Grayscale -format png $PNG
+   convert -quiet $TIFF -depth 16 -colorspace gray -format png $PNG
 fi
 
 # CHECK IF PNG FILE EXISTS AND IS VALID, IF SO, REMOVE TIFF FILE
@@ -61,7 +61,7 @@ PNG="$(dirname $TIFF)/$(basename $TIFF .tif).png"
 # CONVERT FILE IF PNG DOES NOT EXIST
 if [ ! -e $PNG ]; then
    echo " -- converting to $PNG"
-   convert -quiet $TIFF -depth 16 -type Grayscale -format png $PNG
+   convert -quiet $TIFF -depth 16 -colorspace gray -format png $PNG
 fi
 
 # CHECK IF PNG FILE EXISTS AND IS VALID, IF SO, REMOVE TIFF FILE
