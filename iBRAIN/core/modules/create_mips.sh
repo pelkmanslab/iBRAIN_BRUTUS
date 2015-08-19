@@ -11,10 +11,11 @@
 
 function main {
 
-        # Check if image filenames contain "z000", i.e. are z-stacks
+        # Check if image filenames contain "Z000", i.e. are z-stacks
         if [ "${DO_ZSTACK_CHECK}" == "check_zstacks" ]; then
             # we consider only PNGs..
-            ZSTACKCOUNT=$( find $TIFFDIR -maxdepth 1 -type f -regex ".*_z[0-9]+.*\.png$" | wc -l )
+            # XXX: works only for CV7K?
+            ZSTACKCOUNT=$( find $TIFFDIR -maxdepth 1 -type f -regex ".*Z[0-9]+.*\.png$" | wc -l )
             if [ $ZSTACKCOUNT -eq 0 ]; then
                 echo "     <status action=\"${MODULENAME}\">skipped"
                 echo "      <message>"
@@ -52,7 +53,8 @@ import sys
 import os
 sys.path = [os.path.abspath('$BRAINYDIR')] + sys.path
 
-from brainy import BrainyModule, NORM_QUEUE, LONG_QUEUE
+from brainy.modules import BrainyModule
+from brainy.scheduler.base import NORM_QUEUE, LONG_QUEUE
 import os
 import re
 
@@ -66,7 +68,7 @@ class CreateMIPs(BrainyModule):
         self.__wanted_mips = None
         self.__found_mips = None
         self.__zstacks = None
-        self.zstack_regex = re.compile('.+(_z\d+)[^\.]*\.(tiff|png)$')
+        self.zstack_regex = re.compile('.+(Z\d+)[^\.]*\.(tiff|png)$')
 
     def get_zstacks(self):
         if self.__zstacks is None:
