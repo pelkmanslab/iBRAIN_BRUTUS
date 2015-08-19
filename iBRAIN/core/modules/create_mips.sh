@@ -10,12 +10,13 @@
 
 
 function main {
+        MIPSDIR="${BATCHDIR}/../MIPS"
 
         # Check if image filenames contain "Z000", i.e. are z-stacks
         if [ "${DO_ZSTACK_CHECK}" == "check_zstacks" ]; then
             # we consider only PNGs..
             # XXX: works only for CV7K?
-            ZSTACKCOUNT=$( find $TIFFDIR -maxdepth 1 -type f -regex ".*Z[0-9]+.*\.png$" | wc -l )
+            ZSTACKCOUNT=$( find $TIFFDIR -maxdepth 1 -type f -regex ".*Z[0-9]+2.*\.png$" | wc -l )
             if [ $ZSTACKCOUNT -eq 0 ]; then
                 echo "     <status action=\"${MODULENAME}\">skipped"
                 echo "      <message>"
@@ -32,6 +33,7 @@ function main {
                 echo "      </message>"
                 echo "      <output>"
                 touch ${BATCHDIR}/has_zstacks
+                [ -d ${MIPSDIR} ] || mkdir  ${MIPSDIR}
                 echo "      </output>"
                 echo "     </status>"
                 return
@@ -128,7 +130,7 @@ class CreateMIPs(BrainyModule):
             # TODO fix!
             #batch.append('$IBRAIN_BIN_PATH/mip.py %s --outfile %s' % \
             #            (input_images, mip))
-            batch.append('convert  %s -background black -compose lighten -mosaic %s' % \
+            batch.append('convert  %s -background black -compose lighten -mosaic ../MIPS/%s' % \
                         (input_images, mip))
             # TODO: run png check
             if len(batch) >= $BATCHSIZE:
