@@ -10,7 +10,7 @@
 
 
 function main {
-        MIPSDIR="${BATCHDIR}/../MIPS"
+        MIPSDIR="${PROJECTDIR}/MIPS"
 
         # Check if image filenames contain "Z000", i.e. are z-stacks
         if [ "${DO_ZSTACK_CHECK}" == "check_zstacks" ]; then
@@ -95,11 +95,8 @@ class CreateMIPs(BrainyModule):
     def found_mips(self):
         if self.__found_mips is None:
             self.__found_mips = list()
-            for filename in self.files:
-                match = self.zstack_regex.search(filename)
-                if not match and filename in self.wanted_mips:
-                    # Consider this to be a MIPs
-                    self.__found_mips.append(filename)
+            for filename in os.listdir(self.env['mip_dir']):
+                self.__found_mips.append(filename)
         return self.__found_mips
 
     @property
@@ -157,6 +154,7 @@ create_mips = CreateMIPs(dict(
     batch_dir='$BATCHDIR',
     postanalysis_dir='$POSTANALYSISDIR',
     jpg_dir='$JPGDIR',
+    mip_dir='$MIPSDIR',
 ))
 
 
