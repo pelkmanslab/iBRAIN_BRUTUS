@@ -67,7 +67,7 @@ function main {
 			if [ -e $PROJECTDIR/CreateJPGs.runlimit ]; then
 bsub -W 36:00 -o $BATCHDIR/$REPORTFILE "matlab -singleCompThread -nodisplay -nojvm << M_PROG;
 % Add custom project code support.
-brainy.libpath.checkAndAppendLibPath(os.path.dirname(batchfile));
+brainy.libpath.checkAndAppendLibPath(os.path.dirname('${TIFFDIR}'));
 
 create_jpgs('${TIFFDIR}','${JPGDIR}');
 merge_jpgs_per_plate('${JPGDIR}');
@@ -75,7 +75,7 @@ M_PROG"
 			else
 bsub -W 08:00 -o $BATCHDIR/$REPORTFILE "matlab -singleCompThread -nodisplay -nojvm << M_PROG;
 % Add custom project code support.
-brainy.libpath.checkAndAppendLibPath(os.path.dirname(batchfile));
+brainy.libpath.checkAndAppendLibPath(os.path.dirname('${TIFFDIR}'));
 
 create_jpgs('${TIFFDIR}','${JPGDIR}');
 merge_jpgs_per_plate('${JPGDIR}');
@@ -112,7 +112,7 @@ REPORTFILE=CreateJPGs_$(date +"%y%m%d%H%M%S").results
 			if [ -e $PROJECTDIR/CreateJPGs.runlimit ]; then
 bsub -W 36:00 -o $BATCHDIR/$REPORTFILE "matlab -singleCompThread -nodisplay -nojvm << M_PROG;
 % Add custom project code support.
-brainy.libpath.checkAndAppendLibPath(os.path.dirname(batchfile));
+brainy.libpath.checkAndAppendLibPath(os.path.dirname('${TIFFDIR}'));
 
 create_jpgs('${TIFFDIR}','${JPGDIR}');
 merge_jpgs_per_plate('${JPGDIR}');
@@ -120,7 +120,7 @@ M_PROG"
 			else
 bsub -W 08:00 -o $BATCHDIR/$REPORTFILE "matlab -singleCompThread -nodisplay -nojvm << M_PROG;
 % Add custom project code support.
-brainy.libpath.checkAndAppendLibPath(os.path.dirname(batchfile));
+brainy.libpath.checkAndAppendLibPath(os.path.dirname('${TIFFDIR}'));
 
 create_jpgs('${TIFFDIR}','${JPGDIR}');
 merge_jpgs_per_plate('${JPGDIR}');
