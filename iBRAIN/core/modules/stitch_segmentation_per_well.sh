@@ -34,6 +34,9 @@ function main {
                 echo "      <output>"
                 STITCHRESULTFILE="StitchSegmentationPerWell_$(date +"%y%m%d%H%M%S").results"
                 bsub -W 8:00 -o "${BATCHDIR}$STITCHRESULTFILE" "matlab -singleCompThread -nodisplay -nojvm << M_PROG
+% Add custom project code support.
+brainy.libpath.checkAndAppendLibPath('${BATCHDIR}');
+% Run routines
 stitchSegmentationPerWell('${BATCHDIR}');
 M_PROG"
                 touch $PROJECTDIR/StitchSegmentationPerWell.submitted
