@@ -176,6 +176,10 @@ if [ "$INCLUDEDPATH" ] && [ -d $INCLUDEDPATH ]; then
 
         if [ -e ${BATCHDIR}/checkimageset.complete ]; then
 
+            # - JPG creation without illumination correction 
+            #   (a first quality read out of the experiment)
+            . ./core/modules/create_jpgs.sh
+
             # - illumination correction
             . ./core/modules/do_illumination_correction.sh
 
@@ -200,15 +204,14 @@ if [ "$INCLUDEDPATH" ] && [ -d $INCLUDEDPATH ]; then
                 . ./core/modules/create_mips.sh
             fi
 
-            # - JPG creation (is of course dependent on the dataset being complete,
-            #   and is better run after pngconversion or MIPs creation)
-            if [ ! -e ${BATCHDIR}/has_zstacks ] || [ -e ${BATCHDIR}/CreateMIPs.complete ]; then
-                # there would be no MIPS creation, start with creating JPGs
-                . ./core/modules/create_jpgs.sh
-            fi
-
         fi
         ###############################################################
+
+        ##                after illumination correction is finished ###
+        if [ -e ${BATCHDIR}/illuminationcorrection.complete ]; then
+            # - JPG creation with illumination correction 
+            . ./core/modules/create_illcor_jpgs.sh
+        fi
 
         ##################################
         ### START MAIN LOGICS: STAGE 1 ###
