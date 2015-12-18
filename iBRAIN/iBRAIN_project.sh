@@ -208,7 +208,7 @@ if [ "$INCLUDEDPATH" ] && [ -d $INCLUDEDPATH ]; then
         ###############################################################
 
         ##                after illumination correction is finished ###
-        if [ -e ${BATCHDIR}/illuminationcorrection.complete ]; then
+        if [ -e ${BATCHDIR}/illuminationcorrection.complete ] && [ -e ${BATCHDIR}/ConvertAllTiff2Png.complete ] ; then
             # - JPG creation with illumination correction 
             . ./core/modules/create_illcor_jpgs.sh
         fi
