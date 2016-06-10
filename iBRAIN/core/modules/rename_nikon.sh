@@ -69,11 +69,11 @@ function main {
             echo "      <output>"
 			REPORTFILE=RenameNikon_$(date +"%y%m%d%H%M%S").results
 			if [ -e $PROJECTDIR/RenameNikonImages.runlimit ]; then
-bsub -W 36:00 -o $BATCHDIR/$REPORTFILE "matlab -singleCompThread -nodisplay -nojvm << M_PROG;
+bsub -W 36:00 -o $BATCHDIR/$REPORTFILE "matlab -singleCompThread -nodisplay << M_PROG;
 microscopetool.nikon.renameImages('${NIKONDIR}','${NIKONTMPDIR}');
 M_PROG"
 			else
-bsub -W 08:00 -o $BATCHDIR/$REPORTFILE "matlab -singleCompThread -nodisplay -nojvm << M_PROG;
+bsub -W 08:00 -o $BATCHDIR/$REPORTFILE "matlab -singleCompThread -nodisplay << M_PROG;
 microscopetool.nikon.renameImages('${NIKONDIR}','${NIKONTMPDIR}');
 M_PROG"
         	fi            
@@ -99,11 +99,11 @@ M_PROG"
             echo "      <output>"
 			REPORTFILE=RenameNikon_$(date +"%y%m%d%H%M%S").results
 			if [ -e $PROJECTDIR/RenameNikonImages.runlimit ]; then
-bsub -W 36:00 -o $BATCHDIR/$REPORTFILE "matlab -singleCompThread -nodisplay -nojvm << M_PROG;
+bsub -W 36:00 -o $BATCHDIR/$REPORTFILE "matlab -singleCompThread -nodisplay << M_PROG;
 microscopetool.nikon.renameImages('${NIKONDIR}','${NIKONTMPDIR}');
 M_PROG"
 			else
-bsub -W 08:00 -o $BATCHDIR/$REPORTFILE "matlab -singleCompThread -nodisplay -nojvm << M_PROG;
+bsub -W 08:00 -o $BATCHDIR/$REPORTFILE "matlab -singleCompThread -nodisplay  << M_PROG;
 microscopetool.nikon.renameImages('${NIKONDIR}','${NIKONTMPDIR}');
 M_PROG"
         	fi     
